@@ -1,0 +1,76 @@
+#!/bin/bash
+
+# Install utils
+sudo apt install build-essential curl file git wget
+
+# Install bash-it
+# https://github.com/Bash-it/bash-it
+echo "Install bash-it"
+rm -rf $HOME/.bash_it/
+git clone --depth=1 https://github.com/Bash-it/bash-it.git $HOME/.bash_it
+$HOME/.bash_it/install.sh --silent
+
+# Enable bash-it plugins/aliases
+bash-it enable plugin alias-completion base docker docker-compose git tmux
+bash-it enable alias docker docker-compose general git tmux
+
+# Add global gitignore
+ln -s $HOME/.dotfiles/shell/.global-gitignore $HOME/.global-gitignore
+git config --global core.excludesfile $HOME/.global-gitignore
+
+# Add vimrc
+rm $HOME/.vimrc
+ln -s $HOME/.dotfiles/shell/.vimrc $HOME/.vimrc
+
+# Install linuxbrew
+# https://docs.brew.sh/Homebrew-on-Linux
+rm -rf $HOME/.linuxbrew
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)"
+test -d $HOME/.linuxbrew && eval $(~/.linuxbrew/bin/brew shellenv)
+test -d /home/linuxbrew/.linuxbrew && eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
+test -r $HOME/.bash_profile && echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>$HOME/.bash_profile
+echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>$HOME/.profile
+
+# Install tmux
+brew install tmux
+
+# Add tmux plugins
+git clone https://github.com/tmux-plugins/tpm $HOME/.tmux/plugins/tpm
+
+# Add tmux config
+rm $HOME/.tmux.conf
+ln -s $HOME/.dotfiles/shell/.tmux.conf $HOME/.tmux.conf
+
+# Install composer
+EXPECTED_CHECKSUM="$(wget -q -O - https://composer.github.io/installer.sig)"
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+ACTUAL_CHECKSUM="$(php -r "echo hash_file('sha384', 'composer-setup.php');")"
+
+if [ "$EXPECTED_CHECKSUM" != "$ACTUAL_CHECKSUM" ]
+then
+    >&2 echo 'ERROR: Invalid installer checksum'
+    rm composer-setup.php
+    exit 1
+fi
+
+php composer-setup.php --quiet
+rm composer-setup.php
+chmod +x composer.phar
+mv composer.phar /usr/local/bin/composer
+
+# Install fzf
+brew install fzf
+$(brew --prefix)/opt/fzf/install
+
+# Add aliases from .bashrc/.profile
+
+# Add WSL specific config
+# Lando alias
+# WSL -> Docker Desktop config (otherwise, install Docker)
+
+echo "#################################"
+echo 
+echo "- When running tmux for the first time"
+echo "-- Press prefix + I (capital i, as in Install) to fetch the plugins"
+echo 
+echo "#################################"
