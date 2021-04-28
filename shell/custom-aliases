@@ -1,0 +1,88 @@
+alias glo='git log --oneline'
+alias lando-diff-php='lando start && lando rebuild -y -s appserver && rm -rf vendor/ && lando composer install && lando composer du -o && lando artisan view:clear'
+alias gtinit='cd /d/wamp/www/getracker.local/ && tmux'
+#alias ssh-aws='ssh -i /d/Google\ Drive/Infrastructure/AWS/getracker-aws ec2-user@'
+#alias aws-scp='scp -i /d/Google\ Drive/Infrastructure/AWS/getracker-aws'
+alias aws-scp="rsync -Pav -e 'ssh -i ~/.ssh/getracker-aws'"
+
+alias sitespeed='docker run --rm -v "/d/Google Drive/Infrastructure:/sitespeed.io" sitespeedio/sitespeed.io:12.0.1 -b chrome'
+alias coach='docker run --rm -v "/d/Google Drive/Infrastructure:/sitespeed.io" sitespeedio/coach:4.5.0 --details --description -b chrome'
+
+alias ctop='docker run --rm -ti --name=ctop --volume /var/run/docker.sock:/var/run/docker.sock:ro quay.io/vektorlab/ctop:latest'
+
+alias yaw='lando yarn run watch'
+alias yab='lando yarn run build'
+alias yat='lando yarn run test'
+
+alias getracker-flush='lando composer du -o; lando artisan dev:flush-ide-helper; composer fixc'
+alias llog='clear; tail -f -n 0 storage/logs/laravel-$(date +%F).log'
+
+rector() {
+   #docker run --rm -v $(pwd):/project rector/rector:latest process /project/$1 --config="/project/rector.yaml"  --autoload-file /project/vendor/autoload.php
+   docker run --rm -v $(pwd):/project rector/rector:latest process /project/$1 --config="/project/rector.yaml"  --autoload-file /project/vendor/autoload.php
+}
+
+docker-backup() {
+	BASE_DIR="/d/backups"
+	CURRENT_DIR=`pwd`
+	TIMESTAMP=`date +%F`
+	DATABASES=("getracker_database_1" "ezines_database_1" "cerebro_database_1")
+
+	for DATABASE in "${DATABASES[@]}"
+	do
+		BACKUP_DIR="${BASE_DIR}/docker/${TIMESTAMP}/${DATABASE}"
+		mkdir -p "${BACKUP_DIR}"
+#		cd "${BACKUP_DIR}"
+		#docker run --rm --volumes-from "${DATABASE}" -v $(pwd):/backup ubuntu:18.04 tar -czvf /backup/backup.tar.gz /bitnami/mysql/data
+		docker run --rm --volumes-from "${DATABASE}" -v "${BACKUP_DIR}:/backup" ubuntu:18.04 tar -czvf /backup/backup.tar.gz /bitnami/mysql/data
+#		echo "Exit code: $CODE"
+	done
+	
+#	cd "${CURRENT_DIR}"
+}
+
+reqtime() {
+	FORMAT=" \
+    time_namelookup:  %{time_namelookup}\n \
+       time_connect:  %{time_connect}\n \
+    time_appconnect:  %{time_appconnect}\n \
+   time_pretransfer:  %{time_pretransfer}\n \
+      time_redirect:  %{time_redirect}\n \
+ time_starttransfer:  %{time_starttransfer}\n \
+                    ----------\n \
+         time_total:  %{time_total}\n"
+
+	curl -sk -o /dev/null -w "$FORMAT" "$1"
+}
+
+aws-ssh() {
+	ssh -i /d/Google\ Drive/Infrastructure/AWS/getracker-aws "ec2-user@$1"
+}
+
+#aws-scp() {
+#	KEY="/d/Google Drive/Infrastructure/AWS/getracker-aws"
+#	echo $KEY
+#	echo $1
+#	rsync -Pav -e 'ssh -i "$KEY"' ./public/assets/images/icons/ ec2-user@172.31.15.36:/var/www/ge-tracker.com/public/assets/images/icons/
+#}
+
+ngrok-docker() {
+	CMD="docker run --rm -it --name ngrok -p 4040:4040 --link $1 --network $3 -v /c/Users/James/.ngrok2/:/home/ngrok/.ngrok2/ wernight/ngrok ngrok http -subdomain=$4 $1:$2"
+	echo $CMD
+	tmux new-window $CMD; tmux rename-window ngrok
+}
+
+ngrok-getracker() {
+	ngrok-docker getracker_appserver_1 80 getracker_default getracker
+}
+
+gt-cloc() {
+	cloc --not-match-f='bootstrap' app/ packages/jamesausten/ tests/ resources/views/ public/assets/sass/ public/assets/js/getracker/ public/assets/js/graph-data-v3.js public/assets/js/angular
+}
+
+discord-export() {
+	echo "Exporting channel as HTML"
+	docker run --rm -v $(pwd):/app/out tyrrrz/discordchatexporter export -t $DISCORD_BOT_TOKEN -b -c $1 -f HtmlDark
+	echo "Exporting channel as JSON"
+	docker run --rm -v $(pwd):/app/out tyrrrz/discordchatexporter export -t $DISCORD_BOT_TOKEN -b -c $1 -f Json
+}
