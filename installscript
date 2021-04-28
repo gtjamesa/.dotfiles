@@ -41,36 +41,18 @@ git clone https://github.com/tmux-plugins/tpm $HOME/.tmux/plugins/tpm
 rm -f $HOME/.tmux.conf
 ln -s $HOME/.dotfiles/shell/.tmux.conf $HOME/.tmux.conf
 
-# Install composer
-EXPECTED_CHECKSUM="$(wget -q -O - https://composer.github.io/installer.sig)"
-php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-ACTUAL_CHECKSUM="$(php -r "echo hash_file('sha384', 'composer-setup.php');")"
-
-if [ "$EXPECTED_CHECKSUM" != "$ACTUAL_CHECKSUM" ]
-then
-    >&2 echo 'ERROR: Invalid installer checksum'
-    rm composer-setup.php
-    exit 1
-fi
-
-php composer-setup.php --quiet
-rm composer-setup.php
-chmod +x composer.phar
-mv composer.phar /usr/local/bin/composer
-
 # Install fzf
 brew install fzf
 $(brew --prefix)/opt/fzf/install
 
-# Add aliases from .bashrc/.profile
-
-# Add WSL specific config
-# Lando alias
-# WSL -> Docker Desktop config (otherwise, install Docker)
+# TODO: Add aliases from .bashrc/.profile
+# TODO: Add WSL specific config
+# TODO: Lando alias
+# TODO: WSL -> Docker Desktop config (otherwise, install Docker)
 
 echo "#################################"
-echo 
+echo
 echo "- When running tmux for the first time"
 echo "-- Press prefix + I (capital i, as in Install) to fetch the plugins"
-echo 
+echo
 echo "#################################"
