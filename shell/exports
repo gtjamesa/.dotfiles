@@ -1,11 +1,14 @@
+#!/bin/bash
+
 # File editor
 export VISUAL=vim
 export EDITOR="$VISUAL"
 
 # pipx
-export PATH="$PATH:/home/james/.local/bin:/home/james/.local"
+export PATH="$PATH:$HOME/.local/bin:$HOME/.local"
 
-# fzf
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-
+# Node / Yarn
 export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
+
+# Custom Software
+export PATH="/opt:$PATH"

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Custom dotfiles loader script
 
 # Exports
@@ -8,7 +10,12 @@
 
 # Custom aliases
 [ -f ~/.dotfiles/shell/custom-aliases ] && source ~/.dotfiles/shell/custom-aliases
+[ -f ~/.dotfiles/shell/work-aliases.sh ] && source ~/.dotfiles/shell/work-aliases.sh
 
 # fzf
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
+# User custom configuration
+[ -f ~/.dotfiles/custom/secrets.sh ] && source ~/.dotfiles/custom/secrets.sh
+[ -f ~/.dotfiles/custom/exports.sh ] && source ~/.dotfiles/custom/exports.sh
+[ -f ~/.dotfiles/custom/aliases.sh ] && source ~/.dotfiles/custom/aliases.sh

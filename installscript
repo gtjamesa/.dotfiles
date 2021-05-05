@@ -1,54 +1,101 @@
 #!/bin/bash
 
-# Install utils
-sudo apt update -y && sudo apt install -y build-essential curl file git wget vim curl php
+backup_file() {
+  if [[ -f $1 ]]; then
+    echo "Creating backup of $1"
+    mv "$1" "$1.bak"
+  fi
+}
 
-# Install bash-it
-# https://github.com/Bash-it/bash-it
-echo "Install bash-it"
-rm -rf $HOME/.bash_it/
-git clone --depth=1 https://github.com/Bash-it/bash-it.git $HOME/.bash_it
-$HOME/.bash_it/install.sh --silent
+symlink_file() {
+  backup_file "$2"
+  ln -s "$1" "$2"
+}
 
-# Enable bash-it plugins/aliases
-bash-it enable plugin alias-completion base docker docker-compose git tmux
-bash-it enable alias docker docker-compose general git tmux
+# Install ohmyzsh
+# https://github.com/ohmyzsh/ohmyzsh
+install_zsh() {
+  echo "Installing zsh"
+  echo "--------------------"
+  sudo apt install -y zsh
 
-# Add global gitignore
-ln -s $HOME/.dotfiles/shell/.global-gitignore $HOME/.global-gitignore
-git config --global core.excludesfile $HOME/.global-gitignore
+  echo "Installing ohmyzsh"
+  echo "--------------------"
+  rm -rf "$HOME/.oh-my-zsh/"
+  backup_file ~/.zshrc
+  sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+  ln -s "$HOME/.dotfiles/shell/.zshrc" "$HOME/.zshrc"
 
-# Add vimrc
-rm -f $HOME/.vimrc
-ln -s $HOME/.dotfiles/shell/.vimrc $HOME/.vimrc
+  echo "Installing ZSH tools"
+  echo "--------------------"
+  git clone https://github.com/zsh-users/zsh-autosuggestions.git /usr/share/zsh-autosuggestions
+  git clone https://github.com/zsh-users/zsh-syntax-highlighting.git /usr/share/zsh-syntax-highlighting
+}
+
+install_tmux() {
+  echo "Installing tmux"
+  echo "---------------"
+
+  # Install tmux
+  brew install tmux
+
+  # Add tmux plugins
+  git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
+
+  # Add tmux config
+  symlink_file "$HOME/.dotfiles/shell/.tmux.conf" "$HOME/.tmux.conf"
+}
+
+install_fzf() {
+  echo "Installing fzf"
+  echo "--------------"
+  brew install fzf
+  $(brew --prefix)/opt/fzf/install
+}
 
 # Install linuxbrew
 # https://docs.brew.sh/Homebrew-on-Linux
-rm -rf $HOME/.linuxbrew
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)"
-test -d $HOME/.linuxbrew && eval $(~/.linuxbrew/bin/brew shellenv)
-test -d /home/linuxbrew/.linuxbrew && eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
-test -r $HOME/.bash_profile && echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>$HOME/.bash_profile
-echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>$HOME/.profile
+install_linuxbrew() {
+  echo "Installing linuxbrew"
+  echo "--------------------"
+  rm -rf "$HOME/.linuxbrew"
+  sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)"
+  test -d "$HOME/.linuxbrew" && eval $(~/.linuxbrew/bin/brew shellenv)
+  test -d /home/linuxbrew/.linuxbrew && eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
+  test -r "$HOME/.bash_profile" && echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>"$HOME/.bash_profile"
+  echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>"$HOME/.profile"
+}
 
-# Install tmux
-brew install tmux
+install_dotfiles() {
+  # Add global gitignore
+  symlink_file "$HOME/.dotfiles/shell/.global-gitignore" "$HOME/.global-gitignore"
+  git config --global core.excludesfile "$HOME/.global-gitignore"
 
-# Add tmux plugins
-git clone https://github.com/tmux-plugins/tpm $HOME/.tmux/plugins/tpm
+  # Add vimrc
+  symlink_file "$HOME/.dotfiles/shell/.vimrc" "$HOME/.vimrc"
+}
 
-# Add tmux config
-rm -f $HOME/.tmux.conf
-ln -s $HOME/.dotfiles/shell/.tmux.conf $HOME/.tmux.conf
+run_installer() {
+  # Install utils
+  sudo apt update -y && sudo apt install -y \
+    build-essential curl file git wget vim curl php jq
 
-# Install fzf
-brew install fzf
-$(brew --prefix)/opt/fzf/install
+  install_zsh
+  install_dotfiles
+  install_linuxbrew
+  install_tmux
+  install_fzf
+}
 
 # TODO: Add aliases from .bashrc/.profile
 # TODO: Add WSL specific config
 # TODO: Lando alias
 # TODO: WSL -> Docker Desktop config (otherwise, install Docker)
+
+run_installer
+
+# Change default shell
+chsh -s $(which zsh)
 
 echo "#################################"
 echo

@@ -1,10 +1,23 @@
 #!/bin/bash
 
-function bootstrapTerminal() {	
-	sudo -v #ask password beforehand
-	source ~/.dotfiles/installscript
+cloneRepo() {
+  # Install Git
+  sudo apt update -y && sudo apt install -y git
+
+  # Clone repository
+  git clone https://github.com/gtjamesa/.dotfiles.git ~/.dotfiles
 }
 
+bootstrapTerminal() {
+  # Ask password
+	sudo -v
+
+  # Clone the Git repository
+  cloneRepo
+
+  # Install!
+	source ~/.dotfiles/installscript
+}
 
 echo 'Bootstrap terminal'
 echo '------------------'
