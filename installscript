@@ -24,12 +24,12 @@ install_zsh() {
   rm -rf "$HOME/.oh-my-zsh/"
   backup_file ~/.zshrc
   sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-  ln -s "$HOME/.dotfiles/shell/.zshrc" "$HOME/.zshrc"
+  ln -sf "$HOME/.dotfiles/shell/.zshrc" "$HOME/.zshrc"
 
   echo "Installing ZSH tools"
   echo "--------------------"
-  git clone https://github.com/zsh-users/zsh-autosuggestions.git /usr/share/zsh-autosuggestions
-  git clone https://github.com/zsh-users/zsh-syntax-highlighting.git /usr/share/zsh-syntax-highlighting
+  sudo git clone https://github.com/zsh-users/zsh-autosuggestions.git /usr/share/zsh-autosuggestions
+  sudo git clone https://github.com/zsh-users/zsh-syntax-highlighting.git /usr/share/zsh-syntax-highlighting
 }
 
 install_tmux() {
@@ -53,17 +53,13 @@ install_fzf() {
   $(brew --prefix)/opt/fzf/install
 }
 
-# Install linuxbrew
+# Install homebrew
 # https://docs.brew.sh/Homebrew-on-Linux
-install_linuxbrew() {
-  echo "Installing linuxbrew"
+install_homebrew() {
+  echo "Installing homebrew"
   echo "--------------------"
   rm -rf "$HOME/.linuxbrew"
-  sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)"
-  test -d "$HOME/.linuxbrew" && eval $(~/.linuxbrew/bin/brew shellenv)
-  test -d /home/linuxbrew/.linuxbrew && eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
-  test -r "$HOME/.bash_profile" && echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>"$HOME/.bash_profile"
-  echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>"$HOME/.profile"
+  bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 }
 
 install_dotfiles() {
