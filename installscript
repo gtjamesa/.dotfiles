@@ -28,8 +28,14 @@ install_zsh() {
 
   echo "Installing ZSH tools"
   echo "--------------------"
-  sudo git clone https://github.com/zsh-users/zsh-autosuggestions.git /usr/share/zsh-autosuggestions
-  sudo git clone https://github.com/zsh-users/zsh-syntax-highlighting.git /usr/share/zsh-syntax-highlighting
+
+  if [[ ! -d /usr/share/zsh-autosuggestions ]]; then
+    sudo git clone https://github.com/zsh-users/zsh-autosuggestions.git /usr/share/zsh-autosuggestions
+  fi
+
+  if [[ ! -d /usr/share/zsh-syntax-highlighting ]]; then
+    sudo git clone https://github.com/zsh-users/zsh-syntax-highlighting.git /usr/share/zsh-syntax-highlighting
+  fi
 }
 
 install_tmux() {

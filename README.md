@@ -2,6 +2,8 @@
 
 This repository contains my personal dotfiles, inspired by [freekmurze/dotfiles](https://github.com/freekmurze/dotfiles). 
 
+The only requirements are that `sudo` and `curl` are installed, the rest will be installed and configured automatically.
+
 To install, simply run the following command. It will clone this repository into `~/.dotfiles`, and run the `bootstrap` script automatically.
 
 ```bash
