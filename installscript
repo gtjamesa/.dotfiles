@@ -25,6 +25,7 @@ install_zsh() {
   backup_file ~/.zshrc
   sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
   ln -sf "$HOME/.dotfiles/shell/.zshrc" "$HOME/.zshrc"
+  ln -s "$HOME/.dotfiles/themes/james-custom.zsh-theme" "$HOME/.oh-my-zsh/themes/"
 
   echo "Installing ZSH tools"
   echo "--------------------"
