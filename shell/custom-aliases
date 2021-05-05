@@ -45,7 +45,7 @@ fileinfo() {
   local FILESIZE
   local HASH
   FILESIZE=$(stat --printf="%s" "$1")
-  HASH=$(sha256sum "$1" | gawk -F' ' '{print $1}')
+  HASH=$(sha256sum "$1" | awk -F' ' '{print $1}')
   echo "$1"
   echo "Filesize: ${FILESIZE}"
   echo -e "SHA256: ${HASH}\n"
