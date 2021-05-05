@@ -60,6 +60,7 @@ install_homebrew() {
   echo "--------------------"
   rm -rf "$HOME/.linuxbrew"
   bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 }
 
 install_dotfiles() {

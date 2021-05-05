@@ -7,6 +7,9 @@ export EDITOR="$VISUAL"
 # pipx
 export PATH="$PATH:$HOME/.local/bin:$HOME/.local"
 
+# Linuxbrew
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
 # Node / Yarn
 export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
 
