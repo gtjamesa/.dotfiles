@@ -1,7 +1,10 @@
 #!/bin/bash
 
 backup_file() {
-  if [[ -f $1 ]]; then
+  if [[ -L $1 ]]; then
+    echo "Removing symlink $1"
+    rm -f "$1"
+  elif [[ -f $1 ]]; then
     echo "Creating backup of $1"
     mv "$1" "$1.bak"
   fi
