@@ -5,26 +5,33 @@ cloneRepo() {
   sudo apt update -y && sudo apt install -y git
 
   # Clone repository
-  git clone https://github.com/gtjamesa/.dotfiles.git ~/.dotfiles
+  if [[ ! -d ~/.dotfiles ]]; then
+    git clone https://github.com/gtjamesa/.dotfiles.git ~/.dotfiles
+  else
+    cd ~/.dotfiles
+    git fetch origin
+    git pull
+  fi
+
+  cd "$HOME"
 }
 
 bootstrapTerminal() {
   # Ask password
-	sudo -v
+  sudo -v
 
   # Clone the Git repository
   cloneRepo
 
   # Install!
-	source ~/.dotfiles/installscript
+  source ~/.dotfiles/installscript
 }
 
 echo 'Bootstrap terminal'
 echo '------------------'
 echo 'This will reset your terminal. Are you sure you want to to this? (y/n) '
-read -p 'Answer: '  reply
+read -p 'Answer: ' reply
 
-if [[ $reply =~ ^[Yy]$ ]]
-then
-   bootstrapTerminal
+if [[ $reply =~ ^[Yy]$ ]]; then
+  bootstrapTerminal
 fi
