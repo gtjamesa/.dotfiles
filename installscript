@@ -2,6 +2,12 @@
 
 OS="$(uname)"
 
+if [[ "$OS" == "Linux" ]]; then
+  SHARE_PATH="/usr/share"
+elif [[ "$OS" == "Darwin" ]]; then
+  SHARE_PATH="/usr/local/share"
+fi
+
 backup_file() {
   if [[ -L $1 ]]; then
     echo "Removing symlink $1"
@@ -22,7 +28,11 @@ symlink_file() {
 install_zsh() {
   echo "Installing zsh"
   echo "--------------------"
-  sudo apt install -y zsh
+  if [[ "$OS" == "Linux" ]]; then
+    sudo apt install -y zsh
+  elif [[ "$OS" == "Darwin" ]]; then
+    brew install zsh
+  fi
 
   echo "Installing ohmyzsh"
   echo "--------------------"
@@ -35,12 +45,12 @@ install_zsh() {
   echo "Installing ZSH tools"
   echo "--------------------"
 
-  if [[ ! -d /usr/share/zsh-autosuggestions ]]; then
-    sudo git clone https://github.com/zsh-users/zsh-autosuggestions.git /usr/share/zsh-autosuggestions
+  if [[ ! -d "$SHARE_PATH/zsh-autosuggestions" ]]; then
+    sudo git clone https://github.com/zsh-users/zsh-autosuggestions.git "$SHARE_PATH/zsh-autosuggestions"
   fi
 
-  if [[ ! -d /usr/share/zsh-syntax-highlighting ]]; then
-    sudo git clone https://github.com/zsh-users/zsh-syntax-highlighting.git /usr/share/zsh-syntax-highlighting
+  if [[ ! -d "$SHARE_PATH/zsh-syntax-highlighting" ]]; then
+    sudo git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "$SHARE_PATH/zsh-syntax-highlighting"
   fi
 }
 
@@ -60,6 +70,11 @@ install_tmux() {
 
 install_fzf() {
   echo "Installing fzf"
+  echo "--------------"
+  echo
+  echo "Recommended answers: Y - Y - N"
+  echo "The final N is important - fzf is automatically loaded :)"
+  echo
   echo "--------------"
   brew install fzf
   $(brew --prefix)/opt/fzf/install
@@ -94,9 +109,9 @@ run_installer() {
   sudo apt update -y && sudo apt install -y \
     build-essential curl file git wget vim curl php jq
 
+  install_homebrew
   install_zsh
   install_dotfiles
-  install_homebrew
   install_tmux
   install_fzf
 }

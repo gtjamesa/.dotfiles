@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Kali defaults
 #
 # To be sourced into main ohmyzsh themes to not lose functionality
@@ -17,9 +19,18 @@ compinit -d ~/.cache/zcompdump
 zstyle ':completion:*:*:*:*:*' menu select
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' # case insensitive tab completion
 
+# support Linux/Darwin installations
+OS="$(uname)"
+
+if [[ "$OS" == "Linux" ]]; then
+  SHARE_PATH="/usr/share"
+elif [[ "$OS" == "Darwin" ]]; then
+  SHARE_PATH="/usr/local/share"
+fi
+
 # enable syntax-highlighting
-if [ -f /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]; then
-    . /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+if [ -f "$SHARE_PATH/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]; then
+    . "$SHARE_PATH/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
     ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern)
     ZSH_HIGHLIGHT_STYLES[default]=none
     ZSH_HIGHLIGHT_STYLES[unknown-token]=fg=red,bold
@@ -90,8 +101,8 @@ if [ -x /usr/bin/dircolors ]; then
 fi
 
 # enable auto-suggestions based on the history
-if [ -f /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
-    . /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+if [ -f "$SHARE_PATH/zsh-autosuggestions/zsh-autosuggestions.zsh" ]; then
+    . "$SHARE_PATH/zsh-autosuggestions/zsh-autosuggestions.zsh"
     # change suggestion color
     ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#999'
 fi
