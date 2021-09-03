@@ -35,9 +35,6 @@ alias yab='lando yarn run build'
 alias yat='lando yarn run test'
 alias lando-diff-php='lando start && lando rebuild -y -s appserver && rm -rf vendor/ && lando composer install && lando composer du -o && lando artisan view:clear'
 
-# Laravel
-alias vapor='php vendor/bin/vapor'
-
 # GE Tracker
 alias getracker-flush='lando composer du -o; lando artisan dev:flush-ide-helper; composer fixc'
 alias gtinit='cd /d/wamp/www/getracker.local/ && tmux'
