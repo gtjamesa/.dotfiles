@@ -61,6 +61,24 @@ composer-unlink() {
   composer update
 }
 
+# PHP Compatibility checker
+# composer global require phpcompatibility/php-compatibility dealerdirect/phpcodesniffer-composer-installer "squizlabs/php_codesniffer=*"
+phpcc() {
+  CHECK_DIRS='src'
+  if [[ -n $1 ]]; then
+    CHECK_DIRS="$1"
+  fi
+
+  TEST_VERSION='8.0-'
+  if [[ -n $2 ]]; then
+    TEST_VERSION="$2"
+  fi
+
+  echo "Testing PHP compatibility for $TEST_VERSION in $CHECK_DIRS"
+
+  phpcs -p "$CHECK_DIRS" --standard=PHPCompatibility --runtime-set testVersion "$TEST_VERSION"
+}
+
 # Alias lando to run via Windows cmd.exe
 # https://github.com/lando/lando/issues/462#issuecomment-511937745
 alias lando='/c/Windows/System32/cmd.exe /c "lando"'
