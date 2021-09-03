@@ -64,9 +64,28 @@ composer-unlink() {
 # PHP Compatibility checker
 # composer global require phpcompatibility/php-compatibility dealerdirect/phpcodesniffer-composer-installer "squizlabs/php_codesniffer=*"
 phpcc() {
-  CHECK_DIRS='src'
-  if [[ -n $1 ]]; then
+  # If no directory is specified, we should automatically build directories
+  if [[ -z $1 ]]; then
+    AVAIL_DIRS=('app' 'src' 'tests' 'packages')
+    CHECK_DIRS=''
+    CHECK_DIR_CMD=''
+
+    # Build command string if the directory exists
+    for x in "${AVAIL_DIRS[@]}"
+    do
+      if [[ -d "$x" ]]; then
+        CHECK_DIRS="$x $CHECK_DIRS"
+        CHECK_DIR_CMD="-p $x $CHECK_DIR_CMD"
+      fi
+    done
+  else
     CHECK_DIRS="$1"
+    CHECK_DIR_CMD="-p $1"
+  fi
+
+  if [[ -z "$CHECK_DIR_CMD" ]]; then
+    echo "No directories found in CWD from list: $AVAIL_DIRS"
+    return 1
   fi
 
   TEST_VERSION='8.0-'
@@ -74,9 +93,10 @@ phpcc() {
     TEST_VERSION="$2"
   fi
 
-  echo "Testing PHP compatibility for $TEST_VERSION in $CHECK_DIRS"
+  RUN_CMD="phpcs $CHECK_DIR_CMD --standard=PHPCompatibility --runtime-set testVersion $TEST_VERSION"
 
-  phpcs -p "$CHECK_DIRS" --standard=PHPCompatibility --runtime-set testVersion "$TEST_VERSION"
+  echo "Testing PHP compatibility for $TEST_VERSION in $CHECK_DIRS"
+  eval "$RUN_CMD"
 }
 
 # Alias lando to run via Windows cmd.exe
