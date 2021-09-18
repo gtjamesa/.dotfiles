@@ -1,2 +1,4 @@
 custom/*
 !custom/.gitkeep
+shell/optional/*
+!shell/optional/.gitkeep

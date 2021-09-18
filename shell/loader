@@ -2,6 +2,10 @@
 
 # Custom dotfiles loader script
 
+source_dir() {
+  find "$1" -maxdepth 1 -type f -name '*.sh' -exec source {} \;
+}
+
 # Exports
 [ -f ~/.dotfiles/shell/exports ] && source ~/.dotfiles/shell/exports
 
@@ -10,12 +14,13 @@
 
 # Custom aliases
 [ -f ~/.dotfiles/shell/custom-aliases ] && source ~/.dotfiles/shell/custom-aliases
-[ -f ~/.dotfiles/shell/work-aliases.sh ] && source ~/.dotfiles/shell/work-aliases.sh
+[ -f ~/.dotfiles/shell/work-aliases ] && source ~/.dotfiles/shell/work-aliases
+
+# User specified optional aliases
+source_dir ~/.dotfiles/shell/optional
 
 # fzf
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 # User custom configuration
-[ -f ~/.dotfiles/custom/secrets.sh ] && source ~/.dotfiles/custom/secrets.sh
-[ -f ~/.dotfiles/custom/exports.sh ] && source ~/.dotfiles/custom/exports.sh
-[ -f ~/.dotfiles/custom/aliases.sh ] && source ~/.dotfiles/custom/aliases.sh
+source_dir ~/.dotfiles/custom

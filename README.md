@@ -12,11 +12,7 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/gtjamesa/.dotfiles/maste
 
 ## Custom Configuration
 
-This package provides a default configuration, but you can still provide custom customisations. The following files will be loaded automatically:
-
-* `~/.dotfiles/custom/secrets.sh`
-* `~/.dotfiles/custom/aliases.sh`
-* `~/.dotfiles/custom/exports.sh`
+This package provides a default configuration, but you can still provide custom customisations. Any files `.sh` files inside the `~/.dotfiles/custom/` directory will be loaded automatically.
 
 Once you have created the files, you can reload your shell by using `source ~/.zshrc`
 

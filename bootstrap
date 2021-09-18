@@ -24,8 +24,29 @@ bootstrapTerminal() {
   cloneRepo
 
   # Install!
-  source ~/.dotfiles/installscript
+  source ~/.dotfiles/installscript "$@"
 }
+
+help() {
+  cat << EOF
+usage: $0 [OPTIONS]
+    --help               Show this message
+    --all                Install all additional programs and aliases
+    --wsl1|--wsl2        Specify that the installation is on WSL v1 or v2
+    --[no-]composer      Enable/disable Composer installation (and supporting global packages)
+    --[no-]docker        Enable/disable Docker configuration
+    --[no-]getracker     Enable/disable GE Tracker specific aliases
+EOF
+}
+
+for opt in "$@"; do
+  case $opt in
+    --help)
+      help
+      exit 0
+      ;;
+  esac
+done
 
 echo 'Bootstrap terminal'
 echo '------------------'

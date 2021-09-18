@@ -1,6 +1,11 @@
 #!/bin/bash
 
-# TODO: Install latest PHP
+# Check to see if the php executable is in the user's path
+if [[ -z $(which php) ]]; then
+  # TODO: Install latest PHP
+fi
+
+COMPOSER_PATH="/usr/local/bin/composer"
 
 # Install composer
 EXPECTED_CHECKSUM="$(wget -q -O - https://composer.github.io/installer.sig)"
@@ -17,4 +22,10 @@ fi
 php composer-setup.php --quiet
 rm composer-setup.php
 chmod +x composer.phar
-mv composer.phar /usr/local/bin/composer
+mv composer.phar "$COMPOSER_PATH"
+
+# Install global composer requirements
+"$COMPOSER_PATH" global require \
+  phpcompatibility/php-compatibility \
+  dealerdirect/phpcodesniffer-composer-installer \
+  "squizlabs/php_codesniffer=*"

@@ -1,12 +1,58 @@
 #!/bin/bash
 
 OS="$(uname)"
+wsl1=0
+wsl2=0
+composer=
+docker=
+getracker=
 
 if [[ "$OS" == "Linux" ]]; then
   SHARE_PATH="/usr/share"
 elif [[ "$OS" == "Darwin" ]]; then
   SHARE_PATH="/usr/local/share"
 fi
+
+for opt in "$@"; do
+  case $opt in
+    --help)
+      echo "Please run the bootstrap script"
+      exit 0
+      ;;
+    --all)
+      composer=1
+      docker=1
+      getracker=1
+      wsl1=0
+      wsl2=0
+      ;;
+    --wsl1)             wsl1=1 ;;
+    --wsl2)             wsl2=1 ;;
+    --composer)         composer=1 ;;
+    --no-composer)      composer=0 ;;
+    --docker)           docker=1 ;;
+    --no-docker)        docker=0 ;;
+    --getracker)        getracker=1 ;;
+    --no-getracker)     getracker=0 ;;
+    *)
+      echo "unknown option: $opt"
+      help
+      exit 1
+      ;;
+  esac
+done
+
+ask() {
+  while true; do
+    read -p "$1 (y/n) " -r
+    REPLY=${REPLY:-"y"}
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+      return 1
+    elif [[ $REPLY =~ ^[Nn]$ ]]; then
+      return 0
+    fi
+  done
+}
 
 backup_file() {
   if [[ -L $1 ]]; then
@@ -21,6 +67,27 @@ backup_file() {
 symlink_file() {
   backup_file "$2"
   ln -s "$1" "$2"
+}
+
+detect_wsl() {
+  if [[ $(grep Microsoft /proc/version) ]]; then
+    # In WSL but which one?
+    virt_container="$(systemd-detect-virt --container)"
+    case ${virt_container} in
+      wsl)
+        wsl1=1
+        echo "WSL v1 environment detected"
+        ;;
+      none)
+        wsl2=1
+        echo "WSL v2 environment detected"
+        ;;
+      *)
+        wsl1=0
+        wsl2=0
+        ;;
+    esac
+  fi
 }
 
 # Install ohmyzsh
@@ -71,13 +138,9 @@ install_tmux() {
 install_fzf() {
   echo "Installing fzf"
   echo "--------------"
-  echo
-  echo "Recommended answers: Y - Y - N"
-  echo "The final N is important - fzf is automatically loaded :)"
-  echo
-  echo "--------------"
+
   brew install fzf
-  $(brew --prefix)/opt/fzf/install
+  $(brew --prefix)/opt/fzf/install --key-bindings --completion --no-update-rc
 }
 
 # Install homebrew
@@ -104,7 +167,53 @@ install_dotfiles() {
   symlink_file "$HOME/.dotfiles/shell/.vimrc" "$HOME/.vimrc"
 }
 
+install_getracker() {
+  if [[ "$getracker" -eq 1 ]]; then
+    symlink_file "$HOME/.dotfiles/shell/getracker" "$HOME/.dotfiles/shell/optional/getracker"
+  fi
+}
+
+install_composer() {
+  if [[ "$composer" -eq 1 ]]; then
+    source "$HOME/.dotfiles/install/composer.sh"
+  fi
+}
+
+install_docker() {
+  if [[ "$docker" -eq 1 ]]; then
+    # TODO: Install/configure Docker
+  fi
+}
+
+ask_options() {
+  # Composer
+  if [[ -z "$composer" ]]; then
+    ask "Do you want to install Composer?"
+    composer=$?
+  fi
+
+  # Docker
+  if [[ -z "$docker" ]]; then
+    ask "Do you want to install or configure Docker?"
+    docker=$?
+  fi
+
+  # GE Tracker
+  if [[ -z "$getracker" ]]; then
+    ask "Do you want to install GE Tracker specific aliases?"
+    getracker=$?
+  fi
+}
+
 run_installer() {
+  # Ask user their installation preferences for optional requirements
+  ask_options
+
+  # No WSL option was specified, attempt to detect automatically
+  if [[ "$wsl1" -eq 0 -a "$wsl2" -eq 0 ]]; then
+    detect_wsl
+  fi
+
   # Install utils
   sudo apt update -y && sudo apt install -y \
     build-essential curl file git wget vim curl php jq
@@ -114,6 +223,11 @@ run_installer() {
   install_dotfiles
   install_tmux
   install_fzf
+
+  # Install optional requirements
+  install_getracker
+  install_composer
+  install_docker
 }
 
 # TODO: Add aliases from .bashrc/.profile
