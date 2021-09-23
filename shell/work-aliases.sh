@@ -101,6 +101,10 @@ phpcc() {
 
 # Alias lando to run via Windows cmd.exe
 # https://github.com/lando/lando/issues/462#issuecomment-511937745
-alias lando='/c/Windows/System32/cmd.exe /c "lando"'
+if [[ ! -x "$(command -v lando)" ]]; then
+    alias lando="$WSL_MOUNT"'c/Windows/System32/cmd.exe /c "lando"'
+fi
 
-alias adb='/c/Windows/System32/cmd.exe /c "adb"'
+if [[ ! -x "$(command -v adb)" ]]; then
+    alias adb="$WSL_MOUNT"'c/Windows/System32/cmd.exe /c "adb"'
+fi

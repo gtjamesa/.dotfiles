@@ -20,5 +20,8 @@ export PATH="$HOME/.composer/vendor/bin:$PATH"
 # Node / Yarn
 export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
 
+# WSL Drive Mounts
+export WSL_MOUNT="/"
+
 # Custom Software
 export PATH="/opt:$PATH"
