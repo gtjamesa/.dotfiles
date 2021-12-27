@@ -6,6 +6,7 @@ wsl2=0
 composer=
 docker=
 getracker=
+ask_optional=0
 
 if [[ "$OS" == "Linux" ]]; then
   SHARE_PATH="/usr/share"
@@ -34,6 +35,7 @@ for opt in "$@"; do
     --no-docker)        docker=0 ;;
     --getracker)        getracker=1 ;;
     --no-getracker)     getracker=0 ;;
+    --ask-optional)     ask_optional=1 ;;
     *)
       echo "unknown option: $opt"
       help
@@ -76,11 +78,11 @@ detect_wsl() {
     case ${virt_container} in
       wsl)
         wsl1=1
-        echo "WSL v1 environment detected"
+        echo "WSLv1 environment detected"
         ;;
       none)
         wsl2=1
-        echo "WSL v2 environment detected"
+        echo "WSLv2 environment detected"
         ;;
       *)
         wsl1=0
@@ -169,7 +171,7 @@ install_dotfiles() {
 
 install_getracker() {
   if [[ "$getracker" -eq 1 ]]; then
-    symlink_file "$HOME/.dotfiles/shell/getracker" "$HOME/.dotfiles/shell/optional/getracker"
+    symlink_file "$HOME/.dotfiles/shell/getracker" "$HOME/.dotfiles/shell/optional/getracker.sh"
   fi
 }
 
@@ -181,8 +183,16 @@ install_composer() {
 
 install_docker() {
   if [[ "$docker" -eq 1 ]]; then
+    echo "Install Docker"
     # TODO: Install/configure Docker
   fi
+}
+
+install_optional() {
+  # Install optional requirements
+  install_getracker
+  install_composer
+  install_docker
 }
 
 ask_options() {
@@ -205,14 +215,18 @@ ask_options() {
   fi
 }
 
-run_installer() {
+run_preinstall() {
   # Ask user their installation preferences for optional requirements
   ask_options
 
   # No WSL option was specified, attempt to detect automatically
-  if [[ "$wsl1" -eq 0 -a "$wsl2" -eq 0 ]]; then
+  if [[ "$wsl1" -eq 0 && "$wsl2" -eq 0 ]]; then
     detect_wsl
   fi
+}
+
+run_installer() {
+  run_preinstall
 
   # Install utils
   sudo apt update -y && sudo apt install -y \
@@ -224,10 +238,7 @@ run_installer() {
   install_tmux
   install_fzf
 
-  # Install optional requirements
-  install_getracker
-  install_composer
-  install_docker
+  install_optional
 }
 
 # TODO: Add aliases from .bashrc/.profile
@@ -235,7 +246,17 @@ run_installer() {
 # TODO: Lando alias
 # TODO: WSL -> Docker Desktop config (otherwise, install Docker)
 
-run_installer
+if [[ "$ask_optional" -eq 1 ]]; then
+
+  run_preinstall
+  install_optional
+  exit 0
+
+else
+
+  run_installer
+
+fi
 
 # Change default shell
 chsh -s $(which zsh)

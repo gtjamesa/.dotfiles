@@ -21,6 +21,8 @@ alias coach='docker run --rm -v "/d/Google Drive/Infrastructure:/sitespeed.io" s
 
 alias ctop='docker run --rm -ti --name=ctop --volume /var/run/docker.sock:/var/run/docker.sock:ro quay.io/vektorlab/ctop:latest'
 
+alias vapor='php ./vendor/bin/vapor'
+
 # Composer local dev
 composer-link() {
   jq '.repositories |= [{"type": "path", "url": "'$1'", "options": {"symlink": true}}] + . ' composer.json >composer.tmp.json && mv composer.tmp.json composer.json

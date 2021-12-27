@@ -36,9 +36,6 @@ usage: $0 [OPTIONS]
     --[no-]composer      Enable/disable Composer installation (and supporting global packages)
     --[no-]docker        Enable/disable Docker configuration
     --[no-]getracker     Enable/disable GE Tracker specific aliases
-
-  Post-Install options
-    --ask-optional       Ask questions again to enable optional aliases/configuration
 EOF
 }
 

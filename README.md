@@ -10,6 +10,28 @@ To install, simply run the following command. It will clone this repository into
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/gtjamesa/.dotfiles/master/bootstrap)"
 ```
 
+## Installation Options
+
+The installation script supports the following options:
+
+```bash
+usage: bootstrap [OPTIONS]
+    --help               Show this message
+    --all                Install all additional programs and aliases
+    --wsl1|--wsl2        Specify that the installation is on WSLv1 or WSLv2
+    --[no-]composer      Enable/disable Composer installation (and supporting global packages)
+    --[no-]docker        Enable/disable Docker configuration
+    --[no-]getracker     Enable/disable GE Tracker specific aliases
+```
+
+To use the options, you must first download the bootstrap file. 
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/gtjamesa/.dotfiles/master/bootstrap > dotfiles_bootstrap
+bash dotfiles_bootstrap --no-docker --composer
+rm -f dotfiles_bootstrap
+```
+
 ## Custom Configuration
 
 This package provides a default configuration, but you can still provide custom customisations. Any files `.sh` files inside the `~/.dotfiles/custom/` directory will be loaded automatically.

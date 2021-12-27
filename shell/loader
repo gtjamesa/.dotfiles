@@ -3,7 +3,13 @@
 # Custom dotfiles loader script
 
 source_dir() {
+  echo "checking $1"
+#  echo "$PATH"
+#  which source
   find "$1" -maxdepth 1 -type f -name '*.sh' -exec source {} \;
+#  find "$1" -maxdepth 1 -type f -name '*.sh' -exec echo 'file: "{}"' \;
+
+  for f in "$1/*"; do echo "file: $f"; done
 }
 
 # Exports
@@ -16,11 +22,15 @@ source_dir() {
 [ -f ~/.dotfiles/shell/custom-aliases ] && source ~/.dotfiles/shell/custom-aliases
 [ -f ~/.dotfiles/shell/work-aliases ] && source ~/.dotfiles/shell/work-aliases
 
-# User specified optional aliases
-source_dir ~/.dotfiles/shell/optional
-
 # fzf
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
+# User specified optional aliases
+#source_dir ~/.dotfiles/shell/optional
+[ -f ~/.dotfiles/shell/optional/getracker.sh ] && source ~/.dotfiles/shell/optional/getracker.sh
+
 # User custom configuration
-source_dir ~/.dotfiles/custom
+#source_dir ~/.dotfiles/custom
+[ -f ~/.dotfiles/custom/secrets.sh ] && source ~/.dotfiles/custom/secrets.sh
+[ -f ~/.dotfiles/custom/exports.sh ] && source ~/.dotfiles/custom/exports.sh
+[ -f ~/.dotfiles/custom/aliases.sh ] && source ~/.dotfiles/custom/aliases.sh
