@@ -2,7 +2,7 @@
 
 # Git
 alias glo='git log --oneline'
-alias gcom='git checkout master'
+#alias gcom='git checkout master'
 
 alias llog='clear; tail -f -n 0 storage/logs/laravel-$(date +%F).log'
 alias prettyjson='python -m json.tool'
@@ -11,6 +11,14 @@ alias dc='docker-compose'
 
 # Get external IP address
 alias ipaddr='curl ipecho.net/plain; echo'
+
+gcom() {
+  if [[ -n $(git branch --list main) ]]; then
+    git checkout main
+  else
+    git checkout master
+  fi
+}
 
 rector() {
   docker run --rm -v "$(pwd):/project" rector/rector:latest process "/project/$1" --config="/project/rector.yaml" --autoload-file /project/vendor/autoload.php
@@ -93,4 +101,29 @@ ngrok-docker() {
 # AWS
 ec2-status() {
   aws ec2 describe-instances --instance-ids "$1" | jq ".Reservations[0].Instances[0].State.Name"
+}
+
+# Start and source a Python VirtualEnv
+# venv - loads 2.7 by default
+# venv 3 - loads Python 3
+# venv 2/2.7 - loads Python 2.7
+venv() {
+  PYVER=2.7
+
+  # Set version
+  if [[ -n "$1" ]]; then
+    PYVER="$1"
+  fi
+
+  if [[ "$PYVER" == "2" ]]; then
+    PYVER="2.7"
+  fi
+
+  virtualenv -p "/usr/bin/python$PYVER" venv
+  source venv/bin/activate
+}
+
+# Attach tmux to current working directory
+tmux-cwd() {
+  tmux command-prompt -I "$PWD" -p "New session dir:" "attach -c %1"
 }
