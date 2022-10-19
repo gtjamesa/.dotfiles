@@ -230,7 +230,7 @@ run_installer() {
 
   # Install utils
   sudo apt update -y && sudo apt install -y \
-    build-essential curl file git wget vim curl php jq
+    build-essential curl file git wget vim curl php jq zip unzip
 
   install_homebrew
   install_zsh
