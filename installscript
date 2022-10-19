@@ -169,6 +169,21 @@ install_dotfiles() {
   symlink_file "$HOME/.dotfiles/shell/.vimrc" "$HOME/.vimrc"
 }
 
+install_node() {
+  # Install nvm package manager
+  # https://github.com/nvm-sh/nvm
+  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.2/install.sh | bash
+
+  # Source the nvm exports
+  [ -f "$HOME/.dotfiles/shell/nvm/nvm" ] && source "$HOME/.dotfiles/shell/nvm/nvm"
+
+  # Symlink the default-packages file
+  symlink_file "$HOME/.dotfiles/shell/nvm/default-packages" "$NVM_DIR/default-packages"
+
+  # Install Node 18
+  nvm install 18
+}
+
 install_getracker() {
   if [[ "$getracker" -eq 1 ]]; then
     symlink_file "$HOME/.dotfiles/shell/getracker" "$HOME/.dotfiles/shell/optional/getracker.sh"
@@ -237,6 +252,7 @@ run_installer() {
   install_dotfiles
   install_tmux
   install_fzf
+  install_node
 
   install_optional
 }

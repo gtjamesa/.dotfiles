@@ -14,6 +14,7 @@ source_dir() {
 
 # Exports
 [ -f ~/.dotfiles/shell/exports ] && source ~/.dotfiles/shell/exports
+[ -f ~/.dotfiles/shell/nvm/nvm ] && source ~/.dotfiles/shell/nvm/nvm
 
 # Custom ZSH configuration
 [ -f ~/.dotfiles/shell/.zshrc.kali ] && source ~/.dotfiles/shell/.zshrc.kali
