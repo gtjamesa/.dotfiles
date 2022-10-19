@@ -20,7 +20,7 @@ gt-cloc() {
 }
 
 alias getracker-flush='lando composer du -o; lando artisan dev:flush-ide-helper; composer fixc'
-alias gtinit='cd /d/wamp/www/getracker.local/ && tmux'
+alias gtinit='cd ~/sites/getracker.local && tmux'
 #alias ssh-aws='ssh -i /d/Google\ Drive/Infrastructure/AWS/getracker-aws ec2-user@'
 #alias aws-scp='scp -i /d/Google\ Drive/Infrastructure/AWS/getracker-aws'
 alias aws-scp="rsync -Pav -e 'ssh -i ~/.ssh/getracker-aws'"
