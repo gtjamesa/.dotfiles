@@ -92,7 +92,7 @@ fileinfo() {
 }
 
 ngrok-docker() {
-  CMD="docker run --rm -it --name ngrok -p 4040:4040 --link $1 --network $3 -v /c/Users/James/.ngrok2/:/home/ngrok/.ngrok2/ wernight/ngrok ngrok http -subdomain=$4 $1:$2"
+  CMD="docker run --rm -it --name ngrok -p 4040:4040 --link $1 --network $3 -v /mnt/c/Users/James/.ngrok2/:/home/ngrok/.ngrok2/ wernight/ngrok ngrok http -subdomain=$4 $1:$2"
   echo "$CMD"
   tmux new-window "$CMD"
   tmux rename-window ngrok

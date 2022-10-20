@@ -1,11 +1,11 @@
 #!/bin/bash
 
 aws-ssh() {
-  ssh -i /d/Google\ Drive/Infrastructure/AWS/getracker-aws "ec2-user@$1"
+  ssh -i /mnt/d/Google\ Drive/Infrastructure/AWS/getracker-aws "ec2-user@$1"
 }
 
 #aws-scp() {
-#	KEY="/d/Google Drive/Infrastructure/AWS/getracker-aws"
+#	KEY="/mnt/d/Google Drive/Infrastructure/AWS/getracker-aws"
 #	echo $KEY
 #	echo $1
 #	rsync -Pav -e 'ssh -i "$KEY"' ./public/assets/images/icons/ ec2-user@172.31.15.36:/var/www/ge-tracker.com/public/assets/images/icons/
@@ -21,7 +21,7 @@ gt-cloc() {
 
 alias getracker-flush='lando composer du -o; lando artisan dev:flush-ide-helper; composer fixc'
 alias gtinit='cd ~/sites/getracker.local && tmux'
-#alias ssh-aws='ssh -i /d/Google\ Drive/Infrastructure/AWS/getracker-aws ec2-user@'
-#alias aws-scp='scp -i /d/Google\ Drive/Infrastructure/AWS/getracker-aws'
+#alias ssh-aws='ssh -i /mnt/d/Google\ Drive/Infrastructure/AWS/getracker-aws ec2-user@'
+#alias aws-scp='scp -i /mnt/d/Google\ Drive/Infrastructure/AWS/getracker-aws'
 alias aws-scp="rsync -Pav -e 'ssh -i ~/.ssh/getracker-aws'"
 

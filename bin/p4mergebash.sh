@@ -42,4 +42,4 @@ echo "$R"
 echo "$M"
 
 #p4merge.exe "$B" "$L" "$R" "$M"
-"/c/Program Files/Perforce/p4merge.exe" "$B" "$L" "$R" "$M"
+"/mnt/c/Program Files/Perforce/p4merge.exe" "$B" "$L" "$R" "$M"
