@@ -113,16 +113,16 @@ senv() {
   echo
   echo -n "Copying vendor and node_modules archive from $TAR_ARCHIVE... "
   cp "/mnt/d/Google Drive/Development/2022 Rebuild/Dumps/$TAR_ARCHIVE" .
-  echo Done
+  echo -e "${COLOR_GREEN}Done${COLOR_RESET}"
 
-  echo -n 'Removing old vendor and node_modules...'
+  echo -n 'Removing old vendor and node_modules... '
   rm -rf vendor/ node_modules/
-  echo Done
+  echo -e "${COLOR_GREEN}Done${COLOR_RESET}"
 
-  echo -n 'Extracting archive...'
+  echo -n 'Extracting archive... '
   tar -xzf "$TAR_ARCHIVE"
   rm -f "$TAR_ARCHIVE"
-  echo Done
+  echo -e "${COLOR_GREEN}Done${COLOR_RESET}"
 }
 
 benv() {
@@ -141,11 +141,15 @@ benv() {
     rm -f "$DUMP_PATH$TAR_ARCHIVE"
   fi
 
-  echo 'Backing up vendor and node_modules...'
-  tar -czf "$TAR_ARCHIVE" node_modules/ vendor
+  echo -n 'Backing up vendor and node_modules... '
+  tar -czf "$TAR_ARCHIVE" node_modules/ vendor/
+  echo -e "${COLOR_GREEN}Done${COLOR_RESET}"
 
-  echo 'Moving file...'
+  echo -n 'Moving file... '
   mv "$TAR_ARCHIVE" "$DUMP_PATH"
+  echo -e "${COLOR_GREEN}Done${COLOR_RESET}"
+
+  echo -e "${COLOR_GREEN}Created ${TAR_ARCHIVE}${COLOR_RESET}"
 }
 
 
