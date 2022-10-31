@@ -60,11 +60,11 @@ in
     ;;
 esac
 
-echo "Git mergetool args:"
-echo $(map_p4_args "$B")
-echo $(map_p4_args "$L")
-echo $(map_p4_args "$R")
-echo $(map_p4_args "$M")
+#echo "Git mergetool args:"
+#echo $(map_p4_args "$B")
+#echo $(map_p4_args "$L")
+#echo $(map_p4_args "$R")
+#echo $(map_p4_args "$M")
 
 #p4merge.exe "$B" "$L" "$R" "$M"
 "$P4MERGE_BINARY" $(map_p4_args "$B") $(map_p4_args "$L") $(map_p4_args "$R") $(map_p4_args "$M")
