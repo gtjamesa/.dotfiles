@@ -131,6 +131,7 @@ install_tmux() {
   brew install tmux
 
   # Add tmux plugins
+  mkdir -p "$HOME/.tmux/plugins"
   git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
 
   # Add tmux config

@@ -2,14 +2,15 @@
 
 # Custom dotfiles loader script
 
+# Source all files inside a directory
 source_dir() {
   echo "checking $1"
-#  echo "$PATH"
-#  which source
-  find "$1" -maxdepth 1 -type f -name '*.sh' -exec source {} \;
-#  find "$1" -maxdepth 1 -type f -name '*.sh' -exec echo 'file: "{}"' \;
 
-  for f in "$1/*"; do echo "file: $f"; done
+  for file in "$1/*"; do
+    if [ -f "$file" ] ; then
+      . "$file"
+    fi
+  done
 }
 
 # Exports

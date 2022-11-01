@@ -103,6 +103,8 @@ phpcc() {
 #}
 
 senv() {
+  sudo -v
+
   BRANCH="$1"
   DUMP_PATH="/mnt/d/Google Drive/Development/2022 Rebuild/Dumps/"
   FILE_PATH=$(ls -tr "$DUMP_PATH" | grep -E "$BRANCH-.+.tar.gz" | tail -1)
@@ -116,7 +118,7 @@ senv() {
   echo -e "${COLOR_GREEN}Done${COLOR_RESET}"
 
   echo -n 'Removing old vendor and node_modules... '
-  rm -rf vendor/ node_modules/
+  sudo rm -rf vendor/ node_modules/
   echo -e "${COLOR_GREEN}Done${COLOR_RESET}"
 
   echo -n 'Extracting archive... '
