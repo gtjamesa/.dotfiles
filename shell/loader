@@ -17,7 +17,6 @@ source_dir() {
 [ -f ~/.dotfiles/shell/exports ] && source ~/.dotfiles/shell/exports
 [ -f ~/.dotfiles/shell/helpers/colour ] && source ~/.dotfiles/shell/helpers/colour
 [ -f ~/.dotfiles/shell/nvm/nvm ] && source ~/.dotfiles/shell/nvm/nvm
-[ -f ~/.dotfiles/shell/git/helpers ] && source ~/.dotfiles/shell/git/helpers
 
 # Custom ZSH configuration
 [ -f ~/.dotfiles/shell/.zshrc.kali ] && source ~/.dotfiles/shell/.zshrc.kali
@@ -25,6 +24,8 @@ source_dir() {
 # Custom aliases
 [ -f ~/.dotfiles/shell/custom-aliases ] && source ~/.dotfiles/shell/custom-aliases
 [ -f ~/.dotfiles/shell/work-aliases ] && source ~/.dotfiles/shell/work-aliases
+[ -f ~/.dotfiles/shell/git/helpers ] && source ~/.dotfiles/shell/git/helpers
+[ -f ~/.dotfiles/shell/k8s ] && source ~/.dotfiles/shell/k8s
 
 # fzf
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh

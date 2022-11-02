@@ -2,6 +2,14 @@
 
 [ -f ~/.dotfiles/shell/git/p4merge ] && source ~/.dotfiles/shell/git/p4merge
 
+gcom() {
+  if [[ -n $(git branch --list main) ]]; then
+    git checkout main
+  else
+    git checkout master
+  fi
+}
+
 # Shell adaption of https://nitaym.github.io/ourstheirs/
 git-ours-vs-theirs() {
   # Merge

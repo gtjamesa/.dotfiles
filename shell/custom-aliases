@@ -12,14 +12,6 @@ alias dc='docker-compose'
 # Get external IP address
 alias ipaddr='curl ipecho.net/plain; echo'
 
-gcom() {
-  if [[ -n $(git branch --list main) ]]; then
-    git checkout main
-  else
-    git checkout master
-  fi
-}
-
 rector() {
   docker run --rm -v "$(pwd):/project" rector/rector:latest process "/project/$1" --config="/project/rector.yaml" --autoload-file /project/vendor/autoload.php
 }
@@ -126,15 +118,4 @@ venv() {
 # Attach tmux to current working directory
 tmux-cwd() {
   tmux command-prompt -I "$PWD" -p "New session dir:" "attach -c %1"
-}
-
-kubecli() {
-  NAMESPACE=""
-
-  if [[ -n "$1" ]]; then
-    NAMESPACE="-n $1"
-  fi
-
-  #kubectl run "$NAMESPACE" -it remote-cli --rm --image=busybox:1.35 --restart=Never -- /bin/sh
-  /bin/bash -c "kubectl run $NAMESPACE -it remote-cli --rm --image=busybox:1.35 --restart=Never -- /bin/sh"
 }
