@@ -96,11 +96,17 @@ ec2-status() {
 }
 
 # Start and source a Python VirtualEnv
-# venv - loads 2.7 by default
+# venv - loads Python 3 by default
 # venv 3 - loads Python 3
 # venv 2/2.7 - loads Python 2.7
 venv() {
-  PYVER=2.7
+  # Source the venv if it already exists
+  if [[ -f "./venv/bin/activate" ]]; then
+      source venv/bin/activate
+      return
+  fi
+
+  PYVER=3
 
   # Set version
   if [[ -n "$1" ]]; then
