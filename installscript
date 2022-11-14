@@ -185,6 +185,34 @@ install_node() {
   nvm install 18
 }
 
+install_python() {
+  # Install pyenv package manager
+  brew install pyenv
+
+  # Install Python build dependencies
+  # https://github.com/pyenv/pyenv/wiki#suggested-build-environment
+  if [[ $(uname) == "Linux" ]]; then
+    # Ensure that OpenSSL v1.1 is not installed via Brew
+    # as this will cause Python 3.10 install to fail
+    brew uninstall --ignore-dependencies --force openssl@1.1
+
+    sudo apt update -y && sudo apt install -y \
+      make build-essential libssl-dev zlib1g-dev \
+      libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
+      libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev \
+      python3.10-dev openssl
+  elif [[ $(uname) == "Darwin" ]]; then
+    brew install openssl readline sqlite3 xz zlib tcl-tk
+  fi
+
+  pyenv install 2.7
+  pyenv install 3.10
+  pyenv global 3.10
+
+  # Should we reinstall it?
+  # brew install openssl@1.1
+}
+
 install_getracker() {
   if [[ "$getracker" -eq 1 ]]; then
     symlink_file "$HOME/.dotfiles/shell/getracker" "$HOME/.dotfiles/shell/optional/getracker.sh"
@@ -254,6 +282,7 @@ run_installer() {
   install_tmux
   install_fzf
   install_node
+  install_python
 
   install_optional
 }
