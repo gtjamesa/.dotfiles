@@ -26,7 +26,7 @@ git-ours-vs-theirs() {
   # Rebase
   echo -e "\n\t${COLOR_LIGHT_BLUE}# git rebase${COLOR_RESET}\n"
   echo -e "$ git checkout ${COLOR_GREEN}feature${COLOR_RESET}"
-  echo -e "$ git merge ${COLOR_YELLOW}main${COLOR_RESET}"
+  echo -e "$ git rebase ${COLOR_YELLOW}main${COLOR_RESET}"
 
   echo -ne "\nto select changes done in ${COLOR_YELLOW}main${COLOR_RESET}:\t\t"
   echo -e "$ git checkout ${COLOR_YELLOW}--ours${COLOR_RESET} codefile.js"

@@ -76,32 +76,6 @@ phpcc() {
   eval "$RUN_CMD"
 }
 
-
-#senv() {
-#  TAR_ARCHIVE="$1-20220817.tar.gz"
-#  BRANCH="$1"
-#
-#  if [[ "$BRANCH" == "develop" ]]; then
-#    TAR_ARCHIVE="$1-20220825.tar.gz"
-#  fi
-#
-#  git checkout "$BRANCH"
-#
-#  echo
-#  echo -n 'Copying vendor and node_modules archive... '
-#  cp "/mnt/d/Google Drive/Development/2022 Rebuild/Dumps/$TAR_ARCHIVE" .
-#  echo Done
-#
-#  echo -n 'Removing old vendor and node_modules...'
-#  rm -rf vendor/ node_modules/
-#  echo Done
-#
-#  echo -n 'Extracting archive...'
-#  tar -xzf "$TAR_ARCHIVE"
-#  rm -f "$TAR_ARCHIVE"
-#  echo Done
-#}
-
 senv() {
   sudo -v
 
@@ -125,6 +99,9 @@ senv() {
   tar -xzf "$TAR_ARCHIVE"
   rm -f "$TAR_ARCHIVE"
   echo -e "${COLOR_GREEN}Done${COLOR_RESET}"
+
+  # Ensure husky permissions are correct
+  [ -f .husky/pre-commit ] && chmod +x .husky/pre-commit .husky/_/husky.sh
 }
 
 benv() {
@@ -154,9 +131,14 @@ benv() {
   echo -e "${COLOR_GREEN}Created ${TAR_ARCHIVE}${COLOR_RESET}"
 }
 
+wsl-backup() {
+  if [[ -z "$1" ]]; then
+    echo "Usage: wsl-backup <destination>"
+    return 1
+  fi
 
-# Alias lando to run via Windows cmd.exe
-# https://github.com/lando/lando/issues/462#issuecomment-511937745
-alias lando='/mnt/c/Windows/System32/cmd.exe /c "lando"'
+  DEST="$1"
+  FILE_PATH="$DEST/wsl-backup-$(date +%Y%m%d).tar.gz"
 
-alias adb='/mnt/c/Windows/System32/cmd.exe /c "adb"'
+  tar -cvzf "$FILE_PATH" "$HOME"
+}
