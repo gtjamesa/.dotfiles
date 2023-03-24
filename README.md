@@ -7,7 +7,7 @@ The only requirements are that `sudo` and `curl` are installed, the rest will be
 To install, simply run the following command. It will clone this repository into `~/.dotfiles`, and run the `bootstrap` script automatically.
 
 ```bash
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/gtjamesa/.dotfiles/master/bootstrap)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/gtjamesa/.dotfiles/main/bootstrap)"
 ```
 
 ## Installation Options
@@ -27,7 +27,7 @@ usage: bootstrap [OPTIONS]
 To use the options, you must first download the bootstrap file. 
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/gtjamesa/.dotfiles/master/bootstrap > dotfiles_bootstrap
+curl -fsSL https://raw.githubusercontent.com/gtjamesa/.dotfiles/main/bootstrap > dotfiles_bootstrap
 bash dotfiles_bootstrap --no-docker --composer
 rm -f dotfiles_bootstrap
 ```
