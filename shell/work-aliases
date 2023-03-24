@@ -1,0 +1,145 @@
+#!/bin/bash
+
+discord-export() {
+  echo "Exporting channel as HTML"
+  docker run --rm -v "$(pwd):/app/out" tyrrrz/discordchatexporter export -t "$DISCORD_BOT_TOKEN" -b -c "$1" -f HtmlDark
+  echo "Exporting channel as JSON"
+  docker run --rm -v "$(pwd):/app/out" tyrrrz/discordchatexporter export -t "$DISCORD_BOT_TOKEN" -b -c "$1" -f Json
+}
+
+#alias dc='docker-compose'
+#alias dce='docker-compose exec'
+
+# Docker aliases
+alias yaw='docker-compose exec node yarn watch'
+alias yab='docker-compose exec node yarn build'
+alias yat='docker-compose exec node yarn test'
+alias tinker='docker-compose exec app php artisan tinker'
+alias redis-cli='docker-compose exec redis redis-cli'
+alias vapor='php ./vendor/bin/vapor'
+
+alias sitespeed='docker run --rm -v "/mnt/d/Google Drive/Infrastructure:/sitespeed.io" sitespeedio/sitespeed.io:12.0.1 -b chrome'
+alias coach='docker run --rm -v "/mnt/d/Google Drive/Infrastructure:/sitespeed.io" sitespeedio/coach:4.5.0 --details --description -b chrome'
+
+alias ctop='docker run --rm -ti --name=ctop --volume /var/run/docker.sock:/var/run/docker.sock:ro quay.io/vektorlab/ctop:latest'
+
+alias dive='docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock wagoodman/dive:latest'
+
+# Composer local dev
+composer-link() {
+  jq '.repositories |= [{"type": "path", "url": "'$1'", "options": {"symlink": true}}] + . ' composer.json >composer.tmp.json && mv composer.tmp.json composer.json
+
+  packageName=$(jq -r '.name' "$1/composer.json")
+
+  composer require "$packageName" @dev
+}
+
+composer-unlink() {
+  git checkout composer.json composer.lock
+  composer update
+}
+
+# PHP Compatibility checker
+# composer global require phpcompatibility/php-compatibility dealerdirect/phpcodesniffer-composer-installer "squizlabs/php_codesniffer=*"
+phpcc() {
+  # If no directory is specified, we should automatically build directories
+  if [[ -z $1 ]]; then
+    AVAIL_DIRS=('app' 'src' 'tests' 'packages')
+    CHECK_DIRS=''
+    CHECK_DIR_CMD=''
+
+    # Build command string if the directory exists
+    for x in "${AVAIL_DIRS[@]}"
+    do
+      if [[ -d "$x" ]]; then
+        CHECK_DIRS="$x $CHECK_DIRS"
+        CHECK_DIR_CMD="-p $x $CHECK_DIR_CMD"
+      fi
+    done
+  else
+    CHECK_DIRS="$1"
+    CHECK_DIR_CMD="-p $1"
+  fi
+
+  if [[ -z "$CHECK_DIR_CMD" ]]; then
+    echo "No directories found in CWD from list: $AVAIL_DIRS"
+    return 1
+  fi
+
+  TEST_VERSION='8.0-'
+  if [[ -n $2 ]]; then
+    TEST_VERSION="$2"
+  fi
+
+  RUN_CMD="phpcs $CHECK_DIR_CMD --standard=PHPCompatibility --runtime-set testVersion $TEST_VERSION"
+
+  echo "Testing PHP compatibility for $TEST_VERSION in $CHECK_DIRS"
+  eval "$RUN_CMD"
+}
+
+senv() {
+  sudo -v
+
+  BRANCH="$1"
+  DUMP_PATH="/mnt/d/Google Drive/Development/2022 Rebuild/Dumps/"
+  FILE_PATH=$(ls -tr "$DUMP_PATH" | grep -E "$BRANCH-.+.tar.gz" | tail -1)
+  TAR_ARCHIVE=$(basename "$FILE_PATH")
+
+  git checkout "$BRANCH"
+
+  echo
+  echo -n "Copying vendor and node_modules archive from $TAR_ARCHIVE... "
+  cp "/mnt/d/Google Drive/Development/2022 Rebuild/Dumps/$TAR_ARCHIVE" .
+  echo -e "${COLOR_GREEN}Done${COLOR_RESET}"
+
+  echo -n 'Removing old vendor and node_modules... '
+  sudo rm -rf vendor/ node_modules/
+  echo -e "${COLOR_GREEN}Done${COLOR_RESET}"
+
+  echo -n 'Extracting archive... '
+  tar -xzf "$TAR_ARCHIVE"
+  rm -f "$TAR_ARCHIVE"
+  echo -e "${COLOR_GREEN}Done${COLOR_RESET}"
+
+  # Ensure husky permissions are correct
+  [ -f .husky/pre-commit ] && chmod +x .husky/pre-commit .husky/_/husky.sh
+}
+
+benv() {
+  BRANCH=$(git symbolic-ref --short -q HEAD 2>/dev/null)
+
+  if [[ "$BRANCH" == "" || "$?" -ne 0 ]]; then
+    echo 'Not in a git repository'
+    return 1
+  fi
+
+  DUMP_PATH="/mnt/d/Google Drive/Development/2022 Rebuild/Dumps/"
+  TODAY=$(date +%Y%m%d)
+  TAR_ARCHIVE="$BRANCH-$TODAY.tar.gz"
+
+  if [[ -f "$DUMP_PATH$TAR_ARCHIVE" ]]; then
+    rm -f "$DUMP_PATH$TAR_ARCHIVE"
+  fi
+
+  echo -n 'Backing up vendor and node_modules... '
+  tar -czf "$TAR_ARCHIVE" node_modules/ vendor/
+  echo -e "${COLOR_GREEN}Done${COLOR_RESET}"
+
+  echo -n 'Moving file... '
+  mv "$TAR_ARCHIVE" "$DUMP_PATH"
+  echo -e "${COLOR_GREEN}Done${COLOR_RESET}"
+
+  echo -e "${COLOR_GREEN}Created ${TAR_ARCHIVE}${COLOR_RESET}"
+}
+
+wsl-backup() {
+  if [[ -z "$1" ]]; then
+    echo "Usage: wsl-backup <destination>"
+    return 1
+  fi
+
+  DEST="$1"
+  FILE_PATH="$DEST/wsl-backup-$(date +%Y%m%d).tar.gz"
+
+  tar -cvzf "$FILE_PATH" "$HOME"
+}

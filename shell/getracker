@@ -1,0 +1,16 @@
+#!/bin/bash
+
+aws-ssh() {
+  ssh -i ~/.ssh/getracker-aws "ec2-user@$1"
+}
+
+alias aws-scp="rsync -Pav -e 'ssh -i ~/.ssh/getracker-aws'"
+
+ngrok-getracker() {
+  ngrok-docker getracker_appserver_1 80 getracker_default getracker
+}
+
+gt-cloc() {
+  cloc --not-match-f='bootstrap' app/ packages/jamesausten/ tests/ resources/views/ public/assets/sass/ public/assets/js/getracker/ public/assets/js/graph-data-v3.js public/assets/js/angular
+}
+

@@ -4,9 +4,6 @@
 export VISUAL=vim
 export EDITOR="$VISUAL"
 
-# pipx
-export PATH="$HOME/.local/bin:$HOME/.local:$PATH"
-
 # Linuxbrew
 if [[ $(uname) == "Linux" ]]; then
   eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
@@ -20,8 +17,19 @@ export PATH="$HOME/.composer/vendor/bin:$PATH"
 # Node / Yarn
 export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
 
+# pipx
+export PATH="$HOME/.local/bin:$HOME/.local:$PATH"
+
+# Python (pyenv)
+export PYENV_ROOT="$HOME/.pyenv"
+command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+if command -v pyenv 1>/dev/null 2>&1; then
+  eval "$(pyenv init -)"
+fi
+
 # WSL Drive Mounts
-export WSL_MOUNT="/"
+# This is not required since WSL 2
+# export WSL_MOUNT="/"
 
 # Custom Software
 export PATH="/opt:$PATH"

@@ -2,20 +2,40 @@
 
 # Custom dotfiles loader script
 
+# Source all files inside a directory
+source_dir() {
+  echo "checking $1"
+
+  for file in "$1/*"; do
+    if [ -f "$file" ] ; then
+      . "$file"
+    fi
+  done
+}
+
 # Exports
 [ -f ~/.dotfiles/shell/exports ] && source ~/.dotfiles/shell/exports
+[ -f ~/.dotfiles/shell/helpers/colour ] && source ~/.dotfiles/shell/helpers/colour
+[ -f ~/.dotfiles/shell/nvm/nvm ] && source ~/.dotfiles/shell/nvm/nvm
 
 # Custom ZSH configuration
 [ -f ~/.dotfiles/shell/.zshrc.kali ] && source ~/.dotfiles/shell/.zshrc.kali
 
 # Custom aliases
 [ -f ~/.dotfiles/shell/custom-aliases ] && source ~/.dotfiles/shell/custom-aliases
-[ -f ~/.dotfiles/shell/work-aliases.sh ] && source ~/.dotfiles/shell/work-aliases.sh
+[ -f ~/.dotfiles/shell/work-aliases ] && source ~/.dotfiles/shell/work-aliases
+[ -f ~/.dotfiles/shell/git/helpers ] && source ~/.dotfiles/shell/git/helpers
+[ -f ~/.dotfiles/shell/k8s ] && source ~/.dotfiles/shell/k8s
 
 # fzf
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
+# User specified optional aliases
+#source_dir ~/.dotfiles/shell/optional
+[ -f ~/.dotfiles/shell/optional/getracker.sh ] && source ~/.dotfiles/shell/optional/getracker.sh
+
 # User custom configuration
+#source_dir ~/.dotfiles/custom
 [ -f ~/.dotfiles/custom/secrets.sh ] && source ~/.dotfiles/custom/secrets.sh
 [ -f ~/.dotfiles/custom/exports.sh ] && source ~/.dotfiles/custom/exports.sh
 [ -f ~/.dotfiles/custom/aliases.sh ] && source ~/.dotfiles/custom/aliases.sh

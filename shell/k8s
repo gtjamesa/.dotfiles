@@ -1,0 +1,16 @@
+#!/bin/bash
+
+kubecli() {
+  NAMESPACE=""
+  IDENTIFIER=$(tr -dc a-z0-9 </dev/urandom | head -c 10)
+  CONTAINER_NAME="remote-cli-${IDENTIFIER}"
+
+  if [[ -n "$1" ]]; then
+    NAMESPACE="-n $1"
+  fi
+
+  echo "Starting ${CONTAINER_NAME}"
+
+  # busybox:1.35
+  /bin/bash -c "kubectl run ${NAMESPACE} -it ${CONTAINER_NAME} --rm --image=alpine:3 --restart=Never -- /bin/sh"
+}

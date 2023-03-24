@@ -2,10 +2,12 @@
 
 # Git
 alias glo='git log --oneline'
-alias gcom='git checkout master'
+#alias gcom='git checkout master'
 
 alias llog='clear; tail -f -n 0 storage/logs/laravel-$(date +%F).log'
 alias prettyjson='python -m json.tool'
+
+alias dc='docker-compose'
 
 # Get external IP address
 alias ipaddr='curl ipecho.net/plain; echo'
@@ -43,6 +45,34 @@ reqtime() {
   curl -sk -o /dev/null -w "$FORMAT" "$1"
 }
 
+speedtest() {
+  curl -s https://raw.githubusercontent.com/sivel/speedtest-cli/master/speedtest.py | python3 -
+}
+
+speedtest-linode() {
+  # https://gist.github.com/raulmoyareyes/34cbd643e2c93be64746
+  # curl -o /dev/null http://speedtest.london.linode.com/1GB-london.bin
+
+  if [[ "$1" == "--help" ]]; then
+    cat << EOF
+usage: $0 [SIZE]
+    --help               Show this message
+    SIZE                 Speedtest download size [100MB/1GB]
+EOF
+    return 0
+  fi
+
+  SPEEDTEST_SIZE="$1"
+
+  if [[ -z "$1" ]]; then
+    SPEEDTEST_SIZE="100MB"
+  fi
+
+  echo "Starting $SPEEDTEST_SIZE download. Available: 100MB / 1GB"
+
+  curl -o /dev/null "http://speedtest.london.linode.com/$SPEEDTEST_SIZE-london.bin"
+}
+
 fileinfo() {
   local FILESIZE
   local HASH
@@ -54,7 +84,7 @@ fileinfo() {
 }
 
 ngrok-docker() {
-  CMD="docker run --rm -it --name ngrok -p 4040:4040 --link $1 --network $3 -v /c/Users/James/.ngrok2/:/home/ngrok/.ngrok2/ wernight/ngrok ngrok http -subdomain=$4 $1:$2"
+  CMD="docker run --rm -it --name ngrok -p 4040:4040 --link $1 --network $3 -v /mnt/c/Users/James/.ngrok2/:/home/ngrok/.ngrok2/ wernight/ngrok ngrok http -subdomain=$4 $1:$2"
   echo "$CMD"
   tmux new-window "$CMD"
   tmux rename-window ngrok
@@ -63,4 +93,35 @@ ngrok-docker() {
 # AWS
 ec2-status() {
   aws ec2 describe-instances --instance-ids "$1" | jq ".Reservations[0].Instances[0].State.Name"
+}
+
+# Start and source a Python VirtualEnv
+# venv - loads Python 3 by default
+# venv 3 - loads Python 3
+# venv 2/2.7 - loads Python 2.7
+venv() {
+  # Source the venv if it already exists
+  if [[ -f "./venv/bin/activate" ]]; then
+      source venv/bin/activate
+      return
+  fi
+
+  PYVER=3
+
+  # Set version
+  if [[ -n "$1" ]]; then
+    PYVER="$1"
+  fi
+
+  if [[ "$PYVER" == "2" ]]; then
+    PYVER="2.7"
+  fi
+
+  virtualenv -p "/usr/bin/python$PYVER" venv
+  source venv/bin/activate
+}
+
+# Attach tmux to current working directory
+tmux-cwd() {
+  tmux command-prompt -I "$PWD" -p "New session dir:" "attach -c %1"
 }
