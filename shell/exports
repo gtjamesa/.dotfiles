@@ -27,6 +27,10 @@ if command -v pyenv 1>/dev/null 2>&1; then
   eval "$(pyenv init -)"
 fi
 
+# Kubernetes auto-completion
+command -v kubectl &>/dev/null && source <(kubectl completion zsh)
+command -v helm &>/dev/null && source <(helm completion zsh)
+
 # WSL Drive Mounts
 # This is not required since WSL 2
 # export WSL_MOUNT="/"
