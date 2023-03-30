@@ -16,31 +16,31 @@ fi
 
 for opt in "$@"; do
   case $opt in
-    --help)
-      echo "Please run the bootstrap script"
-      exit 0
-      ;;
-    --all)
-      composer=1
-      docker=1
-      getracker=1
-      wsl1=0
-      wsl2=0
-      ;;
-    --wsl1)             wsl1=1 ;;
-    --wsl2)             wsl2=1 ;;
-    --composer)         composer=1 ;;
-    --no-composer)      composer=0 ;;
-    --docker)           docker=1 ;;
-    --no-docker)        docker=0 ;;
-    --getracker)        getracker=1 ;;
-    --no-getracker)     getracker=0 ;;
-    --ask-optional)     ask_optional=1 ;;
-    *)
-      echo "unknown option: $opt"
-      help
-      exit 1
-      ;;
+  --help)
+    echo "Please run the bootstrap script"
+    exit 0
+    ;;
+  --all)
+    composer=1
+    docker=1
+    getracker=1
+    wsl1=0
+    wsl2=0
+    ;;
+  --wsl1) wsl1=1 ;;
+  --wsl2) wsl2=1 ;;
+  --composer) composer=1 ;;
+  --no-composer) composer=0 ;;
+  --docker) docker=1 ;;
+  --no-docker) docker=0 ;;
+  --getracker) getracker=1 ;;
+  --no-getracker) getracker=0 ;;
+  --ask-optional) ask_optional=1 ;;
+  *)
+    echo "unknown option: $opt"
+    help
+    exit 1
+    ;;
   esac
 done
 
@@ -76,18 +76,18 @@ detect_wsl() {
     # In WSL but which one?
     virt_container="$(systemd-detect-virt --container)"
     case ${virt_container} in
-      wsl)
-        wsl1=1
-        echo "WSLv1 environment detected"
-        ;;
-      none)
-        wsl2=1
-        echo "WSLv2 environment detected"
-        ;;
-      *)
-        wsl1=0
-        wsl2=0
-        ;;
+    wsl)
+      wsl1=1
+      echo "WSLv1 environment detected"
+      ;;
+    none)
+      wsl2=1
+      echo "WSLv2 environment detected"
+      ;;
+    *)
+      wsl1=0
+      wsl2=0
+      ;;
     esac
   fi
 }
@@ -213,6 +213,20 @@ install_python() {
   # brew install openssl@1.1
 }
 
+install_asdf() {
+  KUBECTL_VERSION=1.24.12
+
+  brew install asdf
+
+  # Source the asdf exports
+  source $(brew --prefix)/opt/asdf/libexec/asdf.sh
+
+  # Install kubectl
+  asdf plugin-add kubectl https://github.com/asdf-community/asdf-kubectl.git
+  asdf install kubectl "$KUBECTL_VERSION"
+  asdf global kubectl "$KUBECTL_VERSION"
+}
+
 install_getracker() {
   if [[ "$getracker" -eq 1 ]]; then
     symlink_file "$HOME/.dotfiles/shell/getracker" "$HOME/.dotfiles/shell/optional/getracker.sh"
@@ -283,6 +297,7 @@ run_installer() {
   install_fzf
   install_node
   install_python
+  install_asdf
 
   install_optional
 }

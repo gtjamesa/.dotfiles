@@ -31,6 +31,10 @@ fi
 command -v kubectl &>/dev/null && source <(kubectl completion zsh)
 command -v helm &>/dev/null && source <(helm completion zsh)
 
+# asdf
+source $(brew --prefix)/opt/asdf/libexec/asdf.sh
+#$(brew --prefix)/share/zsh/site-functions
+
 # WSL Drive Mounts
 # This is not required since WSL 2
 # export WSL_MOUNT="/"
