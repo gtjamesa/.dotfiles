@@ -239,6 +239,13 @@ install_wslu() {
   sudo apt install -y wslu
 
   [ ! -f /usr/local/bin/xdg-open ] && sudo ln -s /usr/bin/wslview /usr/local/bin/xdg-open
+
+#  function url_validator {
+#  if [[ "$*" =~ ^https?:\/\/ ]]; then
+#    return 0
+#  else
+#    return 1
+#  fi
 }
 
 install_getracker() {
