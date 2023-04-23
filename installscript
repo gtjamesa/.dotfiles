@@ -232,6 +232,15 @@ install_asdf() {
   asdf global kustomize "$KUSTOMIZE_VERSION"
 }
 
+install_wslu() {
+  # https://github.com/wslutilities/wslu
+  sudo add-apt-repository -y ppa:wslutilities/wslu
+  sudo apt update -y
+  sudo apt install -y wslu
+
+  [ ! -f /usr/local/bin/xdg-open ] && sudo ln -s /usr/bin/wslview /usr/local/bin/xdg-open
+}
+
 install_getracker() {
   if [[ "$getracker" -eq 1 ]]; then
     symlink_file "$HOME/.dotfiles/shell/getracker" "$HOME/.dotfiles/shell/optional/getracker.sh"
@@ -303,6 +312,7 @@ run_installer() {
   install_node
   install_python
   install_asdf
+  install_wslu
 
   install_optional
 }
