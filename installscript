@@ -214,8 +214,8 @@ install_python() {
 }
 
 install_asdf() {
-  KUBECTL_VERSION=1.24.12
-  KUSTOMIZE_VERSION=4.5.4
+  KUBECTL_VERSION=1.25.9
+  KUSTOMIZE_VERSION=4.5.7
 
   brew install asdf
 
