@@ -1,0 +1,5 @@
+kubectl 1.26.4
+kustomize 4.5.7
+pluto 5.16.1
+kubeconform 0.6.1
+eksctl 0.138.0
