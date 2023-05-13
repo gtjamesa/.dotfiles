@@ -21,7 +21,8 @@ export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
 export PATH="$HOME/.local/bin:$HOME/.local:$PATH"
 
 # golang
-export PATH="/usr/local/go/bin:$PATH"
+export GOPATH="$HOME/go"
+export PATH="/usr/local/go/bin:$GOPATH/bin:$PATH"
 
 # Python (pyenv)
 export PYENV_ROOT="$HOME/.pyenv"
@@ -30,10 +31,11 @@ if command -v pyenv 1>/dev/null 2>&1; then
   eval "$(pyenv init -)"
 fi
 
-# Kubernetes auto-completion
+# Kubernetes
 command -v kubectl &>/dev/null && source <(kubectl completion zsh)
 command -v helm &>/dev/null && source <(helm completion zsh)
 command -v kustomize &>/dev/null && source <(kustomize completion zsh)
+export PATH="$HOME/.kubescape/bin:$PATH"
 
 # asdf
 source $(brew --prefix)/opt/asdf/libexec/asdf.sh
