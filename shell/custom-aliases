@@ -143,3 +143,9 @@ mount-synology() {
 umount-synology() {
   sudo umount /mnt/synology
 }
+
+rand-str() {
+  LENGTH=16
+  [ -n "$1" ] && LENGTH="$1"
+  tr -dc A-Za-z0-9 </dev/urandom | head -c "$LENGTH"; echo
+}
