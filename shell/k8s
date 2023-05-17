@@ -14,3 +14,6 @@ kubecli() {
   # busybox:1.35
   /bin/bash -c "kubectl run ${NAMESPACE} -it ${CONTAINER_NAME} --rm --image=alpine:3 --restart=Never -- /bin/sh"
 }
+
+# Alias "k" to "kubectl" if it doesn't already exist
+command -v k || alias k='kubectl'
