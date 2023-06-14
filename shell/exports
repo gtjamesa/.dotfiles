@@ -32,9 +32,6 @@ if command -v pyenv 1>/dev/null 2>&1; then
 fi
 
 # Kubernetes
-command -v kubectl &>/dev/null && source <(kubectl completion zsh)
-command -v helm &>/dev/null && source <(helm completion zsh)
-command -v kustomize &>/dev/null && source <(kustomize completion zsh)
 export PATH="$HOME/.kubescape/bin:$PATH"
 
 # asdf

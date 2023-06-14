@@ -13,6 +13,9 @@ source_dir() {
   done
 }
 
+# Ensure omz completions directory exists
+[ -d "$HOME/.oh-my-zsh/completions" ] || mkdir -p "$HOME/.oh-my-zsh/completions"
+
 # Exports
 [ -f ~/.dotfiles/shell/exports ] && source ~/.dotfiles/shell/exports
 [ -f ~/.dotfiles/shell/helpers/colour ] && source ~/.dotfiles/shell/helpers/colour

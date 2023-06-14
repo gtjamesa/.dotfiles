@@ -34,3 +34,10 @@ git-ours-vs-theirs() {
   echo -ne "to select changes done in ${COLOR_GREEN}feature${COLOR_RESET}:\t"
   echo -e "$ git checkout ${COLOR_GREEN}--theirs${COLOR_RESET} codefile.js"
 }
+
+# Enable gh completion
+if command -v gh &>/dev/null; then
+  if [ ! -f "$HOME/.oh-my-zsh/completions/_gh" ]; then
+    gh completion -s zsh > "$HOME/.oh-my-zsh/completions/_gh"
+  fi
+fi

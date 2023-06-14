@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Auto completion
+command -v kubectl &>/dev/null && source <(kubectl completion zsh)
+command -v helm &>/dev/null && source <(helm completion zsh)
+command -v kustomize &>/dev/null && source <(kustomize completion zsh)
+
 kubecli() {
   NAMESPACE=""
   IDENTIFIER=$(tr -dc a-z0-9 </dev/urandom | head -c 10)
