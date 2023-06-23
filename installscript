@@ -1,7 +1,6 @@
 #!/bin/bash
 
 OS="$(uname)"
-wsl1=0
 wsl2=0
 composer=
 docker=
@@ -24,10 +23,8 @@ for opt in "$@"; do
     composer=1
     docker=1
     getracker=1
-    wsl1=0
     wsl2=0
     ;;
-  --wsl1) wsl1=1 ;;
   --wsl2) wsl2=1 ;;
   --composer) composer=1 ;;
   --no-composer) composer=0 ;;
@@ -72,24 +69,9 @@ symlink_file() {
 }
 
 detect_wsl() {
-  if [[ $(grep Microsoft /proc/version) ]]; then
-    # In WSL but which one?
-    virt_container="$(systemd-detect-virt --container)"
-    case ${virt_container} in
-    wsl)
-      wsl1=1
-      echo "WSLv1 environment detected"
-      ;;
-    none)
-      wsl2=1
-      echo "WSLv2 environment detected"
-      ;;
-    *)
-      wsl1=0
-      wsl2=0
-      ;;
-    esac
-  fi
+  [ -f /proc/sys/fs/binfmt_misc/WSLInterop ] && wsl2=1
+  grep -qi Microsoft /proc/version && wsl2=1
+  grep -qi Microsoft /proc/sys/kernel/osrelease && wsl2=1
 }
 
 # Install ohmyzsh
@@ -235,6 +217,10 @@ install_asdf() {
 }
 
 install_wslu() {
+  if [[ "$wsl2" -eq 0 ]]; then
+    return 0
+  fi
+
   # https://github.com/wslutilities/wslu
   sudo add-apt-repository -y ppa:wslutilities/wslu
   sudo apt update -y
@@ -300,10 +286,9 @@ run_preinstall() {
   # Ask user their installation preferences for optional requirements
   ask_options
 
-  # No WSL option was specified, attempt to detect automatically
-  if [[ "$wsl1" -eq 0 && "$wsl2" -eq 0 ]]; then
-    detect_wsl
-  fi
+  # Detect whether the installer is running inside WSL
+  # This will install (or not!) some other tools
+  detect_wsl
 }
 
 run_installer() {

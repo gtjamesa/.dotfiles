@@ -32,7 +32,6 @@ help() {
 usage: $0 [OPTIONS]
     --help               Show this message
     --all                Install all additional programs and aliases
-    --wsl1|--wsl2        Specify that the installation is on WSL v1 or v2
     --[no-]composer      Enable/disable Composer installation (and supporting global packages)
     --[no-]docker        Enable/disable Docker configuration
     --[no-]getracker     Enable/disable GE Tracker specific aliases

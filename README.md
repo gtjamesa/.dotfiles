@@ -18,7 +18,6 @@ The installation script supports the following options:
 usage: bootstrap [OPTIONS]
     --help               Show this message
     --all                Install all additional programs and aliases
-    --wsl1|--wsl2        Specify that the installation is on WSLv1 or WSLv2
     --[no-]composer      Enable/disable Composer installation (and supporting global packages)
     --[no-]docker        Enable/disable Docker configuration
     --[no-]getracker     Enable/disable GE Tracker specific aliases
