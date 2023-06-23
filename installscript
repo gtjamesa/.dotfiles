@@ -241,9 +241,13 @@ install_composer() {
 }
 
 install_docker() {
-  if [[ "$docker" -eq 1 ]]; then
+  # Install Docker if enabled and not running in WSL2
+  if [[ "$docker" -eq 1 && "$wsl2" -eq 0 ]]; then
     echo "Install Docker"
-    # TODO: Install/configure Docker
+    sudo apt install -y docker.io docker-compose docker-doc
+    sudo systemctl start docker
+    sudo systemctl enable docker
+    sudo usermod -a -G docker "$USER"
   fi
 }
 
@@ -321,6 +325,7 @@ else
 fi
 
 # Change default shell
+echo "Changing default shell to zsh, please authenticate:"
 chsh -s $(which zsh)
 
 echo "#################################"
@@ -328,4 +333,8 @@ echo
 echo "- When running tmux for the first time"
 echo "-- Press prefix + I (capital i, as in Install) to fetch the plugins"
 echo
+if [[ "$docker" -eq 1 ]]; then
+  echo "- You may have to logout/login for Docker to work properly"
+  echo
+fi
 echo "#################################"
