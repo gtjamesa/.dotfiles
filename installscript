@@ -244,7 +244,14 @@ install_docker() {
   # Install Docker if enabled and not running in WSL2
   if [[ "$docker" -eq 1 && "$wsl2" -eq 0 ]]; then
     echo "Install Docker"
-    sudo apt install -y docker.io docker-compose docker-doc
+    sudo apt install -y docker.io docker-doc
+
+    # Install docker-compose
+    wget "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)"
+    sudo mv "docker-compose-$(uname -s)-$(uname -m)" /usr/local/bin/docker-compose
+    sudo chmod -v +x /usr/local/bin/docker-compose
+
+    # Enable docker at startup and add user to group
     sudo systemctl start docker
     sudo systemctl enable docker
     sudo usermod -a -G docker "$USER"
@@ -296,6 +303,8 @@ run_installer() {
   # Install utils
   sudo apt update -y && sudo apt install -y \
     build-essential curl file git wget vim curl jq zip unzip
+
+  #sudo apt install -y linux-headers-$(uname -r) dnsutils
 
   install_homebrew
   install_zsh
