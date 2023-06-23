@@ -285,6 +285,9 @@ run_preinstall() {
   # Detect whether the installer is running inside WSL
   # This will install (or not!) some other tools
   detect_wsl
+
+  # Disable Ubuntu MOTD
+  touch "$HOME/.hushlogin"
 }
 
 run_installer() {
