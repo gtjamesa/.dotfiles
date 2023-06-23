@@ -1,0 +1,7 @@
+#!/bin/bash
+
+asdf-reload() {
+  awk '{print $1}' "$HOME/.tool-versions" | xargs -I {} asdf plugin add {}
+  asdf plugin update --all
+  asdf install
+}

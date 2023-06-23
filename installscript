@@ -196,24 +196,16 @@ install_python() {
 }
 
 install_asdf() {
-  KUBECTL_VERSION=1.26.4
-  KUSTOMIZE_VERSION=4.5.7
-
   brew install asdf
 
   # Source the asdf exports
   source $(brew --prefix)/opt/asdf/libexec/asdf.sh
 
-  # Install plugins
-  asdf plugin add kubectl https://github.com/asdf-community/asdf-kubectl.git
-  asdf plugin add kustomize asdf plugin add kustomize https://github.com/Banno/asdf-kustomize.git
-
-  asdf install kubectl "$KUBECTL_VERSION"
-  asdf global kubectl "$KUBECTL_VERSION"
-  asdf install kustomize "$KUSTOMIZE_VERSION"
-  asdf global kustomize "$KUSTOMIZE_VERSION"
-
   symlink_file "$HOME/.dotfiles/shell/.tool-versions" "$HOME/.tool-versions"
+
+  # Source the "asdf-reload" function to add/install all plugins in .tool-versions
+  source ~/.dotfiles/shell/helpers/asdf
+  asdf-reload
 }
 
 install_wslu() {
