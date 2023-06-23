@@ -2,7 +2,7 @@
 
 # Check to see if the php executable is in the user's path
 if [[ -z $(which php) ]]; then
-  # TODO: Install latest PHP
+  sudo apt install -y php8.1 php8.1-cli php8.1-common php8.1-opcache php8.1-readline
 fi
 
 COMPOSER_PATH="/usr/local/bin/composer"

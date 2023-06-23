@@ -257,7 +257,7 @@ install_optional() {
 ask_options() {
   # Composer
   if [[ -z "$composer" ]]; then
-    ask "Do you want to install Composer?"
+    ask "Do you want to install PHP/Composer?"
     composer=$?
   fi
 
@@ -288,7 +288,7 @@ run_installer() {
 
   # Install utils
   sudo apt update -y && sudo apt install -y \
-    build-essential curl file git wget vim curl php jq zip unzip
+    build-essential curl file git wget vim curl jq zip unzip
 
   install_homebrew
   install_zsh
