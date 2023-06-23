@@ -30,6 +30,7 @@ source_dir() {
 [ -f ~/.dotfiles/shell/git/helpers ] && source ~/.dotfiles/shell/git/helpers
 [ -f ~/.dotfiles/shell/k8s ] && source ~/.dotfiles/shell/k8s
 [ -f ~/.dotfiles/shell/helpers/asdf ] && source ~/.dotfiles/shell/helpers/asdf
+[ -f ~/.dotfiles/shell/helpers/dotfiles ] && source ~/.dotfiles/shell/helpers/dotfiles
 
 # fzf
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh

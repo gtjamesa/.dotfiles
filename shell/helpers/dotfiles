@@ -1,0 +1,6 @@
+#!/bin/bash
+
+dotfiles-install() {
+  echo "You can run the .dotfiles installer on another machine by running:"
+  echo 'bash -c "$(curl -fsSL https://raw.githubusercontent.com/gtjamesa/.dotfiles/main/bootstrap)"'
+}
