@@ -152,3 +152,19 @@ rand-str() {
   [ -n "$1" ] && LENGTH="$1"
   tr -dc A-Za-z0-9 </dev/urandom | head -c "$LENGTH"; echo
 }
+
+ri() {
+  # Create .release-it.json if it doesn't exist
+  if [[ ! -f .release-it.json ]]; then
+  cat <<EOF > .release-it.json
+{
+  "npm": {
+    "ignoreVersion": true,
+    "publish": false
+  }
+}
+EOF
+  fi
+
+  release-it --only-version
+}
