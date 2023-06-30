@@ -241,10 +241,41 @@ install_composer() {
 }
 
 install_docker() {
-  # Install Docker if enabled and not running in WSL2
-  if [[ "$docker" -eq 1 && "$wsl2" -eq 0 ]]; then
+  # Install Docker if enabled
+  if [[ "$docker" -eq 1 ]]; then
     echo "Install Docker"
-    sudo apt install -y docker.io docker-doc
+
+    # Not running in WSL 2
+    if [[ "$wsl2" -eq 0 ]]; then
+      sudo apt install -y docker.io docker-doc
+    else
+      SYS_VERS=$(grep VERSION_ID /etc/os-release | awk -F'"' '{print $2}')
+
+      echo "-----------------------------------------------"
+      echo "Installing Docker in WSL 2"
+      echo "Ensure to select 'iptables-legacy' when prompted"
+      echo "-----------------------------------------------"
+
+      # Enable systemd
+      if [ ! -f /etc/wsl.conf ]; then
+        cat <<EOF | sudo tee /etc/wsl.conf
+[boot]
+systemd=true
+EOF
+      fi
+
+      # https://nickjanetakis.com/blog/install-docker-in-wsl-2-without-docker-desktop
+      # https://dev.to/bowmanjd/install-docker-on-windows-wsl-without-docker-desktop-34m9
+      curl -fsSL https://get.docker.com -o /tmp/get-docker.sh
+      sudo bash /tmp/get-docker.sh
+
+      if [[ "$SYS_VERS" == "22.04" ]]; then
+        echo -e "\033[0;33mEnsure to select 'iptables-legacy' when prompted\033[0m"
+        sudo update-alternatives --config iptables
+      fi
+
+      rm -f /tmp/get-docker.sh
+    fi
 
     # Install docker-compose
     wget "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)"
