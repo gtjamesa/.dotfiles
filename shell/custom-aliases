@@ -136,6 +136,10 @@ tmux-cwd() {
 mount-synology() {
   CREDS_PATH="$HOME/.synologycredentials"
 
+  # Set MOUNT_PATH to $1 if it's not empty, otherwise use "/home"
+  MOUNT_PATH="/${1:-home}"
+  DST_PATH="${2:-/mnt/synology}"
+
   if [[ ! -f "$CREDS_PATH" ]]; then
     echo "username=USERNAME" > "$CREDS_PATH" && echo "password=PASSWORD" >> "$CREDS_PATH"
     echo "Please enter credentials at $CREDS_PATH"
@@ -143,8 +147,8 @@ mount-synology() {
     return 0
   fi
 
-  [ ! -d /mnt/synology ] && sudo mkdir -p /mnt/synology
-  sudo mount -t cifs //192.168.0.100/home /mnt/synology -o "uid=1000,credentials=$HOME/.synologycredentials,rw,nodfs,vers=3.0"
+  [ ! -d /mnt/synology ] && sudo mkdir -p "${DST_PATH}"
+  sudo mount -t cifs "//192.168.0.100${MOUNT_PATH}" "${DST_PATH}" -o "uid=1000,credentials=$HOME/.synologycredentials,rw,nodfs,vers=3.0"
 }
 
 umount-synology() {
