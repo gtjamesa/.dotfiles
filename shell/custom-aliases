@@ -15,6 +15,10 @@ alias ipaddr='curl ipecho.net/plain; echo'
 # Alias "nx" to "npx nx" if it doesn't already exist
 command -v nx || alias nx='npx nx'
 
+function mdc() {
+  mkdir -p "$1" && cd "$1"
+}
+
 rector() {
   docker run --rm -v "$(pwd):/project" rector/rector:latest process "/project/$1" --config="/project/rector.yaml" --autoload-file /project/vendor/autoload.php
 }
