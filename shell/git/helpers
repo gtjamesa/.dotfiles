@@ -10,6 +10,17 @@ gcom() {
   fi
 }
 
+# Show all commits between two branches
+gbh() {
+  if [ -z "$2" ]; then
+    echo "Usage: gbh <branch> <branch2>"
+    echo "Example: gbh main inertia"
+    return 1
+  fi
+
+  git log "$1..$2" --oneline --pretty='%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ad) %C(bold blue)<%an>%Creset'
+}
+
 # Shell adaption of https://nitaym.github.io/ourstheirs/
 git-ours-vs-theirs() {
   # Merge
