@@ -155,7 +155,7 @@ install_dotfiles() {
 install_node() {
   # Install nvm package manager
   # https://github.com/nvm-sh/nvm
-  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.2/install.sh | bash
+  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
 
   # Source the nvm exports
   [ -f "$HOME/.dotfiles/shell/nvm/nvm" ] && source "$HOME/.dotfiles/shell/nvm/nvm"
