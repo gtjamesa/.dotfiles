@@ -1,0 +1,58 @@
+#!/bin/bash
+
+docker-backup() {
+  BASE_DIR="/d/backups"
+  TIMESTAMP=$(date +%F)
+  DATABASES=("getracker_database_1" "ezines_database_1" "cerebro_database_1")
+
+  for DATABASE in "${DATABASES[@]}"; do
+    BACKUP_DIR="${BASE_DIR}/docker/${TIMESTAMP}/${DATABASE}"
+    mkdir -p "${BACKUP_DIR}"
+    #		cd "${BACKUP_DIR}"
+    #docker run --rm --volumes-from "${DATABASE}" -v $(pwd):/backup ubuntu:18.04 tar -czvf /backup/backup.tar.gz /bitnami/mysql/data
+    docker run --rm --volumes-from "${DATABASE}" -v "${BACKUP_DIR}:/backup" ubuntu:22.04 tar -czvf /backup/backup.tar.gz /bitnami/mysql/data
+    #		echo "Exit code: $CODE"
+  done
+}
+
+docker-bench() {
+  DSRV="/lib/systemd/system/docker.service"
+  DEST="$HOME/.cache/docker-bench-security"
+
+  if [[ ! -f "$DSRV" ]]; then
+    echo "Docker is not installed to ${DSRV}"
+    return 1
+  fi
+
+  # Clone the repository if it doesn't exist
+  if [[ ! -d "$DEST" ]]; then
+    mkdir -p "$HOME/.cache"
+    git clone https://github.com/docker/docker-bench-security.git "$HOME/.cache/docker-bench-security"
+    docker build --no-cache -t docker-bench-security "$DEST" &> /dev/null
+  else
+    cd "$DEST"
+
+    # Check if we need to pull changes and rebuild
+    git fetch origin &> /dev/null
+    git pull &> /dev/null
+    docker build --no-cache -t docker-bench-security "$DEST" &> /dev/null
+#    if [[ $(git rev-parse HEAD) != $(git rev-parse @{u}) ]]; then
+#      echo "Updating docker-bench-security"
+#
+#    fi
+
+    cd -
+  fi
+
+  # Run the container
+  docker run --rm --net host --pid host --userns host --cap-add audit_control \
+      -e DOCKER_CONTENT_TRUST=$DOCKER_CONTENT_TRUST \
+      -v /etc:/etc:ro \
+      -v /usr/bin/containerd:/usr/bin/containerd:ro \
+      -v /usr/bin/runc:/usr/bin/runc:ro \
+      -v /usr/lib/systemd:/usr/lib/systemd:ro \
+      -v /var/lib:/var/lib:ro \
+      -v /var/run/docker.sock:/var/run/docker.sock:ro \
+      --label docker_bench_security \
+      docker-bench-security "$@"
+}
