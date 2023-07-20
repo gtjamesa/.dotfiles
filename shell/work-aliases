@@ -102,7 +102,8 @@ senv() {
   echo -e "${COLOR_GREEN}Done${COLOR_RESET}"
 
   # Ensure husky permissions are correct
-  [ -f .husky/pre-commit ] && chmod +x .husky/pre-commit .husky/_/husky.sh
+  [ -f .husky/pre-commit ] && chmod +x .husky/pre-commit
+  [ -f .husky/_/husky.sh ] && chmod +x .husky/_/husky.sh
 }
 
 benv() {
