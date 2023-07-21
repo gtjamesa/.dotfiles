@@ -7,8 +7,8 @@
 #[merge]
 #        tool = p4mergebash
 #[mergetool "p4merge"]
-#        path = "/c/Program Files/Perforce/p4merge.exe"
-#        cmd = "/c/Program Files/Perforce/p4merge.exe \"$BASE\" \"$LOCAL\" \"$REMOTE\" \"$MERGED\""
+#        path = "/mnt/c/Program Files/Perforce/p4merge.exe"
+#        cmd = "/mnt/c/Program Files/Perforce/p4merge.exe \"$BASE\" \"$LOCAL\" \"$REMOTE\" \"$MERGED\""
 #[mergetool "p4mergebash"]
 #        cmd = ~/.dotfiles/bin/p4mergebash.sh $BASE $LOCAL $REMOTE $MERGED
 #        trustExitCode = true
