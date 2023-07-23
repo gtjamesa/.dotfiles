@@ -2,11 +2,11 @@
  
  Function Install-Packages {
   choco install -y `
-  7zip 7zip-std `
-  obsidian `
-  P4Merge `
-  powertoys `
-  ueli `
+  7zip 7zip-zstd `
+  adobereader obsidian typora `
+  powertoys cpu-z ueli rufus sharex 1password `
+  jetbrainstoolbox anydesk.install P4Merge `
+  spotify discord grammarly-for-windows googledrive `
   vlc
 
   # Firefox Developer Edition
