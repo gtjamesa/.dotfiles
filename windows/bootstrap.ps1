@@ -11,12 +11,14 @@ Function Install-Deps {
 }
 
 Function Clone-Repo {
+    $GIT = $GIT = Get-Command git | Select -Expand Source
+
     if (-not (Test-Path -Path "$DOTFILES_PATH")) {
-      git clone https://github.com/gtjamesa/.dotfiles.git $DOTFILES_PATH
+        . $GIT clone https://github.com/gtjamesa/.dotfiles.git $DOTFILES_PATH
     } else {
-       cd $DOTFILES_PATH
-       git fetch origin
-       git pull
+        cd $DOTFILES_PATH
+        . $GIT fetch origin
+        . $GIT pull
     }
 }
 

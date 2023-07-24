@@ -1,12 +1,12 @@
  #Requires -RunAsAdministrator
- 
+
  Function Install-Packages {
   choco install -y `
   7zip 7zip-zstd `
   adobereader obsidian typora `
   powertoys cpu-z ueli rufus sharex 1password `
   jetbrainstoolbox anydesk.install P4Merge `
-  spotify discord grammarly-for-windows googledrive `
+  spotify discord grammarly-for-windows googledrive googlechrome `
   vlc
 
   # Firefox Developer Edition
