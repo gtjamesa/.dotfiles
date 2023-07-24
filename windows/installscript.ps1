@@ -37,7 +37,7 @@ Function Install-Packages {
 Function Install-Extra-Packages {
     choco install -y `
         figma steam `
-        burp-suite-free-edition mullvad-vpn processhacker.install tightvnc wireshark
+        burp-suite-free-edition mullvad-app processhacker.install tightvnc wireshark
 }
 
 echo ""
