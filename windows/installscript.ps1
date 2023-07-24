@@ -55,3 +55,7 @@ Install-Packages
 if ($INSTALL_EXTRAS) {
     Install-Extra-Packages
 }
+
+# Refresh environment
+Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
+refreshenv

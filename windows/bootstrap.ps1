@@ -8,6 +8,9 @@ Function Install-Deps {
 
     # Install git
     choco install -y git
+
+    Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
+    refreshenv
 }
 
 Function Clone-Repo {
