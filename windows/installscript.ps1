@@ -40,6 +40,9 @@ Function Install-Extra-Packages {
         burp-suite-free-edition mullvad-vpn processhacker.install tightvnc wireshark
 }
 
+echo ""
+echo ""
+echo ""
 echo "All general usage programs will be installed by default"
 echo "Additional programs such as Steam, Figma, etc. will be installed if you choose to install extras"
 
