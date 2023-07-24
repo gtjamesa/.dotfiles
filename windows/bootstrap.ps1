@@ -1,5 +1,5 @@
  ##Requires -RunAsAdministrator
- 
+
  $DOTFILES_PATH = "$env:USERPROFILE\.dotfiles"
 
 Function Install-Deps {
@@ -19,3 +19,7 @@ Function Clone-Repo {
        git pull
     }
 }
+
+Install-Deps
+Clone-Repo
+. "$DOTFILES_PATH\windows\installscript.ps1"
