@@ -164,11 +164,11 @@ EOF
 
 ztar() {
   # Encrypt/decrypt single file using encryption level 15
-  # zstd -10 yarn.lock
+  # zstd -7 yarn.lock
   # zstd -d yarn.lock.zst
 
   # Encrypt/decrypt directory
-  # tar -I 'zstd -10' -cf rr-cache.tar.zst .git/rr-cache
+  # tar -I 'zstd -7' -cf rr-cache.tar.zst .git/rr-cache
   # tar -I zstd -xf rr-cache.tar.zst
 
   if [ -z "$1" ]; then
@@ -176,11 +176,13 @@ ztar() {
 Usage: $0 [args] <FILE> [FILE(s)]
     -x                   Extract
 
-Examples:
+Compress:
     $ ztar README.md                  Compress README.md to README.md.zst
-    $ ztar -x README.md.zst           Extract README.md.zst to README.md
     $ ztar tmp.tar.zst /tmp           Compress /tmp to tmp.tar.zst
     $ ztar tmp.tar.zst file1 file2    Compress file1 and file2 to tmp.tar.zst
+
+Extract:
+    $ ztar -x README.md.zst           Extract README.md.zst to README.md
     $ ztar -x tmp.tar.zst             Extract tmp.tar.zst to /tmp
 EOF
     return 1
@@ -226,18 +228,18 @@ EOF
       # Fail if it is a directory
       if [ "$is_dir" -eq 1 ]; then
         echo "ERR: Please specify output filename";
-        echo "Usage: $0 tmp.tar.zst $1";
+        echo "Usage: $0 ${1##*/}.tar.zst $1";
         return 1;
       fi
 
       # Should be a file here so use default behaviour
-#      echo zstd -10 "$filename"
-      zstd -10 "$filename"
+#      echo zstd -7 "$filename"
+      zstd -7 "$filename"
       return 0
     fi
 
     # Compress multiple files into a tar archive
-#    echo tar -I 'zstd -10' -cf "$filename" "${files[@]}"
-    tar -I 'zstd -10' -cf "$filename" "${files[@]}"
+#    echo tar -I 'zstd -7' -cf "$filename" "${files[@]}"
+    tar -I 'zstd -7' -cf "$filename" "${files[@]}"
   fi
 }

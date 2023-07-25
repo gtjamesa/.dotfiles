@@ -82,7 +82,7 @@ senv() {
 
   BRANCH="$1"
   DUMP_PATH="/mnt/d/Google Drive/Development/2022 Rebuild/Dumps/"
-  FILE_PATH=$(ls -tr "$DUMP_PATH" | grep -E "$BRANCH-.+.tar.gz" | tail -1)
+  FILE_PATH=$(ls -tr "$DUMP_PATH" | grep -E "$BRANCH-.+.tar.zst" | tail -1)
   TAR_ARCHIVE=$(basename "$FILE_PATH")
 
   git checkout "$BRANCH"
@@ -97,7 +97,7 @@ senv() {
   echo -e "${COLOR_GREEN}Done${COLOR_RESET}"
 
   echo -n 'Extracting archive... '
-  tar -xzf "$TAR_ARCHIVE"
+  ztar -x "$TAR_ARCHIVE"
   rm -f "$TAR_ARCHIVE"
   echo -e "${COLOR_GREEN}Done${COLOR_RESET}"
 
@@ -116,14 +116,14 @@ benv() {
 
   DUMP_PATH="/mnt/d/Google Drive/Development/2022 Rebuild/Dumps/"
   TODAY=$(date +%Y%m%d)
-  TAR_ARCHIVE="$BRANCH-$TODAY.tar.gz"
+  TAR_ARCHIVE="$BRANCH-$TODAY.tar.zst"
 
   if [[ -f "$DUMP_PATH$TAR_ARCHIVE" ]]; then
     rm -f "$DUMP_PATH$TAR_ARCHIVE"
   fi
 
   echo -n 'Backing up vendor and node_modules... '
-  tar -czf "$TAR_ARCHIVE" node_modules/ vendor/
+  ztar "$TAR_ARCHIVE" node_modules/ vendor/
   echo -e "${COLOR_GREEN}Done${COLOR_RESET}"
 
   echo -n 'Moving file... '
