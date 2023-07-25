@@ -5,3 +5,4 @@ kubeconform 0.6.1
 eksctl 0.138.0
 cloudflared 2023.6.1
 github-cli 2.30.0
+awscli 2.13.3
