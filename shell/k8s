@@ -22,3 +22,6 @@ kubecli() {
 
 # Alias "k" to "kubectl" if it doesn't already exist
 command -v k || alias k='kubectl'
+
+# Add krew to path (https://krew.sigs.k8s.io/)
+export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"

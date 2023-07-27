@@ -4,4 +4,14 @@ asdf-reload() {
   awk '{print $1}' "$HOME/.tool-versions" | xargs -I {} asdf plugin add {}
   asdf plugin update --all
   asdf install
+
+  if grep -q krew ~/.tool-versions; then
+    mkdir -p "$HOME/.krew"
+
+    # Symlink ~/.krew/backup to ~/.dotfiles/shell/.krew-plugins
+    [ ! -h "$HOME/.krew/backup" ] && symlink_file "$HOME/.dotfiles/shell/.krew-plugins" "$HOME/.krew/backup"
+
+    # Install plugins
+    kubectl krew install < "$HOME/.krew/backup"
+  fi
 }

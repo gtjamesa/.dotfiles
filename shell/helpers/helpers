@@ -1,0 +1,28 @@
+#!/bin/bash
+
+ask() {
+  while true; do
+    read -p "$1 (y/n) " -r
+    REPLY=${REPLY:-"y"}
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+      return 1
+    elif [[ $REPLY =~ ^[Nn]$ ]]; then
+      return 0
+    fi
+  done
+}
+
+backup_file() {
+  if [[ -L $1 ]]; then
+    echo "Removing symlink $1"
+    rm -f "$1"
+  elif [[ -f $1 ]]; then
+    echo "Creating backup of $1"
+    mv "$1" "$1.bak"
+  fi
+}
+
+symlink_file() {
+  backup_file "$2"
+  ln -s "$1" "$2"
+}

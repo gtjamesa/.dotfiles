@@ -32,6 +32,7 @@ source_dir() {
 [ -f ~/.dotfiles/shell/aliases/docker ] && source ~/.dotfiles/shell/aliases/docker
 [ -f ~/.dotfiles/shell/helpers/asdf ] && source ~/.dotfiles/shell/helpers/asdf
 [ -f ~/.dotfiles/shell/helpers/dotfiles ] && source ~/.dotfiles/shell/helpers/dotfiles
+[ -f ~/.dotfiles/shell/helpers/helpers ] && source ~/.dotfiles/shell/helpers/helpers
 
 # fzf
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
