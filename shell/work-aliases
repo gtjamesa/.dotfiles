@@ -15,7 +15,6 @@ alias yaw='docker-compose exec node yarn watch'
 alias yab='docker-compose exec node yarn build'
 alias yat='docker-compose exec node yarn test'
 alias tinker='docker-compose exec app php artisan tinker'
-alias redis-cli='docker-compose exec redis redis-cli'
 alias vapor='php ./vendor/bin/vapor'
 
 alias sitespeed='docker run --rm -v "/mnt/d/Google Drive/Infrastructure:/sitespeed.io" sitespeedio/sitespeed.io:12.0.1 -b chrome'
@@ -37,6 +36,13 @@ composer-link() {
 composer-unlink() {
   git checkout composer.json composer.lock
   composer update
+}
+
+# Access Redis running inside docker-compose
+# Usage: redis-cli [filter]
+redis-cli() {
+  [ -z "$1" ] && docker-compose exec redis redis-cli
+  [ -n "$1" ] && docker-compose exec redis redis-cli monitor | tee | grep "$1"
 }
 
 # PHP Compatibility checker
