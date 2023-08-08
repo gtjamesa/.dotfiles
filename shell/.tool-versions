@@ -1,4 +1,4 @@
-kubectl 1.26.4
+kubectl 1.27.4
 kustomize 4.5.7
 pluto 5.18.2
 kubeconform 0.6.1
