@@ -185,7 +185,7 @@ install_asdf() {
 }
 
 install_wslu() {
-  if [[ "$wsl2" -eq 0 ]]; then
+  if [ "$wsl2" -eq 0 ]; then
     return 0
   fi
 
@@ -272,6 +272,17 @@ install_optional() {
   install_docker
 }
 
+fix_wsl() {
+  [ "$wsl2" -eq 0 ] && return 0
+
+  # When systemd is enabled, we may encounter "exec format error" when running windows binaries
+  # https://github.com/microsoft/WSL/issues/8952#issuecomment-1568212651
+  if [ ! -f /usr/lib/binfmt.d/WSLInterop.conf ]; then
+    sudo sh -c 'echo :WSLInterop:M::MZ::/init:PF > /usr/lib/binfmt.d/WSLInterop.conf'
+    sudo systemctl restart systemd-binfmt
+  fi
+}
+
 ask_options() {
   # Composer
   if [[ -z "$composer" ]]; then
@@ -324,6 +335,7 @@ run_installer() {
   install_wslu
 
   install_optional
+  fix_wsl
 }
 
 # TODO: Add aliases from .bashrc/.profile
