@@ -46,6 +46,14 @@ git-ours-vs-theirs() {
   echo -e "$ git checkout ${COLOR_GREEN}--theirs${COLOR_RESET} codefile.js"
 }
 
+git-setup-p4merge() {
+  git config --global diff.tool p4merge
+  git config --global merge.tool p4merge
+  git config --global difftool.p4merge.cmd '/mnt/c/Program\ Files/Perforce/p4merge.exe "$(wslpath -aw $LOCAL)" "$(wslpath -aw $REMOTE)"'
+  git config --global mergetool.p4merge.cmd '/mnt/c/Program\ Files/Perforce/p4merge.exe "$(wslpath -aw $BASE)" "$(wslpath -aw $LOCAL)" "$(wslpath -aw $REMOTE)" "$(wslpath -aw $MERGED)"'
+  git config --global mergetool.p4merge.trustexitcode false
+}
+
 # Enable gh completion
 if command -v gh &>/dev/null; then
   if [ ! -f "$HOME/.oh-my-zsh/completions/_gh" ]; then
