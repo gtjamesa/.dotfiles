@@ -141,7 +141,7 @@ mount-synology() {
     return 0
   fi
 
-  [ ! -d /mnt/synology ] && sudo mkdir -p "${DST_PATH}"
+  [ ! -d "${DST_PATH}" ] && sudo mkdir -p "${DST_PATH}"
   sudo mount -t cifs "//192.168.0.100${MOUNT_PATH}" "${DST_PATH}" -o "uid=1000,credentials=$HOME/.synologycredentials,rw,nodfs,vers=3.0"
 }
 
