@@ -119,13 +119,22 @@ tmux-cwd() {
 }
 
 mount-synology() {
+  if [ "$1" == "--help" ]; then
+    echo "Usage: $0 [mount] [path]"
+    echo
+    echo "mount\t - Mount path (default: home)"
+    echo "path\t - Destination path (default: /mnt/synology)"
+    echo -e "\nExample: $0 home /mnt/synology"
+    return 0
+  fi
+
   CREDS_PATH="$HOME/.synologycredentials"
 
   # Set MOUNT_PATH to $1 if it's not empty, otherwise use "/home"
   MOUNT_PATH="/${1:-home}"
   DST_PATH="${2:-/mnt/synology}"
 
-  if [[ ! -f "$CREDS_PATH" ]]; then
+  if [ ! -f "$CREDS_PATH" ]; then
     echo "username=USERNAME" > "$CREDS_PATH" && echo "password=PASSWORD" >> "$CREDS_PATH"
     echo "Please enter credentials at $CREDS_PATH"
     chmod 0600 "$CREDS_PATH"
