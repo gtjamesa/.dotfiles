@@ -160,7 +160,7 @@ rand-str() {
 
 ri() {
   # Create .release-it.json if it doesn't exist
-  if [ ! -f .release-it.json ]; then
+  if [ ! -f .release-it.json ] && [ -d .git ]; then
   cat <<EOF > .release-it.json
 {
   "npm": {
