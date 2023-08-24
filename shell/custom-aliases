@@ -159,6 +159,13 @@ rand-str() {
 }
 
 ri() {
+  # If we have a package.json and it contains "np" then use that instead
+  if [ -f package.json ] && grep -q '"np":' package.json ; then
+    echo 'Running "yarn np"'
+    yarn np
+    return 0
+  fi
+
   # Create .release-it.json if it doesn't exist
   if [ ! -f .release-it.json ] && [ -d .git ]; then
   cat <<EOF > .release-it.json
