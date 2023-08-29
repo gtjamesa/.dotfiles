@@ -2,6 +2,7 @@
 
 [ -f ~/.dotfiles/shell/aliases/docker ] && source ~/.dotfiles/shell/aliases/docker
 [ -f ~/.dotfiles/shell/aliases/ztar ] && source ~/.dotfiles/shell/aliases/ztar
+[ -f ~/.dotfiles/shell/aliases/wsl ] && source ~/.dotfiles/shell/aliases/wsl
 
 # Git
 alias glo='git log --oneline'

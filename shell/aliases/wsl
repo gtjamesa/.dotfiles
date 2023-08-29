@@ -1,0 +1,26 @@
+#!/bin/bash
+
+xdebug-forward() {
+  wsl2=0
+
+  # Detect WSL 2
+  [ -f /proc/sys/fs/binfmt_misc/WSLInterop ] && wsl2=1
+  grep -qi Microsoft /proc/version && wsl2=1
+  grep -qi Microsoft /proc/sys/kernel/osrelease && wsl2=1
+
+  if [ "$wsl2" -eq 0 ]; then
+    echo 'Error: Not running inside WSL 2.' >&2
+    exit 1
+  fi
+
+  if [ ! -x "$(command -v socat)" ]; then
+    echo 'Error: socat is not installed.' >&2
+    exit 1
+  fi
+
+  HOST_IP=$(cat /etc/resolv.conf | tail -n1 | cut -d " " -f 2)
+  PORT=${1:-9003}
+
+  echo "Forwarding port ${PORT} to ${HOST_IP}:${PORT}..."
+  socat "tcp-listen:${PORT},reuseaddr,fork" "tcp:${HOST_IP}:${PORT}"
+}
