@@ -21,6 +21,19 @@ gbh() {
   git log "$1..$2" --oneline --pretty='%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ad) %C(bold blue)<%an>%Creset'
 }
 
+# Cleans leftover git merged files without using "git clean -df"
+# This will ensure that any untracked files are not deleted
+git-clean-merge() {
+  find . -type f -name '*.orig' -exec rm -f {} \;
+  find . -type f -name '*_BACKUP_*' -exec rm -f {} \;
+  find . -type f -name '*_BASE_*' -exec rm -f {} \;
+  find . -type f -name '*_LOCAL_*' -exec rm -f {} \;
+  find . -type f -name '*_REMOTE_*' -exec rm -f {} \;
+}
+
+# Alias "git-clean-merge" to "gclm" if it doesn't already exist
+command -v gclm || alias gclm='git-clean-merge'
+
 # Shell adaption of https://nitaym.github.io/ourstheirs/
 git-ours-vs-theirs() {
   # Merge
