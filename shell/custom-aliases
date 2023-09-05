@@ -162,7 +162,7 @@ rand-str() {
 ri() {
   # If we have a package.json and it contains "np" then use that instead
   if [ -f package.json ] && grep -q '"np":' package.json ; then
-    echo 'Running "yarn np"'
+    echo -e "[${COLOR_BLUE}"${COLOR_CYAN}\!${COLOR_RESET}"${COLOR_RESET}] ${COLOR_GREEN}Running \"yarn np\"${COLOR_RESET}"
     yarn np
     return 0
   fi

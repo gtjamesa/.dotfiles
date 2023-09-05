@@ -4,3 +4,11 @@ dotfiles-install() {
   echo "You can run the .dotfiles installer on another machine by running:"
   echo 'bash -c "$(curl -fsSL https://raw.githubusercontent.com/gtjamesa/.dotfiles/main/bootstrap)"'
 }
+
+dotfiles-sync() {
+  echo -e "${COLOR_GREEN}Syncing .dotfiles${COLOR_RESET}\n"
+  cd "$HOME/.dotfiles"
+  git fetch origin
+  git pull --rebase
+  cd -
+}
