@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# bun completions
+[ -s "/home/james/.oh-my-zsh/completions/_bun" ] && source "/home/james/.oh-my-zsh/completions/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"

@@ -141,6 +141,9 @@ install_node() {
 
   # Install Node 18
   nvm install 18
+
+  # Install bun
+  curl -fsSL https://bun.sh/install | bash
 }
 
 install_python() {
