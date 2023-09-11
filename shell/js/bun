@@ -6,3 +6,13 @@
 # bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
+
+bun-configure() {
+  git config --global diff.lockb.textconv bun
+  git config --global diff.lockb.binary true
+
+  if [ ! -f "$HOME/.gitattributes" ] || ! grep -q "lockb" "$HOME/.gitattributes"; then
+    echo "Adding lockb to .gitattributes"
+    echo "*.lockb diff=lockb" >> "$HOME/.gitattributes"
+  fi
+}
