@@ -38,7 +38,7 @@ reqtime() {
                     ----------\n \
          time_total:  %{time_total}\n"
 
-  curl -sk -o /dev/null -w "$FORMAT" "$1"
+  curl -sk -o /dev/null -w "$FORMAT" "$1" "${@:2}"
 }
 
 speedtest() {
