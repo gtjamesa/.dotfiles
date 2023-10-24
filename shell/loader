@@ -21,6 +21,7 @@ source_dir() {
 [ -f ~/.dotfiles/shell/helpers/colour ] && source ~/.dotfiles/shell/helpers/colour
 [ -f ~/.dotfiles/shell/nvm/nvm ] && source ~/.dotfiles/shell/nvm/nvm
 [ -f ~/.dotfiles/shell/js/bun ] && source ~/.dotfiles/shell/js/bun
+[ -f ~/.dotfiles/shell/js/pnpm ] && source ~/.dotfiles/shell/js/pnpm
 
 # Custom ZSH configuration
 [ -f ~/.dotfiles/shell/.zshrc.kali ] && source ~/.dotfiles/shell/.zshrc.kali
