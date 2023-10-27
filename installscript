@@ -133,14 +133,18 @@ install_node() {
   # https://github.com/nvm-sh/nvm
   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
 
-  # Source the nvm exports
+  # Source some stuff
   [ -f "$HOME/.dotfiles/shell/nvm/nvm" ] && source "$HOME/.dotfiles/shell/nvm/nvm"
+  [ -f "$HOME/.dotfiles/shell/js/pnpm" ] && source "$HOME/.dotfiles/shell/js/pnpm"
 
   # Symlink the default-packages file
   symlink_file "$HOME/.dotfiles/shell/nvm/default-packages" "$NVM_DIR/default-packages"
 
-  # Install Node 18
-  nvm install 18
+  # Install Node 20
+  nvm install 20
+
+  # Install pnpm
+  dotfiles-install-pnpm
 
   # Install bun
   curl -fsSL https://bun.sh/install | bash
