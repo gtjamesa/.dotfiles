@@ -6,6 +6,14 @@ case ":$PATH:" in
   *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
 
+# Fix pnpm being created in "~/.local/share/pnpm"
+# As we are installing with corepack,
+# we can load pnpm straight from the nvm directory for the current node version
+nvm_dir=${$(which node)%/node}
+if [ -f "$HOME/.local/share/pnpm/pnpm" ] && [ -f "$nvm_dir/pnpm" ]; then
+  ln -sf "$nvm_dir/pnpm" "$HOME/.local/share/pnpm/pnpm"
+fi
+
 command -v pn || alias pn='pnpm'
 
 # tabtab source for packages
