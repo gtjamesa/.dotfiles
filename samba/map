@@ -1,0 +1,5 @@
+#!/bin/bash
+
+SCRIPT_PATH=$(wslpath -aw "$HOME/.dotfiles/samba/map.ps1")
+echo -e "Run the following commands from a PowerShell command prompt:\n"
+echo "powershell.exe -exec bypass $SCRIPT_PATH"

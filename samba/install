@@ -1,0 +1,53 @@
+#!/bin/bash
+
+SMB_CONF_FILE="/etc/samba/smb.conf"
+
+smb_conf() {
+  cat << EOF
+[Projects]
+   comment = ${USER}'s projects
+   path = ${HOME}
+   guest ok = no
+   writeable = yes
+   write list = ${USER}
+   browseable = yes
+   create mask = 0644
+   directory mask = 0755
+EOF
+}
+
+create_smb_share() {
+  if [ ! -f "${SMB_CONF_FILE}" ]; then
+    conf_content=$(smb_conf)
+    echo -e "\n\nCreating ${SMB_CONF_FILE}..."
+    echo "${conf_content}" > "${SMB_CONF_FILE}"
+  else
+    echo -e "\n\n${SMB_CONF_FILE} already exists, please add the following:\n"
+    smb_conf
+  fi
+}
+
+sudo -v
+
+# Read username
+echo -n "Enter your Windows username: "
+read USERNAME
+
+# Read password
+stty -echo
+echo -n "Enter your Windows password: "
+read PASSWORD
+stty echo
+echo -e "\n"
+
+sudo apt install -y samba
+create_smb_share
+
+# Create local SMB user
+echo -e "${PASSWORD}\n${PASSWORD}\n" | sudo smbpasswd -L -a ${USERNAME}
+# Enable the user
+sudo smbpasswd -L -e ${USERNAME}
+sudo service smbd restart
+
+# Show instructions
+exec ./map

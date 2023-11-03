@@ -44,7 +44,7 @@ echo ""
 echo ""
 echo ""
 echo "All general usage programs will be installed by default"
-echo "Additional programs such as Steam, Figma, etc. will be installed if you choose to install extras"
+echo "Additional programs such as Steam, Burp Suite, Figma, etc. will be installed if you choose to install extras"
 
 if (Prompt-For-Confirmation('Extras', 'Do you want to install extra packages?')) {
     $INSTALL_EXTRAS = $true
