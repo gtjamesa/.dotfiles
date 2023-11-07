@@ -9,7 +9,8 @@ esac
 # Fix pnpm being created in "~/.local/share/pnpm"
 # As we are installing with corepack,
 # we can load pnpm straight from the nvm directory for the current node version
-nvm_dir=${$(which node)%/node}
+node_path=$(which node)
+nvm_dir=${node_path%/node}
 if [ -f "$HOME/.local/share/pnpm/pnpm" ] && [ -f "$nvm_dir/pnpm" ]; then
   ln -sf "$nvm_dir/pnpm" "$HOME/.local/share/pnpm/pnpm"
 fi
