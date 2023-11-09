@@ -6,6 +6,7 @@ if [ "$(uname)" != "Linux" ]; then
 fi
 
 JETBRAINS_TOOLBOX_VERSION="2.0.5.17700"
+ANYDESK_VERSION="6.3.0-1"
 OS_NAME=$(grep 'NAME=' /etc/os-release | head -1 | awk -F'"' '{print $2}')
 
 sudo -v
@@ -36,9 +37,12 @@ download-software() {
   wget -qO - https://deb.tableplus.com/apt.tableplus.com.gpg.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/tableplus-archive.gpg > /dev/null
   sudo add-apt-repository "deb [arch=amd64] https://deb.tableplus.com/debian/22 tableplus main"
 
+  # AnyDesk
+  wget "https://download.anydesk.com/linux/anydesk_${ANYDESK_VERSION}_amd64.deb" -O /tmp/anydesk.deb
+
   # Install configured software in one go if we can
   sudo apt update -y
-  sudo apt install -y -f /tmp/1password-latest.deb /tmp/steam.deb
+  sudo apt install -y -f /tmp/1password-latest.deb /tmp/steam.deb /tmp/anydesk.deb
   sudo apt install -y tableplus wine-installer
 
   rm -f /tmp/1password-latest.deb /tmp/steam.deb
@@ -51,7 +55,7 @@ install-flathub-packages() {
     # text
     io.typora.Typora md.obsidian.Obsidian org.gnome.meld \
     # utility
-    com.github.tchx84.Flatseal com.anydesk.Anydesk com.getpostman.Postman \
+    com.github.tchx84.Flatseal com.getpostman.Postman \
     # games
     net.davidotek.pupgui2
   )
