@@ -10,9 +10,9 @@ docker=
 getracker=
 ask_optional=0
 
-if [[ "$OS" == "Linux" ]]; then
+if [ "$OS" == "Linux" ]; then
   SHARE_PATH="/usr/share"
-elif [[ "$OS" == "Darwin" ]]; then
+elif [ "$OS" == "Darwin" ]; then
   SHARE_PATH="/usr/local/share"
 fi
 

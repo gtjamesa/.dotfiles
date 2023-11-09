@@ -1,0 +1,64 @@
+#!/bin/bash
+
+if [ "$(uname)" != "Linux" ]; then
+  echo "Installer can only be run on Linux"
+  exit
+fi
+
+JETBRAINS_TOOLBOX_VERSION="2.0.5.17700"
+OS_NAME=$(grep 'NAME=' /etc/os-release | head -1 | awk -F'"' '{print $2}')
+
+sudo -v
+
+# Create some directories automatically
+create-opt() {
+  OPT_DIRS="/opt/apps /opt/tmp"
+  for app in "${OPT_DIRS[@]}"; do
+    sudo mkdir -p "${app}"
+    sudo setfacl -R -m "u:${USER}:rwx" "${app}"
+  done
+}
+
+# Download software that may not exist in apt/flathub
+download-software() {
+  # Jetbrains Toolbox
+  wget "https://download.jetbrains.com/toolbox/jetbrains-toolbox-${JETBRAINS_TOOLBOX_VERSION}.tar.gz" -O /tmp/jetbrains-toolbox.tar.gz
+  tar -xzvf /tmp/jetbrains-toolbox.tar.gz -C /opt/apps --strip-components=1
+  rm -f /tmp/jetbrains-toolbox.tar.gz
+
+  # 1Password
+  wget https://downloads.1password.com/linux/debian/amd64/stable/1password-latest.deb -O /tmp/1password-latest.deb
+
+  # Steam
+  wget https://cdn.cloudflare.steamstatic.com/client/installer/steam.deb -O /tmp/steam.deb
+
+  # Table Plus
+  wget -qO - https://deb.tableplus.com/apt.tableplus.com.gpg.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/tableplus-archive.gpg > /dev/null
+  sudo add-apt-repository "deb [arch=amd64] https://deb.tableplus.com/debian/22 tableplus main"
+
+  # Install configured software in one go if we can
+  sudo apt update -y
+  sudo apt install -y -f /tmp/1password-latest.deb /tmp/steam.deb
+  sudo apt install -y tableplus wine-installer
+
+  rm -f /tmp/1password-latest.deb /tmp/steam.deb
+}
+
+install-flathub-packages() {
+  PACKAGES=(
+    # entertainment
+    com.spotify.Client com.discordapp.Discord com.ktechpit.whatsie org.videolan.VLC \
+    # text
+    io.typora.Typora md.obsidian.Obsidian org.gnome.meld \
+    # utility
+    com.github.tchx84.Flatseal com.anydesk.Anydesk com.getpostman.Postman \
+    # games
+    net.davidotek.pupgui2
+  )
+  flatpak install -y "${PACKAGES[@]}"
+}
+
+# Run the desktop installer
+create-opt
+download-software
+install-flathub-packages
