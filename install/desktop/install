@@ -49,7 +49,7 @@ download-software() {
   sudo apt install -y -f /tmp/1password-latest.deb /tmp/steam.deb /tmp/anydesk.deb
   sudo apt install -y tableplus wine-installer
 
-  rm -f /tmp/1password-latest.deb /tmp/steam.deb
+  rm -f /tmp/1password-latest.deb /tmp/steam.deb /tmp/anydesk.deb
 }
 
 install-flathub-packages() {
