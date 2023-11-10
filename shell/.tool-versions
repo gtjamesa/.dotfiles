@@ -8,3 +8,4 @@ github-cli 2.36.0
 awscli 2.13.3
 krew 0.4.4
 websocat 1.11.0
+kubectx 0.9.5
