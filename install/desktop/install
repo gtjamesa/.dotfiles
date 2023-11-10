@@ -13,7 +13,7 @@ sudo -v
 
 # Create some directories automatically
 create-opt() {
-  OPT_DIRS="/opt/apps /opt/tmp"
+  OPT_DIRS=("/opt/apps" "/opt/tmp")
   for app in "${OPT_DIRS[@]}"; do
     sudo mkdir -p "${app}"
     sudo setfacl -R -m "u:${USER}:rwx" "${app}"
