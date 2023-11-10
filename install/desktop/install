@@ -33,6 +33,10 @@ download-software() {
   # Steam
   wget https://cdn.cloudflare.steamstatic.com/client/installer/steam.deb -O /tmp/steam.deb
 
+  # Navicat Premium
+  wget https://dn.navicat.com/download/navicat16-premium-en.AppImage -O /opt/apps/navicat.AppImage
+  chmod +x /opt/apps/navicat.AppImage
+
   # Table Plus
   wget -qO - https://deb.tableplus.com/apt.tableplus.com.gpg.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/tableplus-archive.gpg > /dev/null
   sudo add-apt-repository "deb [arch=amd64] https://deb.tableplus.com/debian/22 tableplus main"
