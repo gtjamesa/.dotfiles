@@ -10,3 +10,4 @@ krew 0.4.4
 websocat 1.11.0
 kubectx 0.9.5
 helm 3.13.2
+kubeseal 0.24.3
