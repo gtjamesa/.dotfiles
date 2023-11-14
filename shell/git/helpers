@@ -67,6 +67,22 @@ git-setup-p4merge() {
   git config --global mergetool.p4merge.trustexitcode false
 }
 
+# Set meld alias if we've installed it via flatpak
+#if ! command -v meld && [ -d /var/lib/flatpak/app/org.gnome.meld ]; then
+#  alias meld='flatpak run org.gnome.meld'
+#fi
+
+git-setup-meld() {
+  MELD_CMD='meld'
+  [ -d /var/lib/flatpak/app/org.gnome.meld ] && MELD_CMD='flatpak run org.gnome.meld'
+
+  git config --global diff.tool meld
+  git config --global merge.tool meld
+  git config --global difftool.meld.cmd ''$MELD_CMD' "$LOCAL" "$REMOTE"'
+  git config --global mergetool.meld.cmd ''$MELD_CMD' "$LOCAL" "$BASE" "$REMOTE" --output "$MERGED"'
+  #git config --global mergetool.meld.trustexitcode false
+}
+
 # Enable gh completion
 if command -v gh &>/dev/null; then
   if [ ! -f "$HOME/.oh-my-zsh/completions/_gh" ]; then
