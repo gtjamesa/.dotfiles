@@ -59,7 +59,7 @@ install-flathub-packages() {
     # text
     io.typora.Typora md.obsidian.Obsidian org.gnome.meld \
     # utility
-    com.github.tchx84.Flatseal com.getpostman.Postman \
+    com.github.tchx84.Flatseal com.getpostman.Postman org.flameshot.Flameshot \
     # games
     net.davidotek.pupgui2
   )
