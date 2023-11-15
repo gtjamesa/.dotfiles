@@ -44,10 +44,13 @@ download-software() {
   # AnyDesk
   wget "https://download.anydesk.com/linux/anydesk_${ANYDESK_VERSION}_amd64.deb" -O /tmp/anydesk.deb
 
+  # asciinema
+  sudo apt-add-repository -y ppa:zanchey/asciinema
+
   # Install configured software in one go if we can
   sudo apt update -y
   sudo apt install -y -f /tmp/1password-latest.deb /tmp/steam.deb /tmp/anydesk.deb
-  sudo apt install -y tableplus wine-installer
+  sudo apt install -y tableplus wine-installer asciinema
 
   rm -f /tmp/1password-latest.deb /tmp/steam.deb /tmp/anydesk.deb
 }
