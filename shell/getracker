@@ -1,7 +1,23 @@
 #!/bin/bash
 
 aws-ssh() {
-  ssh -i ~/.ssh/getracker-aws "ec2-user@$1"
+  if [ ! -f "$HOME/.ssh/getracker-aws" ]; then
+    echo "AWS SSH key not found. Please create it at ~/.ssh/getracker-aws"
+    return 1
+  fi
+
+  IP="$1"
+  LOOKUP_TYPE="PrivateIpAddress"
+
+  # If a non-IP was provided, look it up via the EC2 API
+  if [ ! "$IP" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]; then
+    [ "$2" == "public" ] && LOOKUP_TYPE="PublicIpAddress"
+    echo -n "Resolving: ${IP} -> "
+    IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=${IP}" | jq -r ".[][].Instances[0].${LOOKUP_TYPE}")
+    echo "${IP}"
+  fi
+
+  ssh -i ~/.ssh/getracker-aws "ec2-user@${IP}"
 }
 
 alias aws-scp="rsync -Pav -e 'ssh -i ~/.ssh/getracker-aws'"
