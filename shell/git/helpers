@@ -34,6 +34,12 @@ git-clean-merge() {
 # Alias "git-clean-merge" to "gclm" if it doesn't already exist
 command -v gclm || alias gclm='git-clean-merge'
 
+# approve and merge a PR
+function gham() {
+  gh pr review -a "$1"
+  gh pr merge -d "$1"
+}
+
 # Shell adaption of https://nitaym.github.io/ourstheirs/
 git-ours-vs-theirs() {
   # Merge
