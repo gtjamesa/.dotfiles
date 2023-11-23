@@ -1,0 +1,10 @@
+[/]
+default='afb4f136-0d48-418d-a852-9978e8d3efa3'
+list=['afb4f136-0d48-418d-a852-9978e8d3efa3']
+
+[:afb4f136-0d48-418d-a852-9978e8d3efa3]
+background-color='rgb(15,23,42)'
+foreground-color='rgb(208,207,204)'
+use-theme-colors=false
+visible-name='James'
+
