@@ -38,6 +38,14 @@ command -v gclm || alias gclm='git-clean-merge'
 function gham() {
   gh pr review -a "$1"
   gh pr merge -d "$1"
+
+  if [ "$?" -ne 0 ]; then
+    gh pr merge -d --admin "$1"
+  fi
+
+  if [ "$?" -eq 0 ]; then
+    echo "PR merged successfully"
+  fi
 }
 
 # Shell adaption of https://nitaym.github.io/ourstheirs/
