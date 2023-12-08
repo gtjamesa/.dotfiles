@@ -16,9 +16,6 @@ alias dc='docker-compose'
 # Get external IP address
 alias ipaddr='curl ipecho.net/plain; echo'
 
-# Alias "nx" to "npx nx" if it doesn't already exist
-command -v nx || alias nx='npx nx'
-
 function mdc() {
   mkdir -p "$1" && cd "$1"
 }

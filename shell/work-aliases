@@ -150,3 +150,23 @@ wsl-backup() {
 
   tar -cvzf "$FILE_PATH" "$HOME"
 }
+
+# Run PHP inside a local docker container using the "getracker/php-base" image
+lphp() {
+  # grep -oP '"php": "(?:\^(?:\d\.\d)\|)?\^(?:\d\.\d)"' composer.json
+  # if [ -f composer.json ] && grep -q '"php":' package.json ; then
+  PHP_VERS="8.3"
+
+  # if first argument patches a PHP version, use that
+  if [[ "$1" =~ ^[0-9]+\.[0-9]+$ ]]; then
+    PHP_VERS="$1"
+    shift
+  fi
+
+  CMD_ARGS="${@}"
+
+  # Default args to bash if not defined
+  [ -z "$CMD_ARGS" ] && CMD_ARGS="bash"
+
+  docker run --rm -it -v "$(pwd):/var/www" "getracker/php-base:${PHP_VERS}-dev_fpm" "${CMD_ARGS}"
+}
