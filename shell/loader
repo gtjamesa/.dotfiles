@@ -34,6 +34,7 @@ source_dir() {
 [ -f ~/.dotfiles/shell/helpers/asdf ] && source ~/.dotfiles/shell/helpers/asdf
 [ -f ~/.dotfiles/shell/helpers/dotfiles ] && source ~/.dotfiles/shell/helpers/dotfiles
 [ -f ~/.dotfiles/shell/helpers/helpers ] && source ~/.dotfiles/shell/helpers/helpers
+[ -f ~/.dotfiles/shell/helpers/rust ] && source ~/.dotfiles/shell/helpers/rust
 
 # fzf
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
