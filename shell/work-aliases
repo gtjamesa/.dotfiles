@@ -11,7 +11,7 @@ discord-export() {
 #alias dce='docker-compose exec'
 
 # Docker aliases
-alias yaw='docker-compose exec node yarn watch'
+alias yaw='docker-compose exec node yarn dev'
 alias yab='docker-compose exec node yarn build'
 alias yat='docker-compose exec node yarn test'
 alias tinker='docker-compose exec app php artisan tinker'
