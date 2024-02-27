@@ -15,3 +15,32 @@ asdf-reload() {
     kubectl krew install < "$HOME/.krew/backup"
   fi
 }
+
+asdf-upgrade() {
+  help_text="Usage: asdf-upgrade <plugin> [ --no-local | --no-global ]"
+
+  if [ -z "$1" ]; then
+    echo "$help_text"
+    return 1
+  fi
+
+  install_local=1
+  install_global=1
+
+  for opt in "$@"; do
+    case $opt in
+    --help)
+      echo "$help_text"
+      return 0
+      ;;
+    --no-local) install_local=0 ;;
+    --no-global) install_global=1 ;;
+    esac
+  done
+
+  asdf plugin update "$1"
+  asdf install "$1" latest
+
+  [ "$install_local" -eq 1 ] && asdf local "$1" latest
+  [ "$install_global" -eq 1 ] && asdf global "$1" latest
+}
