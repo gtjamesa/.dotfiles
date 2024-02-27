@@ -26,6 +26,7 @@ asdf-upgrade() {
 
   install_local=1
   install_global=1
+  install_version="latest"
 
   for opt in "$@"; do
     case $opt in
@@ -35,12 +36,15 @@ asdf-upgrade() {
       ;;
     --no-local) install_local=0 ;;
     --no-global) install_global=1 ;;
+    *)
+      [ "$1" != "$opt" ] && install_version="$opt"
+      ;;
     esac
   done
 
   asdf plugin update "$1"
-  asdf install "$1" latest
+  asdf install "$1" "$install_version"
 
-  [ "$install_local" -eq 1 ] && asdf local "$1" latest
-  [ "$install_global" -eq 1 ] && asdf global "$1" latest
+  [ "$install_local" -eq 1 ] && asdf local "$1" "$install_version"
+  [ "$install_global" -eq 1 ] && asdf global "$1" "$install_version"
 }
