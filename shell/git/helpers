@@ -34,6 +34,21 @@ git-clean-merge() {
 # Alias "git-clean-merge" to "gclm" if it doesn't already exist
 command -v gclm || alias gclm='git-clean-merge'
 
+if ! command -v gtam &>/dev/null; then
+  function gtam() {
+    if [ -z "$1" ]; then
+      echo "Usage: gtam <tag> [commit]"
+      return 1
+    fi
+
+    if [ -n "$2" ]; then
+      git tag -a -m "$1" "$1" "$2"
+    else
+      git tag -a -m "$1" "$1"
+    fi
+  }
+fi
+
 # approve and merge a PR
 function gham() {
   gh pr review -a "$1"
