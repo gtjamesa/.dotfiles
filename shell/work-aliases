@@ -170,3 +170,12 @@ lphp() {
 
   docker run --rm -it -v "$(pwd):/var/www" "getracker/php-base:${PHP_VERS}-dev_fpm" "${CMD_ARGS}"
 }
+
+nvidia-flatpak-update() {
+  DRIVER_VERSION=$(awk '{print $8}' /proc/driver/nvidia/version | head -1)
+  FLATPAK_VERSION="${DRIVER_VERSION//./-}"
+
+  echo -e "Installing flatpak drivers for version ${COLOR_GREEN}${DRIVER_VERSION}${COLOR_RESET}\n"
+
+  flatpak install --user flathub "org.freedesktop.Platform.GL.nvidia-${FLATPAK_VERSION}/x86_64" "org.freedesktop.Platform.GL32.nvidia-${FLATPAK_VERSION}/x86_64"
+}
