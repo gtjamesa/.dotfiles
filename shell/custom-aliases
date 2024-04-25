@@ -178,3 +178,18 @@ EOF
 
   release-it --only-version
 }
+
+# Clip a section of a video using ffmpeg
+fclip() {
+  if ! command -v ffmpeg &>/dev/null; then
+    echo "ffmpeg not installed"
+    return 1
+  fi
+
+  if [ -z "$4" ]; then
+    echo "Usage: fclip <src-file> <dst-file> <start-timestamp> <end-timestamp>"
+    return 1
+  fi
+
+  ffmpeg -ss "$3" -to "$4" -i "$1" -async 1 "$2"
+}
