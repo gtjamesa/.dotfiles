@@ -1,0 +1,6 @@
+{
+    "device": "alsa_input.usb-Logitech_PRO_X_000000000000-00.mono-fallback",
+    "device-description": "PRO X Mono",
+    "device-profile": "analog-input-mic",
+    "preset-name": "masc_voice_noise_reduction"
+}
