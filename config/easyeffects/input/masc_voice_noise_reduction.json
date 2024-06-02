@@ -217,7 +217,7 @@
             "input-gain": 0.0,
             "lookahead": 5.0,
             "mode": "Herm Wide",
-            "output-gain": 4.0,
+            "output-gain": 6.0,
             "oversampling": "Half x2(2L)",
             "release": 5.0,
             "sidechain-preamp": 0.0,
