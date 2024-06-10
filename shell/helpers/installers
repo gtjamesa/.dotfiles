@@ -1,0 +1,35 @@
+#!/bin/bash
+
+install-ueli() {
+  DOWNLOAD_URL=$(curl -s https://api.github.com/repos/oliverschwendener/ueli/releases | jq -r 'map(select(.prerelease == true)) | .[0].assets | map(select(.browser_download_url | contains("AppImage"))) | .[].browser_download_url')
+  _dl_setex "$DOWNLOAD_URL" "/opt/apps/ueli.AppImage"
+}
+
+_dl_setex() {
+  TMPFILE=$(mktemp)
+  echo "Downloading $1 to $2..."
+  wget -q --show-progress -O "$TMPFILE" "$1"
+  chmod +x "$TMPFILE"
+  mv -f "$TMPFILE" "$2"
+}
+
+#_github_release_url() {
+#  if [ -z "$2" ]; then
+#    echo "Usage: $0 oliverschwendener/ueli AppImage"
+#    return 1
+#  fi
+#}
+
+_add_autostart() {
+  cat <<EOF > ~/.config/autostart/ueli.desktop
+[Desktop Entry]
+Type=Application
+Exec=/opt/apps/ueli.AppImage
+X-GNOME-Autostart-enabled=true
+NoDisplay=false
+Hidden=false
+Name[en_GB]=ueli
+Comment[en_GB]=v9 alpha
+X-GNOME-Autostart-Delay=10
+EOF
+}
