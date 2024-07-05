@@ -1,9 +1,16 @@
 #!/bin/bash
 
 install-ueli() {
+  DOWNLOAD_URL=$(curl -s https://api.github.com/repos/oliverschwendener/ueli/releases/latest | jq -r '.assets | map(select(.browser_download_url | contains("AppImage"))) | .[].browser_download_url')
+  _dl_setex "$DOWNLOAD_URL" "/opt/apps/ueli.AppImage"
+}
+
+install-ueli-preprelease() {
   DOWNLOAD_URL=$(curl -s https://api.github.com/repos/oliverschwendener/ueli/releases | jq -r 'map(select(.prerelease == true)) | .[0].assets | map(select(.browser_download_url | contains("AppImage"))) | .[].browser_download_url')
   _dl_setex "$DOWNLOAD_URL" "/opt/apps/ueli.AppImage"
 }
+
+
 
 _dl_setex() {
   TMPFILE=$(mktemp)
