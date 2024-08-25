@@ -172,7 +172,14 @@ lphp() {
 }
 
 nvidia-flatpak-update() {
-  DRIVER_VERSION=$(awk '{print $8}' /proc/driver/nvidia/version | head -1)
+  VERSION_FILE=/proc/driver/nvidia/version
+
+  if [ ! -f "${VERSION_FILE}" ]; then
+    echo "Nvidia driver not found (${VERSION_FILE})"
+    return 1
+  fi
+
+  DRIVER_VERSION=$(awk '{print $8}' "${VERSION_FILE}" | head -1)
   FLATPAK_VERSION="${DRIVER_VERSION//./-}"
 
   echo -e "Installing flatpak drivers for version ${COLOR_GREEN}${DRIVER_VERSION}${COLOR_RESET}\n"
