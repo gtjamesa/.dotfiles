@@ -21,6 +21,12 @@ gbh() {
   git log "$1..$2" --oneline --pretty='%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ad) %C(bold blue)<%an>%Creset'
 }
 
+# Remove last commit and unstage changes
+gundo() {
+  git reset --soft HEAD~
+  git reset
+}
+
 # Cleans leftover git merged files without using "git clean -df"
 # This will ensure that any untracked files are not deleted
 git-clean-merge() {
