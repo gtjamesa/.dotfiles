@@ -27,6 +27,18 @@ gundo() {
   git reset
 }
 
+# Remove the default aliases provided by zsh
+unalias gunwip
+unalias gwip
+
+alias gunwip='git rev-list --max-count=1 --format="%s" HEAD | grep -q "wip:" && git reset HEAD~1'
+
+gwip() {
+  git add -A
+  git rm $(git ls-files --deleted) 2> /dev/null
+  git commit --no-verify --no-gpg-sign --message "wip: $1 [skip ci]"
+}
+
 # Cleans leftover git merged files without using "git clean -df"
 # This will ensure that any untracked files are not deleted
 git-clean-merge() {
