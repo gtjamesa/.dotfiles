@@ -39,6 +39,20 @@ gwip() {
   git commit --no-verify --no-gpg-sign --message "wip: $1 [skip ci]"
 }
 
+gtomain() {
+  CURRENT_BRANCH=$(git branch --show-current)
+
+  if [ "$CURRENT_BRANCH" != "master" ]; then
+    echo "You must be on the master branch to rename it to main"
+    return 1
+  fi
+
+  git branch -m master main
+  git fetch origin
+  git branch -u origin/main main
+  git remote set-head origin -a
+}
+
 # Cleans leftover git merged files without using "git clean -df"
 # This will ensure that any untracked files are not deleted
 git-clean-merge() {
