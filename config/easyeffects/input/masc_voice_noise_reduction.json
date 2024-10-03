@@ -78,7 +78,7 @@
                 },
                 "band2": {
                     "frequency": 425.0,
-                    "gain": -2.0,
+                    "gain": -4.41,
                     "mode": "BWC (MT)",
                     "mute": false,
                     "q": 0.9999999999999998,
@@ -89,7 +89,7 @@
                 },
                 "band3": {
                     "frequency": 3500.0,
-                    "gain": 3.0,
+                    "gain": -2.06,
                     "mode": "BWC (BT)",
                     "mute": false,
                     "q": 0.7,
@@ -100,7 +100,7 @@
                 },
                 "band4": {
                     "frequency": 9000.0,
-                    "gain": 2.0,
+                    "gain": -0.88,
                     "mode": "LRX (MT)",
                     "mute": false,
                     "q": 0.7,
@@ -140,7 +140,7 @@
                 },
                 "band2": {
                     "frequency": 425.0,
-                    "gain": -2.0,
+                    "gain": -4.41,
                     "mode": "BWC (MT)",
                     "mute": false,
                     "q": 0.9999999999999998,
@@ -151,7 +151,7 @@
                 },
                 "band3": {
                     "frequency": 3500.0,
-                    "gain": 3.0,
+                    "gain": -2.06,
                     "mode": "BWC (BT)",
                     "mute": false,
                     "q": 0.7,
@@ -162,7 +162,7 @@
                 },
                 "band4": {
                     "frequency": 9000.0,
-                    "gain": 2.0,
+                    "gain": -0.88,
                     "mode": "LRX (MT)",
                     "mute": false,
                     "q": 0.7,
@@ -237,7 +237,7 @@
             "bypass": false,
             "enable-vad": false,
             "input-gain": 0.0,
-            "model-path": "",
+            "model-name": "",
             "output-gain": 0.0,
             "release": 20.0,
             "vad-thres": 50.0,
