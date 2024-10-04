@@ -38,5 +38,8 @@ export PATH="$HOME/.kubescape/bin:$PATH"
 source $(brew --prefix)/opt/asdf/libexec/asdf.sh
 #$(brew --prefix)/share/zsh/site-functions
 
+# zoxide
+eval "$(zoxide init zsh)"
+
 # Custom Software
 export PATH="/opt:$PATH"
