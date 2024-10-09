@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ask() {
+confirm() {
   while true; do
     read -p "$1 (y/n) " -r
     REPLY=${REPLY:-"y"}

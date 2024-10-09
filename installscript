@@ -298,19 +298,19 @@ fix_wsl() {
 ask_options() {
   # Composer
   if [[ -z "$composer" ]]; then
-    ask "Do you want to install PHP/Composer?"
+    confirm "Do you want to install PHP/Composer?"
     composer=$?
   fi
 
   # Docker
   if [[ -z "$docker" ]]; then
-    ask "Do you want to install or configure Docker?"
+    confirm "Do you want to install or configure Docker?"
     docker=$?
   fi
 
   # GE Tracker
   if [[ -z "$getracker" ]]; then
-    ask "Do you want to install GE Tracker specific aliases?"
+    confirm "Do you want to install GE Tracker specific aliases?"
     getracker=$?
   fi
 }
