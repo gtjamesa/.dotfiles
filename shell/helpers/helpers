@@ -13,12 +13,18 @@ confirm() {
 }
 
 backup_file() {
-  if [[ -L $1 ]]; then
+  if [ -L "$1" ]; then
     echo "Removing symlink $1"
     rm -f "$1"
-  elif [[ -f $1 ]]; then
-    echo "Creating backup of $1"
-    mv "$1" "$1.bak"
+  elif [ -f "$1" ]; then
+    if [ -n "$2" ]; then
+      DST_FILE="$2/$(date +%Y%m%d)-$1"
+      echo "Copying $1 to $DST_FILE"
+      cp "$1" "$DST_FILE"
+    else
+      echo "Moving $1 to $1.bak"
+      mv "$1" "$1.bak"
+    fi
   fi
 }
 
