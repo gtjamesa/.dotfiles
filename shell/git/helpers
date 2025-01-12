@@ -65,6 +65,7 @@ git-clean-merge() {
 
 # Alias "git-clean-merge" to "gclm" if it doesn't already exist
 command -v gclm || alias gclm='git-clean-merge'
+command -v ghil || alias ghil='gh issue list'
 
 if ! command -v gtam &>/dev/null; then
   function gtam() {
