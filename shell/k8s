@@ -20,6 +20,18 @@ kubecli() {
   /bin/bash -c "kubectl run ${NAMESPACE} -it ${CONTAINER_NAME} --rm --image=alpine:3 --restart=Never -- /bin/sh"
 }
 
+kube-local-proxy() {
+  KUBE_LOCAL="k3s-local"
+  CURRENT_CTX=$(kubectx -c)
+
+  if [ "$CURRENT_CTX" != "$KUBE_LOCAL" ]; then
+    echo "Switching to $KUBE_LOCAL"
+    kubectx "$KUBE_LOCAL"
+  fi
+
+  kubectl -n argocd port-forward svc/argocd-server 8443:443
+}
+
 # Alias "k" to "kubectl" if it doesn't already exist
 command -v k || alias k='kubectl'
 
