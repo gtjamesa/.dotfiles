@@ -147,7 +147,8 @@ mount-synology() {
 }
 
 umount-synology() {
-  sudo umount /mnt/synology
+  MOUNT_PATH="${1:-/mnt/synology}"
+  sudo umount "$MOUNT_PATH"
 }
 
 rand-str() {
