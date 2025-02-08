@@ -23,13 +23,16 @@ kubecli() {
 kube-local-proxy() {
   KUBE_LOCAL="k3s-local"
   CURRENT_CTX=$(kubectx -c)
+  PORT=${1:-8443}
 
   if [ "$CURRENT_CTX" != "$KUBE_LOCAL" ]; then
     echo "Switching to $KUBE_LOCAL"
     kubectx "$KUBE_LOCAL"
   fi
 
-  kubectl -n argocd port-forward svc/argocd-server 8443:443
+  echo -e "\n${COLOR_GREEN}Access ArgoCD Web UI:${COLOR_RESET} ${COLOR_YELLOW}https://127.0.0.1:${PORT}${COLOR_RESET}\n"
+
+  kubectl -n argocd port-forward svc/argocd-server ${PORT}:443
 }
 
 # Alias "k" to "kubectl" if it doesn't already exist
