@@ -210,3 +210,36 @@ fclip() {
 
   ffmpeg -ss "$3" -to "$4" -i "$1" -async 1 "$2"
 }
+
+fconcat() {
+  if ! command -v ffmpeg &>/dev/null; then
+    echo "ffmpeg not installed"
+    return 1
+  fi
+
+  if [ -z "$3" ]; then
+    echo "Usage: fconcat <dst-file> <src-file1 [src-file2 src-file3]...>"
+    return 1
+  fi
+
+  TMPFILE=$(mktemp)
+  DST_PATH="$1"
+
+  for opt in "$@"; do
+    # if arg is the same as first argument, skip
+    if [ "$opt" != "$DST_PATH" ]; then
+      FILE_PATH="$opt"
+
+      # Prepend `pwd` if FILE_PATH is a relative path
+      if [[ "$FILE_PATH" != /* ]]; then
+        FILE_PATH="$(pwd)/${FILE_PATH}"
+      fi
+
+      echo "file '${FILE_PATH}'" >> "${TMPFILE}"
+    fi
+  done
+
+  ffmpeg -safe 0 -f concat -i "${TMPFILE}" -c copy "${DST_PATH}"
+
+  rm -f "${TMPFILE}"
+}
