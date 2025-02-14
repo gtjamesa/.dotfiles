@@ -23,7 +23,7 @@ aws-ssh() {
 alias aws-scp="rsync -Pav -e 'ssh -i ~/.ssh/getracker-aws'"
 
 ngrok-getracker() {
-  ngrok-docker getracker_appserver_1 80 getracker_default getracker
+  ngrok-docker getracker-legacy-web-1 80 getracker-legacy_app-net getracker
 }
 
 gt-cloc() {
