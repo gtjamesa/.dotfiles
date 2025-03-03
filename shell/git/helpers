@@ -41,13 +41,14 @@ gwip() {
 
 gtomain() {
   CURRENT_BRANCH=$(git branch --show-current)
+  MASTER_BRANCH=${1:-master}
 
-  if [ "$CURRENT_BRANCH" != "master" ]; then
-    echo "You must be on the master branch to rename it to main"
+  if [ "$CURRENT_BRANCH" != "$MASTER_BRANCH" ]; then
+    echo "You must be on the '${MASTER_BRANCH}' branch to rename it to main"
     return 1
   fi
 
-  git branch -m master main
+  git branch -m "$MASTER_BRANCH" main
   git fetch origin
   git branch -u origin/main main
   git remote set-head origin -a
