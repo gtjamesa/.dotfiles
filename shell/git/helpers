@@ -54,6 +54,33 @@ gtomain() {
   git remote set-head origin -a
 }
 
+# Sync local branch with remote (upstream)
+gsup() {
+  if ! command -v git_main_branch &>/dev/null; then
+    echo "git_main_branch function not found - are you using zsh with git plugin enabled?"
+    return 1
+  fi
+
+  UPSTREAM=${2:-upstream}
+  MASTER_BRANCH=$(git_main_branch)
+  CURRENT_BRANCH=$(git branch --show-current)
+  TARGET_BRANCH=${1:-"$MASTER_BRANCH"}
+
+  if [ -z "$1" ] || [ "$1" == "--help" ]; then
+      echo -e "Sync local branch ($CURRENT_BRANCH) with remote (upstream)\n"
+      echo "Usage: $0 [branch] [upstream]"
+      echo -e "\nbranch\t\tThe branch to sync with upstream (default: $MASTER_BRANCH)"
+      echo -e "upstream\tThe upstream remote to sync with (default: upstream)"
+      return 1
+    fi
+
+  echo "Syncing $CURRENT_BRANCH with $UPSTREAM/$TARGET_BRANCH"
+
+  git fetch "$UPSTREAM"
+  git rebase "$UPSTREAM/$TARGET_BRANCH"
+  git push
+}
+
 # Cleans leftover git merged files without using "git clean -df"
 # This will ensure that any untracked files are not deleted
 git-clean-merge() {
