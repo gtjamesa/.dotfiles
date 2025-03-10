@@ -69,7 +69,7 @@ gsup() {
   if [ -z "$1" ] || [ "$1" == "--help" ]; then
       echo -e "Sync local branch ($CURRENT_BRANCH) with remote (upstream)\n"
       echo "Usage: $0 [branch] [upstream]"
-      echo -e "\nbranch\t\tThe branch to sync with upstream (default: $MASTER_BRANCH)"
+      echo -e "\nbranch\t\tThe *remote* branch to sync from upstream (default: $MASTER_BRANCH)"
       echo -e "upstream\tThe upstream remote to sync with (default: upstream)"
       return 1
     fi
