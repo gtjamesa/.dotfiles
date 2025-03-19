@@ -186,3 +186,19 @@ nvidia-flatpak-update() {
 
   flatpak install --user flathub "org.freedesktop.Platform.GL.nvidia-${FLATPAK_VERSION}/x86_64" "org.freedesktop.Platform.GL32.nvidia-${FLATPAK_VERSION}/x86_64"
 }
+
+cl-help() {
+  echo -e "${COLOR_GREEN}build${COLOR_RESET}\t\t Changes that affect the build system or external dependencies (example scopes: gulp, broccoli, npm)"
+  echo -e "${COLOR_GREEN}chore${COLOR_RESET}\t\t Other changes that don't modify src or test files"
+  echo -e "${COLOR_GREEN}ci${COLOR_RESET}\t\t Changes to our CI configuration files and scripts (example scopes: Travis, Circle, BrowserStack, SauceLabs)"
+  echo -e "${COLOR_GREEN}docs${COLOR_RESET}\t\t Documentation only changes"
+  echo -e "${COLOR_GREEN}feat${COLOR_RESET}\t\t A new feature"
+  echo -e "${COLOR_GREEN}fix${COLOR_RESET}\t\t A bug fix"
+  echo -e "${COLOR_GREEN}perf${COLOR_RESET}\t\t A code change that improves performance"
+  echo -e "${COLOR_GREEN}refactor${COLOR_RESET}\t A code change that neither fixes a bug nor adds a feature"
+  echo -e "${COLOR_GREEN}revert${COLOR_RESET}\t\t Reverts a previous commit"
+  echo -e "${COLOR_GREEN}style${COLOR_RESET}\t\t Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)"
+  echo -e "${COLOR_GREEN}test${COLOR_RESET}\t\t Adding missing tests or correcting existing tests"
+  echo -e "${COLOR_GREEN}types${COLOR_RESET}\t\t Changes that affect the typescript type definitions"
+  echo -e "${COLOR_GREEN}wip${COLOR_RESET}\t\t Work in progress (should be removed before merging)"
+}
