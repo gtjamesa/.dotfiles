@@ -62,14 +62,22 @@ install-flathub-packages() {
     # text
     io.typora.Typora md.obsidian.Obsidian org.gnome.meld \
     # utility
-    com.github.tchx84.Flatseal com.getpostman.Postman org.flameshot.Flameshot \
+    com.github.tchx84.Flatseal com.getpostman.Postman org.flameshot.Flameshot io.github.pwr_solaar.solaar \
     # games
-    net.davidotek.pupgui2
+    net.davidotek.pupgui2 com.obsproject.Studio io.github.trigg.discover_overlay
   )
   flatpak install -y "${PACKAGES[@]}"
+}
+
+install-autostarts() {
+  SOLARR_AUTOSTART="$HOME/.config/autostart/solaar.desktop"
+  sudo wget https://github.com/pwr-Solaar/Solaar/raw/refs/heads/master/rules.d/42-logitech-unify-permissions.rules -O /etc/udev/rules.d/42-logitech-unify-permissions.rules
+  wget https://github.com/pwr-Solaar/Solaar/raw/refs/heads/master/share/autostart/solaar.desktop -O "$SOLARR_AUTOSTART"
+  sed -i 's/Exec=solaar/Exec=flatpak run io.github.pwr_solaar.solaar/' "$SOLARR_AUTOSTART"
 }
 
 # Run the desktop installer
 create-opt
 download-software
 install-flathub-packages
+install-autostarts
