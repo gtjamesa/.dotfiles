@@ -41,8 +41,20 @@ composer-unlink() {
 # Access Redis running inside docker-compose
 # Usage: redis-cli [filter]
 redis-cli() {
+  if [ "$1" == "--help" ]; then
+    echo "Usage: redis-cli [filter] [--short]"
+    return 0
+  fi
+
   [ -z "$1" ] && docker-compose exec redis redis-cli
-  [ -n "$1" ] && docker-compose exec redis redis-cli monitor | tee | grep "$1"
+
+  if [ -n "$1" ]; then
+    if [ "$2" == "--short" ]; then
+      docker-compose exec redis redis-cli monitor | tee | grep "$1" | awk '{print $4 $5}'
+    else
+      docker-compose exec redis redis-cli monitor | tee | grep "$1"
+    fi
+  fi
 }
 
 # PHP Compatibility checker
