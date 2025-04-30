@@ -50,7 +50,7 @@ redis-cli() {
 
   if [ -n "$1" ]; then
     if [ "$2" == "--short" ]; then
-      docker-compose exec redis redis-cli monitor | tee | grep "$1" | awk '{print $4 $5}'
+      docker-compose exec redis redis-cli monitor | tee | grep "$1" | awk '{print $4" "$5}'
     else
       docker-compose exec redis redis-cli monitor | tee | grep "$1"
     fi
