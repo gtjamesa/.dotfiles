@@ -15,6 +15,7 @@ alias yaw='docker-compose exec node yarn dev'
 alias yab='docker-compose exec node yarn build'
 alias yat='docker-compose exec node yarn test'
 alias tinker='docker-compose exec app php artisan tinker'
+alias app-bash='docker-compose exec app bash'
 alias vapor='php ./vendor/bin/vapor'
 
 alias sitespeed='docker run --rm -v "/mnt/d/Google Drive/Infrastructure:/sitespeed.io" sitespeedio/sitespeed.io:12.0.1 -b chrome'
@@ -181,22 +182,6 @@ lphp() {
   [ -z "$CMD_ARGS" ] && CMD_ARGS="bash"
 
   docker run --rm -it -v "$(pwd):/var/www" "getracker/php-base:${PHP_VERS}-dev_fpm" "${CMD_ARGS}"
-}
-
-nvidia-flatpak-update() {
-  VERSION_FILE=/proc/driver/nvidia/version
-
-  if [ ! -f "${VERSION_FILE}" ]; then
-    echo "Nvidia driver not found (${VERSION_FILE})"
-    return 1
-  fi
-
-  DRIVER_VERSION=$(awk '{print $8}' "${VERSION_FILE}" | head -1)
-  FLATPAK_VERSION="${DRIVER_VERSION//./-}"
-
-  echo -e "Installing flatpak drivers for version ${COLOR_GREEN}${DRIVER_VERSION}${COLOR_RESET}\n"
-
-  flatpak install --user flathub "org.freedesktop.Platform.GL.nvidia-${FLATPAK_VERSION}/x86_64" "org.freedesktop.Platform.GL32.nvidia-${FLATPAK_VERSION}/x86_64"
 }
 
 cl-help() {
