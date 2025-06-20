@@ -47,10 +47,15 @@ download-software() {
   # asciinema
   sudo apt-add-repository -y ppa:zanchey/asciinema
 
+  # FirefoxPWA
+  # https://github.com/filips123/PWAsForFirefox
+  curl -fsSL https://packagecloud.io/filips/FirefoxPWA/gpgkey | gpg --dearmor | sudo tee /usr/share/keyrings/firefoxpwa-keyring.gpg > /dev/null
+  echo "deb [signed-by=/usr/share/keyrings/firefoxpwa-keyring.gpg] https://packagecloud.io/filips/FirefoxPWA/any any main" | sudo tee /etc/apt/sources.list.d/firefoxpwa.list > /dev/null
+
   # Install configured software in one go if we can
   sudo apt update -y
   sudo apt install -y -f /tmp/1password-latest.deb /tmp/steam.deb /tmp/anydesk.deb
-  sudo apt install -y tableplus wine-installer asciinema
+  sudo apt install -y tableplus wine-installer asciinema firefoxpwa
 
   rm -f /tmp/1password-latest.deb /tmp/steam.deb /tmp/anydesk.deb
 }
