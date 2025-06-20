@@ -41,6 +41,9 @@ source_dir() {
 # fzf
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
+# autocompletions
+command -v tailscale &>/dev/null && source <(tailscale completion zsh)
+
 # User specified optional aliases
 #source_dir ~/.dotfiles/shell/optional
 [ -f ~/.dotfiles/shell/optional/getracker.sh ] && source ~/.dotfiles/shell/optional/getracker.sh
