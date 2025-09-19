@@ -4,3 +4,4 @@ shell/optional/*
 !shell/optional/.gitkeep
 test.txt
 dotfiles_bootstrap
+.idea
