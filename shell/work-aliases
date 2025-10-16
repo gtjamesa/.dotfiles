@@ -15,7 +15,7 @@ alias yaw='docker-compose exec node yarn dev'
 alias yab='docker-compose exec node yarn build'
 alias yat='docker-compose exec node yarn test'
 alias tinker='docker-compose exec app php artisan tinker'
-alias app-bash='docker-compose exec app bash'
+alias app-bash="docker-compose exec -u ${1:-1000} app bash"
 alias vapor='php ./vendor/bin/vapor'
 
 alias sitespeed='docker run --rm -v "/mnt/d/Google Drive/Infrastructure:/sitespeed.io" sitespeedio/sitespeed.io:12.0.1 -b chrome'

@@ -56,3 +56,9 @@ docker-bench() {
       --label docker_bench_security \
       docker-bench-security "$@"
 }
+
+#dc-running() {
+#  RUNNING=$(docker-compose ps --services --filter 'status=running')
+#
+#  if grep "$1"
+#}
