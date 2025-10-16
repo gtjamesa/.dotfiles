@@ -302,3 +302,19 @@ runelite-flatpak-update() {
   patch -b "$BINARY_PATH" < "$PATCH_FILE"
   rm -f "$PATCH_FILE"
 }
+
+install-gimp-ps-shortcuts() {
+  GIMP_DIR="$HOME/.config/GIMP/3.0"
+  BASE_URL="https://github.com/loloolooo/photoshop-keymap-for-gimp/raw/refs/heads/3.x"
+
+  if [ ! -d "$GIMP_DIR" ]; then
+    echo "GIMP config directory not found: $GIMP_DIR"
+    return 1
+  fi
+
+  backup_file "$GIMP_DIR/controllerrc"
+  backup_file "$GIMP_DIR/shortcutsrc"
+
+  wget -O "$GIMP_DIR/controllerrc" "${BASE_URL}/controllerrc"
+  wget -O "$GIMP_DIR/shortcutsrc" "${BASE_URL}/shortcutsrc"
+}
