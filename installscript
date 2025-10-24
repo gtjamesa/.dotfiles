@@ -332,7 +332,7 @@ run_installer() {
 
   # Install utils
   sudo apt update -y && sudo apt install -y \
-    build-essential curl file git wget vim curl jq zip unzip zstd
+    build-essential curl file git wget vim curl jq zip unzip zstd xclip
 
   #sudo apt install -y linux-headers-$(uname -r) dnsutils
 

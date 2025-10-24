@@ -11,6 +11,9 @@ elif [[ $(uname) == "Darwin" ]]; then
   eval "$(/usr/local/bin/brew shellenv)"
 fi
 
+# dotfiles bin
+export PATH="$HOME/.dotfiles/shell/bin:$PATH"
+
 # Composer
 export PATH="$HOME/.composer/vendor/bin:$PATH"
 

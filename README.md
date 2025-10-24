@@ -45,3 +45,7 @@ The main entrypoint to be included in your `.zshrc` file is listed below. *This 
 # Custom ZSH dotfiles
 [ -f ~/.dotfiles/shell/loader ] && source ~/.dotfiles/shell/loader
 ```
+
+## Notes
+
+- https://evanhahn.com/scripts-i-wrote-that-i-use-all-the-time/
