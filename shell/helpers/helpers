@@ -12,6 +12,18 @@ confirm() {
   done
 }
 
+confirm_zsh() {
+  while true; do
+    read -k 1 "?$1 (y/n) "
+    REPLY=${REPLY:-"y"}
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+      return 1
+    elif [[ $REPLY =~ ^[Nn]$ ]]; then
+      return 0
+    fi
+  done
+}
+
 backup_file() {
   if [ -L "$1" ]; then
     echo "Removing symlink $1"

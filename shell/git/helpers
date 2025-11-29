@@ -66,19 +66,24 @@ gsup() {
   CURRENT_BRANCH=$(git branch --show-current)
   TARGET_BRANCH=${1:-"$MASTER_BRANCH"}
 
-  if [ -z "$1" ] || [ "$1" == "--help" ]; then
-      echo -e "Sync local branch ($CURRENT_BRANCH) with remote (upstream)\n"
-      echo "Usage: $0 [branch] [upstream]"
-      echo -e "\nbranch\t\tThe *remote* branch to sync from upstream (default: $MASTER_BRANCH)"
-      echo -e "upstream\tThe upstream remote to sync with (default: upstream)"
-      return 1
-    fi
+  if [ "$1" == "--help" ]; then
+    echo -e "Sync local branch ($CURRENT_BRANCH) with remote (upstream)\n"
+    echo "Usage: $0 [branch] [upstream]"
+    echo -e "\nbranch\t\tThe *remote* branch to sync from upstream (default: $MASTER_BRANCH)"
+    echo -e "upstream\tThe upstream remote to sync with (default: upstream)"
+    return 1
+  fi
 
-  echo "Syncing $CURRENT_BRANCH with $UPSTREAM/$TARGET_BRANCH"
+  confirm_zsh "Do you want to sync the current branch (${CURRENT_BRANCH}) with ${UPSTREAM}/${TARGET_BRANCH}?"
+  DO_SYNC=$?
 
-  git fetch "$UPSTREAM"
-  git rebase "$UPSTREAM/$TARGET_BRANCH"
-  git push
+  if [ "$DO_SYNC" -eq 1 ]; then
+    echo "Syncing $CURRENT_BRANCH with $UPSTREAM/$TARGET_BRANCH"
+
+    git fetch "$UPSTREAM"
+    git rebase "$UPSTREAM/$TARGET_BRANCH"
+    git push
+  fi
 }
 
 # Cleans leftover git merged files without using "git clean -df"
