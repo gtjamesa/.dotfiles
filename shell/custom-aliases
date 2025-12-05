@@ -294,7 +294,7 @@ runelite-flatpak-update() {
   cp "$BINARY_PATH" "$BACKUP_PATH"
 
   # Download the latest version
-  flatpak update com.jagex.Launcher com.jagex.Launcher.ThirdParty.RuneLite
+  flatpak update -y com.jagex.Launcher com.jagex.Launcher.ThirdParty.RuneLite
 
   # Merge the changes
   PATCH_FILE=$(mktemp)
