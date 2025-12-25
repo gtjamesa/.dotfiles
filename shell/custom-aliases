@@ -260,6 +260,47 @@ nvidia-flatpak-update() {
   flatpak install --user flathub "org.freedesktop.Platform.GL.nvidia-${FLATPAK_VERSION}/x86_64" "org.freedesktop.Platform.GL32.nvidia-${FLATPAK_VERSION}/x86_64"
 }
 
+runelite-flatpak-link() {
+  BASE_DIR="$HOME/.var/app/com.adamcake.Bolt/data/bolt-launcher"
+  SCREENSHOT_DIR=""
+
+  if [ ! -d "$BASE_DIR" ]; then
+    echo -e "Bolt launcher directory not found: $BASE_DIR\n"
+    echo "Install: ${COLOR_BLUE}flatpak install --user -y flathub com.adamcake.Bolt${COLOR_RESET}"
+    return 1
+  fi
+
+  CURRENT_LINK=$(readlink -f "$HOME/.runelite")
+  if [ "$CURRENT_LINK" == "$BASE_DIR/.runelite" ]; then
+    echo "Runelite link already set to Bolt launcher directory"
+    return 0
+  fi
+
+  # Check if screenshots directory is a symlink
+  if [ -L "$HOME/.runelite/screenshots" ]; then
+    SCREENSHOT_DIR=$(readlink -f "$HOME/.runelite/screenshots")
+  fi
+
+  if [ -d "$HOME/.runelite" ] && [ ! -L "$HOME/.runelite" ]; then
+    BACKUP_DIR=".runelite-$(date +%Y%m%d).bak"
+    echo "Backing up existing .runelite directory to $HOME/$BACKUP_DIR"
+    mv "$HOME/.runelite" "$HOME/$BACKUP_DIR"
+  fi
+
+  # Link directories
+  ln -s "$BASE_DIR/.runelite" "$HOME/.runelite"
+
+  # Re-link screenshots directory if it was a symlink
+  if [ -n "$SCREENSHOT_DIR" ]; then
+    mv "$HOME/.runelite/screenshots" "$HOME/.runelite/screenshots.bak"
+    rm -rf "$HOME/.runelite/screenshots"
+    ln -s "$SCREENSHOT_DIR" "$HOME/.runelite/screenshots"
+  fi
+
+  echo ""
+  echo "Add 'xdg-pictures/RuneLite:create' filesystem permission in Flatseal for Bolt launcher to access screenshots"
+}
+
 runelite-flatpak-update() {
   BASE_DIR="$HOME/.local/share/flatpak/runtime/com.jagex.Launcher.ThirdParty.RuneLite/x86_64/stable/active/files"
   BINARY_PATH="$BASE_DIR/RuneLite.exe"
