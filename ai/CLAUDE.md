@@ -37,4 +37,8 @@ Description of the change
 
 ## Plans
 
-- At the end of each plan, give me a list of unresolved questions to answer, if any. Make the questions extremely concise. Sacrifice grammar for the sake of concision. 
+- At the end of each plan, give me a list of unresolved questions to answer, if any. Make the questions extremely concise. Sacrifice grammar for the sake of concision.
+
+## TDD
+
+- When a bug can't be reproduced in the test environment (e.g., Hermes-specific issues that don't manifest in Node.js/V8), acknowledge honestly: "Can't reproduce in Node.js — this is a targeted fix based on Sentry stacktrace" rather than pretending it's TDD. 
