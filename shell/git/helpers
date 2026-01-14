@@ -4,9 +4,9 @@
 
 gcom() {
   if [[ -n $(git branch --list main) ]]; then
-    git checkout main
+    git switch main
   else
-    git checkout master
+    git switch master
   fi
 }
 
