@@ -44,5 +44,8 @@ source $(brew --prefix)/opt/asdf/libexec/asdf.sh
 # zoxide
 eval "$(zoxide init zsh)"
 
+# claude
+export ENABLE_LSP_TOOL=1
+
 # Custom Software
 export PATH="/opt:$PATH"

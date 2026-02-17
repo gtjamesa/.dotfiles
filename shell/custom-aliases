@@ -8,7 +8,7 @@
 alias glo='git log --oneline'
 #alias gcom='git checkout master'
 
-alias llog='clear; tail -f -n 0 storage/logs/laravel-$(date +%F).log'
+alias llog='clear; touch storage/logs/laravel-$(date +%F).log; tail -f -n 0 storage/logs/laravel-$(date +%F).log'
 alias prettyjson='python -m json.tool'
 
 alias dc='docker-compose'
