@@ -1,0 +1,7 @@
+#!/bin/bash
+
+ai-agents-link() {
+  ln -s "$HOME/.dotfiles/ai/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
+  ln -s "$HOME/.dotfiles/ai/settings.json" "$HOME/.claude/settings.json"
+  ln -s "$HOME/.dotfiles/ai/.agents" "$HOME/.agents"
+}

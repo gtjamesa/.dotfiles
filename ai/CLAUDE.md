@@ -14,7 +14,7 @@ When I say to add a comment to a PR with a TODO on it, use the GitHub 'checkbox'
 
 ## Changesets
 
-To add a changeset, write a new file to the `changeset` directory.
+To add a changeset, write a new file to the `.changeset` directory.
 
 The file should be named `0000-your-change.md`. Decide yourself whether to make it a patch, minor, or major change.
 
