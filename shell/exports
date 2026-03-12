@@ -49,3 +49,4 @@ export ENABLE_LSP_TOOL=1
 
 # Custom Software
 export PATH="/opt:$PATH"
+export PATH=$PATH:$HOME/.maestro/bin
