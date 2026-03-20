@@ -53,7 +53,7 @@
       "mcp__ide__getDiagnostics"
     ]
   },
-  "model": "opus",
+  "model": "opus[1m]",
   "enabledPlugins": {
     "commit-commands@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
@@ -61,5 +61,6 @@
     "superpowers@superpowers-dev": true,
     "laravel-simplifier@laravel": true
   },
+  "voiceEnabled": false,
   "skipDangerousModePermissionPrompt": true
 }
