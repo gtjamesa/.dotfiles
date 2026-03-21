@@ -18,6 +18,15 @@
       "skillFolderHash": "4e4191389b0cbc87dc77090c2255c5495a0b26fa",
       "installedAt": "2026-02-11T12:32:13.144Z",
       "updatedAt": "2026-02-23T08:15:53.535Z"
+    },
+    "bruno-collection-generator": {
+      "source": "patricio0312rev/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/patricio0312rev/skills.git",
+      "skillPath": "testing/bruno-collection-generator/SKILL.md",
+      "skillFolderHash": "f2f5adf6d72385c386fc22bfc8fb16ce5aa792a1",
+      "installedAt": "2026-03-21T10:34:04.706Z",
+      "updatedAt": "2026-03-21T10:34:04.706Z"
     }
   },
   "dismissed": {
