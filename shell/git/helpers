@@ -2,8 +2,18 @@
 
 [ -f ~/.dotfiles/shell/git/p4merge ] && source ~/.dotfiles/shell/git/p4merge
 
+_git_main_worktree() {
+  git worktree list --porcelain | head -1 | sed 's/^worktree //'
+}
+
+_git_is_worktree() {
+  [[ "$(git rev-parse --git-dir)" != "$(git rev-parse --git-common-dir)" ]]
+}
+
 gcom() {
-  if [[ -n $(git branch --list main) ]]; then
+  if _git_is_worktree; then
+    cd "$(_git_main_worktree)"
+  elif [[ -n $(git branch --list main) ]]; then
     git switch main
   else
     git switch master
@@ -126,6 +136,12 @@ function gham() {
 
   if [ "$?" -eq 0 ]; then
     echo "PR merged successfully"
+
+    if _git_is_worktree; then
+      local wt_dir="$(pwd)"
+      cd "$(_git_main_worktree)"
+      git worktree remove "$wt_dir"
+    fi
   fi
 }
 
