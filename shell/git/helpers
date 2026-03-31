@@ -128,19 +128,27 @@ fi
 # approve and merge a PR
 function gham() {
   gh pr review -a "$1"
-  gh pr merge -d "$1"
 
-  if [ "$?" -ne 0 ]; then
-    gh pr merge -d --admin "$1"
-  fi
+  if _git_is_worktree; then
+    gh pr merge "$1" || gh pr merge --admin "$1"
 
-  if [ "$?" -eq 0 ]; then
-    echo "PR merged successfully"
-
-    if _git_is_worktree; then
+    if [ "$?" -eq 0 ]; then
+      echo "PR merged successfully"
       local wt_dir="$(pwd)"
+      local branch="$(git branch --show-current)"
       cd "$(_git_main_worktree)"
       git worktree remove "$wt_dir"
+      git push origin --delete "$branch" 2>/dev/null
+    fi
+  else
+    gh pr merge -d "$1"
+
+    if [ "$?" -ne 0 ]; then
+      gh pr merge -d --admin "$1"
+    fi
+
+    if [ "$?" -eq 0 ]; then
+      echo "PR merged successfully"
     fi
   fi
 }
