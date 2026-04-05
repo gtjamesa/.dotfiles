@@ -1,0 +1,6 @@
+[sie][Gate#0]
+attack=30
+bypass=true
+curveThreshold=-57
+release=600
+sidechainMode=1

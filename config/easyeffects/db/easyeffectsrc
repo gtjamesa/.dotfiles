@@ -1,0 +1,19 @@
+[Presets]
+lastLoadedInputPreset=G Pro X Custom
+
+[StreamInputs]
+inputDevice=alsa_input.usb-Logitech_PRO_X_000000000000-00.mono-fallback
+mostUsedPresets=G Pro X Custom,masc_voice_noise_reduction
+plugins=echo_canceller#0,speex#0,rnnoise#0,gate#0,equalizer#0,autogain#0,loudness#0,limiter#0
+useDefaultInputDevice=false
+usedPresets=G Pro X Custom:2,masc_voice_noise_reduction:1
+visiblePage=pluginsPage
+visiblePlugin=gate#0
+
+[StreamOutputs]
+outputDevice=alsa_output.pci-0000_0c_00.4.analog-stereo
+
+[Window]
+height=782
+visiblePage=pwPage
+width=1324
