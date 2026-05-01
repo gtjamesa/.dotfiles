@@ -61,6 +61,7 @@
     "superpowers@superpowers-dev": true,
     "laravel-simplifier@laravel": true
   },
-  "voiceEnabled": false,
-  "skipDangerousModePermissionPrompt": true
+  "skipDangerousModePermissionPrompt": true,
+  "skipAutoPermissionPrompt": true,
+  "voiceEnabled": false
 }
