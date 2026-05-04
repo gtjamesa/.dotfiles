@@ -199,3 +199,19 @@ cl-help() {
   echo -e "${COLOR_GREEN}types${COLOR_RESET}\t\t Changes that affect the typescript type definitions"
   echo -e "${COLOR_GREEN}wip${COLOR_RESET}\t\t Work in progress (should be removed before merging)"
 }
+
+create-npm-token() {
+  TOKEN_NAME="${1:-${PWD##*/} RW $(date +%Y%m%d)}"
+
+  echo -e "Creating ${COLOR_GREEN}${TOKEN_NAME}${COLOR_RESET}"
+
+  npm token create \
+    --name "$TOKEN_NAME" \
+    --bypass-2fa --expires 90 \
+    --orgs-permission read-write \
+    --orgs getracker \
+    --packages-and-scopes-permission read-write \
+    --scopes @getracker
+
+  gh secret set NPM_TOKEN
+}
