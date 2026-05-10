@@ -1,7 +1,15 @@
 #!/bin/bash
 
 asdf-reload() {
-  awk '{print $1}' "$HOME/.tool-versions" | xargs -I {} asdf plugin add {}
+  local desired current missing
+  desired=$(awk '{print $1}' "$HOME/.tool-versions" | sort -u)
+  current=$(asdf plugin list 2>/dev/null | sort -u)
+  missing=$(comm -23 <(echo "$desired") <(echo "$current"))
+
+  if [ -n "$missing" ]; then
+    echo "$missing" | xargs -I {} asdf plugin add {}
+  fi
+
   asdf plugin update --all
   asdf install
 
