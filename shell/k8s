@@ -35,8 +35,14 @@ kube-local-proxy() {
   kubectl -n argocd port-forward svc/argocd-server ${PORT}:443
 }
 
-# Alias "k" to "kubectl" if it doesn't already exist
-command -v k || alias k='kubectl'
+# Alias kubectl/k to kubecolor if installed, else fall back to kubectl
+if command -v kubecolor &>/dev/null; then
+  alias kubectl='kubecolor'
+  alias k='kubecolor'
+  compdef kubecolor=kubectl 2>/dev/null
+else
+  command -v k &>/dev/null || alias k='kubectl'
+fi
 
 # Add krew to path (https://krew.sigs.k8s.io/)
 export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
