@@ -201,17 +201,32 @@ cl-help() {
 }
 
 create-npm-token() {
+  if [[ "$1" == "--help" || "$1" == "-h" ]]; then
+    cat <<EOF
+Usage: create-npm-token [TOKEN_NAME]
+
+Creates a 90-day read-write npm token scoped to @getracker and sets it as
+the NPM_TOKEN GitHub Actions secret on the current repo.
+
+TOKEN_NAME defaults to "<dirname> RW <YYYYMMDD>".
+EOF
+    return 0
+  fi
+
   TOKEN_NAME="${1:-${PWD##*/} RW $(date +%Y%m%d)}"
 
   echo -e "Creating ${COLOR_GREEN}${TOKEN_NAME}${COLOR_RESET}"
 
-  npm token create \
+  if ! npm token create \
     --name "$TOKEN_NAME" \
     --bypass-2fa --expires 90 \
     --orgs-permission read-write \
     --orgs getracker \
     --packages-and-scopes-permission read-write \
-    --scopes @getracker
+    --scopes @getracker; then
+    echo -e "${COLOR_RED}npm token create failed; aborting${COLOR_RESET}" >&2
+    return 1
+  fi
 
   gh secret set NPM_TOKEN
 }
