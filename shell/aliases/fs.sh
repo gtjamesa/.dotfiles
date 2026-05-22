@@ -1,6 +1,6 @@
 #!/bin/bash
 
-alias prettyjson='python -m json.tool'
+alias prettyjson='python3 -m json.tool'
 
 function mdc() {
   mkdir -p "$1" && cd "$1"
