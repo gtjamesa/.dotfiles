@@ -218,7 +218,8 @@ install_wslu() {
 
 install_getracker() {
   if [[ "$getracker" -eq 1 ]]; then
-    symlink_file "$HOME/.dotfiles/shell/getracker" "$HOME/.dotfiles/shell/optional/getracker.sh"
+    source "$HOME/.dotfiles/shell/helpers/dotmod"
+    dotmod enable getracker
   fi
 }
 
