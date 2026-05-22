@@ -109,9 +109,10 @@ source $ZSH/oh-my-zsh.sh
 #
 ####
 
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+# moved to .zshenv
+#export NVM_DIR="$HOME/.nvm"
+#[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+#[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 # Automatically switch node version when an .nvmsh file is found
 # https://github.com/nvm-sh/nvm#zsh
@@ -135,5 +136,3 @@ load-nvmrc() {
 add-zsh-hook chpwd load-nvmrc
 load-nvmrc
 
-#eval "$(rbenv init --no-rehash zsh)"
-eval "$(rbenv init - zsh)"

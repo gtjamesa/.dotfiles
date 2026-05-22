@@ -95,6 +95,21 @@ install_homebrew() {
   fi
 }
 
+install_macos() {
+  # Enable hidden folders in Finder by default
+  defaults write com.apple.finder AppleShowAllFiles -boolean true
+
+  # Install nvm
+  # TODO: this should install the latest version
+  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+
+  # install rbenv / other tools
+  brew install rbenv htop zstd jq ccache openssl@1.1 openssl@3
+
+  gem install bundler
+  gem install cocapods
+}
+
 install_dotfiles() {
   # Add global gitignore
   symlink_file "$HOME/.dotfiles/shell/.global-gitignore" "$HOME/.global-gitignore"
@@ -112,6 +127,7 @@ run_installer() {
   install_homebrew
   install_zsh
   install_dotfiles
+  install_macos
   install_tmux
   install_fzf
 }

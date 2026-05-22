@@ -11,7 +11,8 @@ export PATH="$HOME/.local/bin:$HOME/.local:$PATH"
 if [[ $(uname) == "Linux" ]]; then
   eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 elif [[ $(uname) == "Darwin" ]]; then
-  eval "$(/usr/local/bin/brew shellenv)"
+  BREW=$(which brew)
+  eval "$($BREW shellenv)"
 fi
 
 # Node / Yarn
