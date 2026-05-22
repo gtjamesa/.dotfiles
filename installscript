@@ -233,7 +233,19 @@ install_macos() {
   # macOS dev tooling (zstd/jq come via apt on Linux)
   brew install rbenv htop zstd jq ccache openssl@1.1 openssl@3
 
-  # Ruby gems for iOS/macOS development
+  # Initialise rbenv and install the latest stable Ruby so `gem install`
+  # lands in rbenv's user-writable prefix (system Ruby on macOS is not
+  # gem-writable without sudo).
+  eval "$(rbenv init - bash)"
+  local ruby_ver
+  ruby_ver=$(rbenv install -l 2>/dev/null | grep -E '^[[:space:]]*[0-9.]+[[:space:]]*$' | tail -1 | tr -d '[:space:]')
+  if [ -n "$ruby_ver" ]; then
+    rbenv install -s "$ruby_ver"
+    rbenv global "$ruby_ver"
+    rbenv rehash
+  fi
+
+  # Ruby gems for iOS/macOS development (via rbenv's Ruby)
   gem install bundler
   gem install cocoapods
 }
