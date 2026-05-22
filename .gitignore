@@ -2,6 +2,10 @@ custom/*
 !custom/.gitkeep
 shell/optional/*
 !shell/optional/.gitkeep
+
+# npx skills externals - rebuilt from ai/.agents/.skill-lock.json by ai-sync
+ai/.agents/skills/
+
 test.txt
 dotfiles_bootstrap
 .idea

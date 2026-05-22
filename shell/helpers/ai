@@ -1,7 +1,135 @@
 #!/bin/bash
 
-ai-agents-link() {
-  ln -s "$HOME/.dotfiles/ai/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
-  ln -s "$HOME/.dotfiles/ai/settings.json" "$HOME/.claude/settings.json"
-  ln -s "$HOME/.dotfiles/ai/.agents" "$HOME/.agents"
+# Claude Code config lives in ~/.dotfiles/ai:
+#   CLAUDE.md / settings.json   - tracked, symlinked into ~/.claude
+#   skills/<name>/              - authored skills, tracked, symlinked into ~/.claude/skills
+#   .agents/.skill-lock.json    - tracked; lockfile for `npx skills` externals
+# `npx skills` copies external skills straight into ~/.claude/skills (not tracked);
+# ai-sync rebuilds them from the lockfile so machines stay in sync.
+_AI_DOTFILES="$HOME/.dotfiles/ai"
+
+# Ensure $2 is a symlink to $1, backing up whatever was there. Counts changes.
+_ai_link() {
+  local target="$1" link="$2"
+  if [ -L "$link" ] && [ "$(readlink "$link")" = "$target" ]; then
+    return 0
+  fi
+  symlink_file "$target" "$link"
+  echo "  linked $link -> $target"
+  _ai_changes=$(( ${_ai_changes:-0} + 1 ))
+}
+
+# Scaffold a new authored skill and link it into ~/.claude/skills
+ai-skill-new() {
+  local name="$1"
+  if [ -z "$name" ] || [ "$name" = "--help" ]; then
+    echo "Usage: ai-skill-new <skill-name>"
+    echo "Creates an authored skill in $_AI_DOTFILES/skills/<name> and links it into ~/.claude/skills"
+    return 1
+  fi
+  if ! [[ "$name" =~ ^[a-z0-9][a-z0-9-]*$ ]]; then
+    echo "Skill name must be lowercase kebab-case (a-z, 0-9, -)"
+    return 1
+  fi
+
+  local skill_dir="$_AI_DOTFILES/skills/$name"
+  if [ -e "$skill_dir" ]; then
+    echo "Skill already exists: $skill_dir"
+    return 1
+  fi
+
+  mkdir -p "$skill_dir" "$HOME/.claude/skills"
+  cat > "$skill_dir/SKILL.md" <<EOF
+---
+name: $name
+description: TODO - describe when this skill should be used
+---
+
+# $name
+
+TODO - write the skill instructions.
+EOF
+
+  _ai_link "$skill_dir" "$HOME/.claude/skills/$name"
+  echo "Created $skill_dir/SKILL.md"
+  echo "Edit the SKILL.md, then commit it in your dotfiles."
+}
+
+# Verify + repair the Claude Code config layout. Idempotent: safe to run on
+# any machine after pulling the dotfiles repo.
+ai-sync() {
+  if [ "$1" = "--help" ]; then
+    echo "Usage: ai-sync"
+    echo "Verifies and repairs the Claude Code layout: ~/.claude and ~/.agents"
+    echo "symlinks, authored skills, and external skills restored from the lockfile."
+    echo "Idempotent - safe to run on any machine after pulling the dotfiles repo."
+    return 0
+  fi
+
+  if [ ! -d "$_AI_DOTFILES" ]; then
+    echo "ai-sync: $_AI_DOTFILES not found - is the dotfiles repo cloned?"
+    return 1
+  fi
+
+  local claude_dir="$HOME/.claude"
+  local skills_dir="$claude_dir/skills"
+  local lock="$_AI_DOTFILES/.agents/.skill-lock.json"
+  _ai_changes=0
+
+  echo "ai-sync: checking layout"
+  mkdir -p "$skills_dir" "$_AI_DOTFILES/skills"
+
+  # Top-level symlinks into ~/.claude (and ~/.agents for the skills lockfile)
+  _ai_link "$_AI_DOTFILES/CLAUDE.md"     "$claude_dir/CLAUDE.md"
+  _ai_link "$_AI_DOTFILES/settings.json" "$claude_dir/settings.json"
+  _ai_link "$_AI_DOTFILES/.agents"       "$HOME/.agents"
+
+  # Restore external skills from the lockfile. `npx skills` copies each skill
+  # straight into ~/.claude/skills; a skill counts as installed once that path
+  # is a real folder with a SKILL.md (a symlink there is the old layout - drop it).
+  if [ -f "$lock" ] && command -v jq >/dev/null 2>&1; then
+    local src name dest
+    local -a missing
+    for src in $(jq -r '.skills[].source' "$lock" | sort -u); do
+      missing=()
+      for name in $(jq -r --arg s "$src" '.skills | to_entries[] | select(.value.source == $s) | .key' "$lock"); do
+        dest="$skills_dir/$name"
+        if [ -L "$dest" ] || [ ! -f "$dest/SKILL.md" ]; then
+          [ -L "$dest" ] && rm -f "$dest"
+          missing+=("$name")
+        fi
+      done
+      if [ ${#missing[@]} -gt 0 ]; then
+        echo "  restoring from $src: ${missing[*]}"
+        npx -y skills@latest add "$src" -g -a claude-code -s "${missing[@]}" -y
+        _ai_changes=$(( _ai_changes + ${#missing[@]} ))
+      fi
+    done
+  elif [ -f "$lock" ]; then
+    echo "  jq not found - skipping external skill restore"
+  fi
+
+  # Link authored skills into ~/.claude/skills
+  local d sname
+  for d in $(find "$_AI_DOTFILES/skills" -mindepth 1 -maxdepth 1 -type d 2>/dev/null); do
+    sname="$(basename "$d")"
+    _ai_link "$_AI_DOTFILES/skills/$sname" "$skills_dir/$sname"
+  done
+
+  # Drop stale (broken) skill symlinks
+  local link
+  for link in $(find "$skills_dir" -maxdepth 1 -type l 2>/dev/null); do
+    if [ ! -e "$link" ]; then
+      rm -f "$link"
+      echo "  removed stale link $link"
+      _ai_changes=$(( _ai_changes + 1 ))
+    fi
+  done
+
+  if [ "$_ai_changes" -eq 0 ]; then
+    echo "ai-sync: layout OK"
+  else
+    echo "ai-sync: $_ai_changes item(s) updated"
+  fi
+  unset _ai_changes
 }
