@@ -7,10 +7,14 @@ function mdc() {
 }
 
 fileinfo() {
-  local FILESIZE
-  local HASH
-  FILESIZE=$(stat --printf="%s" "$1")
-  HASH=$(sha256sum "$1" | awk -F' ' '{print $1}')
+  local FILESIZE HASH
+  if [ "$(uname)" = "Darwin" ]; then
+    FILESIZE=$(stat -f%z "$1")
+    HASH=$(shasum -a 256 "$1" | awk '{print $1}')
+  else
+    FILESIZE=$(stat --printf="%s" "$1")
+    HASH=$(sha256sum "$1" | awk '{print $1}')
+  fi
   echo "$1"
   echo "Filesize: ${FILESIZE}"
   echo -e "SHA256: ${HASH}\n"

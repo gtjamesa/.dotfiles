@@ -45,9 +45,10 @@ for opt in "$@"; do
 done
 
 detect_wsl() {
+  [ "$OS" == "Linux" ] || return 0
   [ -f /proc/sys/fs/binfmt_misc/WSLInterop ] && wsl2=1
-  grep -qi Microsoft /proc/version && wsl2=1
-  grep -qi Microsoft /proc/sys/kernel/osrelease && wsl2=1
+  grep -qi Microsoft /proc/version 2>/dev/null && wsl2=1
+  grep -qi Microsoft /proc/sys/kernel/osrelease 2>/dev/null && wsl2=1
 }
 
 # Install ohmyzsh
@@ -223,6 +224,20 @@ install_wslu() {
 #  fi
 }
 
+install_macos() {
+  # macOS-only setup — guarded by OS check in run_installer.
+
+  # Show hidden files in Finder
+  defaults write com.apple.finder AppleShowAllFiles -boolean true
+
+  # macOS dev tooling (zstd/jq come via apt on Linux)
+  brew install rbenv htop zstd jq ccache openssl@1.1 openssl@3
+
+  # Ruby gems for iOS/macOS development
+  gem install bundler
+  gem install cocoapods
+}
+
 install_getracker() {
   if [[ "$getracker" -eq 1 ]]; then
     source "$HOME/.dotfiles/shell/helpers/dotmod"
@@ -237,6 +252,11 @@ install_composer() {
 }
 
 install_docker() {
+  # Docker on macOS means Docker Desktop — install it manually, skip here
+  if [[ "$OS" == "Darwin" ]]; then
+    return 0
+  fi
+
   # Install Docker if enabled
   if [[ "$docker" -eq 1 ]]; then
     echo "Install Docker"
@@ -338,9 +358,11 @@ run_preinstall() {
 run_installer() {
   run_preinstall
 
-  # Install utils
-  sudo apt update -y && sudo apt install -y \
-    build-essential curl file git wget vim curl jq zip unzip zstd xclip
+  # Install utils (Linux)
+  if [[ "$OS" == "Linux" ]]; then
+    sudo apt update -y && sudo apt install -y \
+      build-essential curl file git wget vim curl jq zip unzip zstd xclip
+  fi
 
   #sudo apt install -y linux-headers-$(uname -r) dnsutils
 
@@ -353,6 +375,11 @@ run_installer() {
   install_python
   install_asdf
   install_wslu
+
+  # macOS-specific setup
+  if [[ "$OS" == "Darwin" ]]; then
+    install_macos
+  fi
 
   install_optional
   fix_wsl
