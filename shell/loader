@@ -47,8 +47,9 @@ source_dir ~/.dotfiles/shell/aliases
 # fzf
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-# autocompletions
-command -v tailscale &>/dev/null && source <(tailscale completion zsh)
+# autocompletions — cached to the omz completions dir (no per-shell subprocess)
+command -v tailscale &>/dev/null && [ ! -f "$HOME/.oh-my-zsh/completions/_tailscale" ] \
+  && tailscale completion zsh > "$HOME/.oh-my-zsh/completions/_tailscale"
 
 # User specified optional modules (symlinked here at install time)
 source_dir ~/.dotfiles/shell/optional
