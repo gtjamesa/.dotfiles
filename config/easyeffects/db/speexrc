@@ -1,0 +1,4 @@
+[sie][Speex#0]
+enableVad=true
+vadProbabilityContinue=80
+vadProbabilityStart=85
