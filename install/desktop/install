@@ -86,3 +86,7 @@ create-opt
 download-software
 install-flathub-packages
 install-autostarts
+
+# Enable desktop-only shell modules
+source "$HOME/.dotfiles/shell/helpers/dotmod"
+dotmod enable desktop-aliases audio installers
