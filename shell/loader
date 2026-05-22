@@ -2,14 +2,13 @@
 
 # Custom dotfiles loader script
 
-# Source all files inside a directory
+# Source all *.sh files in a directory (safe if dir is empty or missing)
 source_dir() {
-  echo "checking $1"
-
-  for file in "$1/*"; do
-    if [ -f "$file" ] ; then
-      . "$file"
-    fi
+  [ -d "$1" ] || return 0
+  [ -n "${ZSH_VERSION:-}" ] && setopt local_options null_glob
+  local file
+  for file in "$1"/*.sh; do
+    [ -f "$file" ] && [ -r "$file" ] && source "$file"
   done
 }
 
@@ -45,12 +44,8 @@ source_dir() {
 # autocompletions
 command -v tailscale &>/dev/null && source <(tailscale completion zsh)
 
-# User specified optional aliases
-#source_dir ~/.dotfiles/shell/optional
-[ -f ~/.dotfiles/shell/optional/getracker.sh ] && source ~/.dotfiles/shell/optional/getracker.sh
+# User specified optional modules (symlinked here at install time)
+source_dir ~/.dotfiles/shell/optional
 
-# User custom configuration
-#source_dir ~/.dotfiles/custom
-[ -f ~/.dotfiles/custom/secrets.sh ] && source ~/.dotfiles/custom/secrets.sh
-[ -f ~/.dotfiles/custom/exports.sh ] && source ~/.dotfiles/custom/exports.sh
-[ -f ~/.dotfiles/custom/aliases.sh ] && source ~/.dotfiles/custom/aliases.sh
+# User custom configuration (machine-local, gitignored)
+source_dir ~/.dotfiles/custom
