@@ -31,7 +31,7 @@ download-software() {
   wget https://downloads.1password.com/linux/debian/amd64/stable/1password-latest.deb -O /tmp/1password-latest.deb
 
   # Steam
-  wget https://cdn.cloudflare.steamstatic.com/client/installer/steam.deb -O /tmp/steam.deb
+  wget https://cdn.akamai.steamstatic.com/client/installer/steam.deb -O /tmp/steam.deb
 
   # Navicat Premium
   wget https://dn.navicat.com/download/navicat16-premium-en.AppImage -O /opt/apps/navicat.AppImage
