@@ -63,3 +63,6 @@ export ENABLE_LSP_TOOL=1
 # Custom Software
 export PATH="/opt:$PATH"
 export PATH=$PATH:$HOME/.maestro/bin
+
+# Sentinel — loader checks this to skip a redundant re-source on non-Darwin.
+export DOTFILES_EXPORTS_LOADED=1

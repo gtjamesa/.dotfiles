@@ -16,8 +16,11 @@ source_dir() {
 # Ensure omz completions directory exists
 [ -d "$HOME/.oh-my-zsh/completions" ] || mkdir -p "$HOME/.oh-my-zsh/completions"
 
-# Exports
-[ -f ~/.dotfiles/shell/exports ] && source ~/.dotfiles/shell/exports
+# Exports — .zshenv normally sources this first. Re-source on Darwin so brew
+# prepends survive macOS's /etc/zprofile path_helper reorder.
+if [ -z "${DOTFILES_EXPORTS_LOADED:-}" ] || [ "$(uname)" = "Darwin" ]; then
+  [ -f ~/.dotfiles/shell/exports ] && source ~/.dotfiles/shell/exports
+fi
 
 # Interactive tool init — kept out of exports so non-interactive shells stay fast
 command -v pyenv >/dev/null 2>&1 && eval "$(pyenv init -)"
