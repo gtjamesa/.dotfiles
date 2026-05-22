@@ -28,7 +28,12 @@ export NVM_DIR="$HOME/.nvm"
 if [ -d "$NVM_DIR/versions/node" ]; then
   _nvm_want=
   [ -r "$NVM_DIR/alias/default" ] && _nvm_want="$(cat "$NVM_DIR/alias/default")"
-  _nvm_node=$(command ls -1 "$NVM_DIR/versions/node" 2>/dev/null | grep -E "^v${_nvm_want#v}" | sort -V | tail -1)
+  # Follow alias chain (e.g. default -> lts/iron -> v20.18.0)
+  while [ -n "$_nvm_want" ] && [ -r "$NVM_DIR/alias/$_nvm_want" ]; do
+    _nvm_want="$(cat "$NVM_DIR/alias/$_nvm_want")"
+  done
+  # Anchor so v20 matches v20.x but not v200.x
+  _nvm_node=$(command ls -1 "$NVM_DIR/versions/node" 2>/dev/null | grep -E "^v${_nvm_want#v}(\.|$)" | sort -V | tail -1)
   [ -z "$_nvm_node" ] && _nvm_node=$(command ls -1 "$NVM_DIR/versions/node" 2>/dev/null | sort -V | tail -1)
   [ -n "$_nvm_node" ] && export PATH="$NVM_DIR/versions/node/$_nvm_node/bin:$PATH"
   unset _nvm_want _nvm_node
