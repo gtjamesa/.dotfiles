@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Pure environment + PATH only — sourced by .zshenv for every shell
+# (incl. non-interactive / Xcode). Slow tool init lives in loader, not here.
+
 # File editor
 export VISUAL=vim
 export EDITOR="$VISUAL"
@@ -18,6 +21,18 @@ export PATH="$HOME/.dotfiles/shell/bin:$PATH"
 export PATH="$HOME/.composer/vendor/bin:$PATH"
 
 # Node / Yarn
+# Put the active nvm node on PATH without sourcing the (slow) nvm.sh, so
+# non-interactive shells (Xcode build phases, cron) get `node`. loader still
+# loads full nvm for interactive use.
+export NVM_DIR="$HOME/.nvm"
+if [ -d "$NVM_DIR/versions/node" ]; then
+  _nvm_want=
+  [ -r "$NVM_DIR/alias/default" ] && _nvm_want="$(cat "$NVM_DIR/alias/default")"
+  _nvm_node=$(command ls -1 "$NVM_DIR/versions/node" 2>/dev/null | grep -E "^v${_nvm_want#v}" | sort -V | tail -1)
+  [ -z "$_nvm_node" ] && _nvm_node=$(command ls -1 "$NVM_DIR/versions/node" 2>/dev/null | sort -V | tail -1)
+  [ -n "$_nvm_node" ] && export PATH="$NVM_DIR/versions/node/$_nvm_node/bin:$PATH"
+  unset _nvm_want _nvm_node
+fi
 export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
 
 # pipx
@@ -27,22 +42,12 @@ export PATH="$HOME/.local/bin:$HOME/.local:$PATH"
 export GOPATH="$HOME/go"
 export PATH="/usr/local/go/bin:$GOPATH/bin:$PATH"
 
-# Python (pyenv)
+# Python (pyenv) — PATH only; `pyenv init` runs in loader (interactive)
 export PYENV_ROOT="$HOME/.pyenv"
 command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
-if command -v pyenv 1>/dev/null 2>&1; then
-  eval "$(pyenv init -)"
-fi
 
 # Kubernetes
 export PATH="$HOME/.kubescape/bin:$PATH"
-
-# asdf
-source $(brew --prefix)/opt/asdf/libexec/asdf.sh
-#$(brew --prefix)/share/zsh/site-functions
-
-# zoxide
-eval "$(zoxide init zsh)"
 
 # claude
 export ENABLE_LSP_TOOL=1

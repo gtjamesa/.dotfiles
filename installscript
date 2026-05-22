@@ -126,6 +126,9 @@ install_dotfiles() {
 
   # Add vimrc
   symlink_file "$HOME/.dotfiles/shell/.vimrc" "$HOME/.vimrc"
+
+  # Add zshenv (env for non-interactive / GUI / Xcode shells)
+  symlink_file "$HOME/.dotfiles/shell/.zshenv" "$HOME/.zshenv"
 }
 
 install_node() {

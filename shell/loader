@@ -17,6 +17,14 @@ source_dir() {
 
 # Exports
 [ -f ~/.dotfiles/shell/exports ] && source ~/.dotfiles/shell/exports
+
+# Interactive tool init — kept out of exports so non-interactive shells stay fast
+command -v pyenv >/dev/null 2>&1 && eval "$(pyenv init -)"
+_asdf="$(brew --prefix 2>/dev/null)/opt/asdf/libexec/asdf.sh"
+[ -f "$_asdf" ] && source "$_asdf"
+unset _asdf
+command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init zsh)"
+
 [ -f ~/.dotfiles/shell/helpers/colour ] && source ~/.dotfiles/shell/helpers/colour
 [ -f ~/.dotfiles/shell/nvm/nvm ] && source ~/.dotfiles/shell/nvm/nvm
 [ -f ~/.dotfiles/shell/js/bun ] && source ~/.dotfiles/shell/js/bun
