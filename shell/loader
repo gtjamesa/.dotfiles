@@ -48,9 +48,12 @@ source_dir ~/.dotfiles/shell/aliases
 # fzf
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-# autocompletions — cached to the omz completions dir (no per-shell subprocess)
-command -v tailscale &>/dev/null && [ ! -f "$HOME/.oh-my-zsh/completions/_tailscale" ] \
-  && tailscale completion zsh > "$HOME/.oh-my-zsh/completions/_tailscale"
+# autocompletions — cached to the omz completions dir (no per-shell subprocess).
+# Re-run compinit when we generate a new file so this shell picks it up.
+if command -v tailscale &>/dev/null && [ ! -f "$HOME/.oh-my-zsh/completions/_tailscale" ]; then
+  tailscale completion zsh > "$HOME/.oh-my-zsh/completions/_tailscale"
+  autoload -Uz compinit && compinit
+fi
 
 # User specified optional modules (symlinked here at install time)
 source_dir ~/.dotfiles/shell/optional
