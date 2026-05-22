@@ -19,13 +19,17 @@ dotmod() {
       for o in "$enabled"/*.sh; do [ -e "$o" ] && echo "  $(basename "$o" .sh)"; done
       ;;
     enable)
+      mkdir -p "$enabled"
       for o in "$@"; do
         if [ ! -f "$avail/$o.sh" ]; then
           echo "dotmod: no such module: $o" >&2
           continue
         fi
-        ln -sfn "$avail/$o.sh" "$enabled/$o.sh"
-        echo "enabled $o"
+        if ln -sfn "$avail/$o.sh" "$enabled/$o.sh"; then
+          echo "enabled $o"
+        else
+          echo "dotmod: failed to enable $o" >&2
+        fi
       done
       echo "— open a new shell to apply"
       ;;
