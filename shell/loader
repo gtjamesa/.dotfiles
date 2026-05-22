@@ -25,9 +25,8 @@ source_dir() {
 # Custom ZSH configuration
 [ -f ~/.dotfiles/shell/.zshrc.kali ] && source ~/.dotfiles/shell/.zshrc.kali
 
-# Custom aliases
-[ -f ~/.dotfiles/shell/custom-aliases ] && source ~/.dotfiles/shell/custom-aliases
-[ -f ~/.dotfiles/shell/work-aliases ] && source ~/.dotfiles/shell/work-aliases
+# Aliases (core domain files — always loaded)
+source_dir ~/.dotfiles/shell/aliases
 [ -f ~/.dotfiles/shell/git/helpers ] && source ~/.dotfiles/shell/git/helpers
 [ -f ~/.dotfiles/shell/k8s ] && source ~/.dotfiles/shell/k8s
 [ -f ~/.dotfiles/shell/helpers/asdf ] && source ~/.dotfiles/shell/helpers/asdf

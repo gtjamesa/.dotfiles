@@ -62,3 +62,7 @@ docker-bench() {
 #
 #  if grep "$1"
 #}
+
+alias dc='docker-compose'
+alias ctop='docker run --rm -ti --name=ctop --volume /var/run/docker.sock:/var/run/docker.sock:ro quay.io/vektorlab/ctop:latest'
+alias dive='docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock wagoodman/dive:latest'

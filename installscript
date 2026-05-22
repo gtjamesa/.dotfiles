@@ -208,6 +208,10 @@ install_wslu() {
 
   [ ! -f /usr/local/bin/xdg-open ] && sudo ln -s /usr/bin/wslview /usr/local/bin/xdg-open
 
+  # Enable the WSL shell module
+  source "$HOME/.dotfiles/shell/helpers/dotmod"
+  dotmod enable wsl
+
 #  function url_validator {
 #  if [[ "$*" =~ ^https?:\/\/ ]]; then
 #    return 0
