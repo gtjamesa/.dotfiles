@@ -30,7 +30,7 @@ backup_file() {
     rm -f "$1"
   elif [ -f "$1" ]; then
     if [ -n "$2" ]; then
-      DST_FILE="$2/$(date +%Y%m%d)-$1"
+      DST_FILE="$2/$(date +%Y%m%d)-$(basename "$1")"
       echo "Copying $1 to $DST_FILE"
       cp "$1" "$DST_FILE"
     else
