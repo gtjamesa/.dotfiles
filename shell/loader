@@ -34,7 +34,7 @@ command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init zsh)"
 [ -f ~/.dotfiles/shell/js/pnpm ] && source ~/.dotfiles/shell/js/pnpm
 
 # Custom ZSH configuration
-[ -f ~/.dotfiles/shell/.zshrc.kali ] && source ~/.dotfiles/shell/.zshrc.kali
+[ -f ~/.dotfiles/shell/zsh-interactive ] && source ~/.dotfiles/shell/zsh-interactive
 
 # Aliases (core domain files — always loaded)
 source_dir ~/.dotfiles/shell/aliases

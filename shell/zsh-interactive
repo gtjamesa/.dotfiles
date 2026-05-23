@@ -1,8 +1,7 @@
 #!/bin/bash
 
-# Kali defaults
-#
-# To be sourced into main ohmyzsh themes to not lose functionality
+# Interactive zsh niceties (setopts, completion, plugins, ls/less colors)
+# Originally lifted from Kali's default zshrc; sourced after the ohmyzsh theme.
 
 #setopt autocd              # change directory just by typing its name
 #setopt correct            # auto correct mistakes
