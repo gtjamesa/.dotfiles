@@ -133,9 +133,15 @@ install_dotfiles() {
 }
 
 install_node() {
-  # Install nvm package manager
+  # Install nvm package manager (latest release)
   # https://github.com/nvm-sh/nvm
-  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+  local nvm_version
+  nvm_version=$(curl -fsSL https://api.github.com/repos/nvm-sh/nvm/releases/latest | grep -oE '"tag_name":\s*"[^"]+"' | head -1 | sed -E 's/.*"([^"]+)"$/\1/')
+  if [ -z "$nvm_version" ]; then
+    echo "Failed to detect latest nvm version; falling back to v0.40.4" >&2
+    nvm_version="v0.40.4"
+  fi
+  curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/${nvm_version}/install.sh" | bash
 
   # Source some stuff
   [ -f "$HOME/.dotfiles/shell/nvm/nvm" ] && source "$HOME/.dotfiles/shell/nvm/nvm"
