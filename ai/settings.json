@@ -63,5 +63,6 @@
   "skipDangerousModePermissionPrompt": true,
   "skipAutoPermissionPrompt": true,
   "voiceEnabled": false,
-  "effortLevel": "xhigh"
+  "effortLevel": "xhigh",
+  "defaultMode": "auto"
 }
