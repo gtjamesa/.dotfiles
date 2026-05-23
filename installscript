@@ -150,8 +150,8 @@ install_node() {
   # Symlink the default-packages file
   symlink_file "$HOME/.dotfiles/shell/nvm/default-packages" "$NVM_DIR/default-packages"
 
-  # Install Node 20
-  nvm install 20
+  # Install Node 24
+  nvm install 24
 
   # Install pnpm
   dotfiles-install-pnpm
