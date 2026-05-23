@@ -156,11 +156,6 @@ install_node() {
   # Install pnpm
   dotfiles-install-pnpm
 
-  # Install bun
-  curl -fsSL https://bun.sh/install | bash
-  [ -f "$HOME/.dotfiles/shell/js/bun" ] && source "$HOME/.dotfiles/shell/js/bun"
-  command -v bun-configure && bun-configure
-
   # Install release-it
   pnpm add -g release-it
 }

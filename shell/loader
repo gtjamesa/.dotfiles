@@ -31,7 +31,6 @@ command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init zsh)"
 
 [ -f ~/.dotfiles/shell/helpers/colour ] && source ~/.dotfiles/shell/helpers/colour
 [ -f ~/.dotfiles/shell/nvm/nvm ] && source ~/.dotfiles/shell/nvm/nvm
-[ -f ~/.dotfiles/shell/js/bun ] && source ~/.dotfiles/shell/js/bun
 [ -f ~/.dotfiles/shell/js/pnpm ] && source ~/.dotfiles/shell/js/pnpm
 
 # Custom ZSH configuration
