@@ -25,7 +25,11 @@ OS="$(uname)"
 if [[ "$OS" == "Linux" ]]; then
   SHARE_PATH="/usr/share"
 elif [[ "$OS" == "Darwin" ]]; then
-  SHARE_PATH="/usr/local/share"
+  if [ -d /opt/homebrew/share ]; then
+    SHARE_PATH="/opt/homebrew/share"
+  else
+    SHARE_PATH="/usr/local/share"
+  fi
 fi
 
 # enable syntax-highlighting
