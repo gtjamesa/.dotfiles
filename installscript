@@ -141,25 +141,24 @@ install_dotfiles() {
 }
 
 install_node() {
-  # Install nvm package manager (latest release)
-  # https://github.com/nvm-sh/nvm
-  local nvm_version
-  nvm_version=$(curl -fsSL https://api.github.com/repos/nvm-sh/nvm/releases/latest | grep -oE '"tag_name":\s*"[^"]+"' | head -1 | sed -E 's/.*"([^"]+)"$/\1/')
-  if [ -z "$nvm_version" ]; then
-    echo "Failed to detect latest nvm version; falling back to v0.40.4" >&2
-    nvm_version="v0.40.4"
-  fi
-  curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/${nvm_version}/install.sh" | bash
+  # Install fnm (Fast Node Manager). The official installer uses brew on macOS
+  # and downloads a binary on Linux; --skip-shell stops it editing .zshrc
+  # (loader handles fnm init itself).
+  # https://github.com/Schniz/fnm
+  curl -fsSL https://fnm.vercel.app/install | bash -s -- --skip-shell
 
-  # Source some stuff
-  [ -f "$HOME/.dotfiles/shell/nvm/nvm" ] && source "$HOME/.dotfiles/shell/nvm/nvm"
+  # Make fnm reachable in this script (Linux installer drops it in ~/.local/share/fnm)
+  export PATH="$HOME/.local/share/fnm:$PATH"
+
+  # Bring up fnm env for the rest of the installer
+  eval "$(fnm env --shell bash)"
+
+  # Install latest LTS node and set as default
+  fnm install --lts
+  fnm default "$(fnm current)"
+
+  # Source pnpm helper now that node is on PATH
   [ -f "$HOME/.dotfiles/shell/js/pnpm" ] && source "$HOME/.dotfiles/shell/js/pnpm"
-
-  # Symlink the default-packages file
-  symlink_file "$HOME/.dotfiles/shell/nvm/default-packages" "$NVM_DIR/default-packages"
-
-  # Install Node 24
-  nvm install 24
 
   # Install pnpm
   dotfiles-install-pnpm

@@ -24,24 +24,13 @@ export PATH="$HOME/.dotfiles/shell/bin:$PATH"
 # Composer
 export PATH="$HOME/.composer/vendor/bin:$PATH"
 
-# Node / Yarn
-# Put the active nvm node on PATH without sourcing the (slow) nvm.sh, so
-# non-interactive shells (Xcode build phases, cron) get `node`. loader still
-# loads full nvm for interactive use.
-export NVM_DIR="$HOME/.nvm"
-if [ -d "$NVM_DIR/versions/node" ]; then
-  _nvm_want=
-  [ -r "$NVM_DIR/alias/default" ] && _nvm_want="$(cat "$NVM_DIR/alias/default")"
-  # Follow alias chain (e.g. default -> lts/iron -> v20.18.0)
-  while [ -n "$_nvm_want" ] && [ -r "$NVM_DIR/alias/$_nvm_want" ]; do
-    _nvm_want="$(cat "$NVM_DIR/alias/$_nvm_want")"
-  done
-  # Anchor so v20 matches v20.x but not v200.x
-  _nvm_node=$(command ls -1 "$NVM_DIR/versions/node" 2>/dev/null | grep -E "^v${_nvm_want#v}(\.|$)" | sort -V | tail -1)
-  [ -z "$_nvm_node" ] && _nvm_node=$(command ls -1 "$NVM_DIR/versions/node" 2>/dev/null | sort -V | tail -1)
-  [ -n "$_nvm_node" ] && export PATH="$NVM_DIR/versions/node/$_nvm_node/bin:$PATH"
-  unset _nvm_want _nvm_node
-fi
+# Node / Yarn — fnm (Fast Node Manager)
+# Put fnm's default node on PATH without invoking the fnm binary, so
+# non-interactive shells (Xcode build phases, cron) get `node` for free.
+# loader runs the full `fnm env` for interactive shells.
+export FNM_DIR="$HOME/.local/share/fnm"
+[ -x "$FNM_DIR/aliases/default/bin/node" ] && \
+  export PATH="$FNM_DIR/aliases/default/bin:$PATH"
 export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
 
 # pipx

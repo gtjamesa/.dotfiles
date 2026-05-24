@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# fnm — interactive setup. exports already puts the default node on PATH for
+# non-interactive shells; this adds the chpwd hook for .nvmrc / .node-version
+# / package.json engines auto-switching.
+command -v fnm >/dev/null 2>&1 || return 0
+
+eval "$(fnm env --use-on-cd --shell zsh)"
