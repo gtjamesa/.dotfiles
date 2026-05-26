@@ -44,6 +44,7 @@ source_dir ~/.dotfiles/shell/aliases
 [ -f ~/.dotfiles/shell/helpers/dotfiles ] && source ~/.dotfiles/shell/helpers/dotfiles
 [ -f ~/.dotfiles/shell/helpers/dotmod ] && source ~/.dotfiles/shell/helpers/dotmod
 [ -f ~/.dotfiles/shell/helpers/helpers ] && source ~/.dotfiles/shell/helpers/helpers
+[ -f ~/.dotfiles/shell/helpers/distro ] && source ~/.dotfiles/shell/helpers/distro
 [ -f ~/.dotfiles/shell/helpers/rust ] && source ~/.dotfiles/shell/helpers/rust
 [ -f ~/.dotfiles/shell/helpers/ai ] && source ~/.dotfiles/shell/helpers/ai
 
