@@ -1,8 +1,13 @@
 #!/bin/bash
 
 cloneRepo() {
-  # Install Git
-  sudo apt update -y && sudo apt install -y git
+  # Install Git — distro helper doesn't exist yet (git clone brings it down),
+  # so sniff the package manager inline
+  if command -v dnf >/dev/null; then
+    sudo dnf install -y git
+  else
+    sudo apt update -y && sudo apt install -y git
+  fi
 
   # Clone repository
   if [[ ! -d ~/.dotfiles ]]; then
