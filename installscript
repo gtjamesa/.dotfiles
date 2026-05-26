@@ -2,6 +2,7 @@
 
 # Load helper functions
 source "$HOME/.dotfiles/shell/helpers/helpers"
+source "$HOME/.dotfiles/shell/helpers/distro"
 
 OS="$(uname)"
 wsl2=0
@@ -60,11 +61,11 @@ detect_wsl() {
 install_zsh() {
   echo "Installing zsh"
   echo "--------------------"
-  if [[ "$OS" == "Linux" ]]; then
-    sudo apt install -y zsh
-  elif [[ "$OS" == "Darwin" ]]; then
-    brew install zsh
-  fi
+  case "$DOTFILES_PKG" in
+    apt)  sudo apt install -y zsh ;;
+    dnf)  sudo dnf install -y zsh ;;
+    brew) brew install zsh ;;
+  esac
 
   echo "Installing ohmyzsh"
   echo "--------------------"
@@ -173,19 +174,29 @@ install_python() {
 
   # Install Python build dependencies
   # https://github.com/pyenv/pyenv/wiki#suggested-build-environment
-  if [[ $(uname) == "Linux" ]]; then
-    # Ensure that OpenSSL v1.1 is not installed via Brew
-    # as this will cause Python 3.10 install to fail
-    brew uninstall --ignore-dependencies --force openssl@1.1
+  case "$DOTFILES_PKG" in
+    apt)
+      # OpenSSL v1.1 from brew conflicts with Python 3.10 build on Linux
+      brew uninstall --ignore-dependencies --force openssl@1.1 2>/dev/null || true
 
-    sudo apt update -y && sudo apt install -y \
-      make build-essential libssl-dev zlib1g-dev \
-      libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
-      libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev \
-      python3.10-dev openssl
-  elif [[ $(uname) == "Darwin" ]]; then
-    brew install openssl readline sqlite3 xz zlib tcl-tk
-  fi
+      sudo apt update -y
+      sudo apt install -y \
+        make build-essential libssl-dev zlib1g-dev \
+        libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
+        libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev \
+        python3.10-dev openssl
+      ;;
+    dnf)
+      sudo dnf install -y \
+        @development-tools openssl-devel zlib-devel \
+        bzip2-devel readline-devel sqlite-devel wget curl llvm \
+        ncurses-devel xz xz-devel tk-devel libxml2-devel xmlsec1-devel libffi-devel \
+        openssl
+      ;;
+    brew)
+      brew install openssl readline sqlite3 xz zlib tcl-tk
+      ;;
+  esac
 
   pyenv install 2.7
   pyenv install 3.10
@@ -214,9 +225,16 @@ install_wslu() {
   fi
 
   # https://github.com/wslutilities/wslu
-  sudo add-apt-repository -y ppa:wslutilities/wslu
-  sudo apt update -y
-  sudo apt install -y wslu
+  case "$DOTFILES_PKG" in
+    apt)
+      sudo add-apt-repository -y ppa:wslutilities/wslu
+      sudo apt update -y
+      sudo apt install -y wslu
+      ;;
+    dnf)
+      sudo dnf install -y wslu
+      ;;
+  esac
 
   [ ! -f /usr/local/bin/xdg-open ] && sudo ln -s /usr/bin/wslview /usr/local/bin/xdg-open
 
@@ -281,36 +299,28 @@ install_docker() {
   if [[ "$docker" -eq 1 ]]; then
     echo "Install Docker"
 
-    # Not running in WSL 2
-    if [[ "$wsl2" -eq 0 ]]; then
-      sudo apt install -y docker.io docker-doc
-    else
-      SYS_VERS=$(grep VERSION_ID /etc/os-release | awk -F'"' '{print $2}')
-
-      echo "-----------------------------------------------"
-      echo "Installing Docker in WSL 2"
-      echo "Ensure to select 'iptables-legacy' when prompted"
-      echo "-----------------------------------------------"
-
-      # Enable systemd
-      if [ ! -f /etc/wsl.conf ]; then
-        cat <<EOF | sudo tee /etc/wsl.conf
+    # WSL 2 prep: enable systemd
+    if [[ "$wsl2" -eq 1 ]] && [ ! -f /etc/wsl.conf ]; then
+      cat <<EOF | sudo tee /etc/wsl.conf
 [boot]
 systemd=true
 EOF
-      fi
+    fi
 
-      # https://nickjanetakis.com/blog/install-docker-in-wsl-2-without-docker-desktop
-      # https://dev.to/bowmanjd/install-docker-on-windows-wsl-without-docker-desktop-34m9
-      curl -fsSL https://get.docker.com -o /tmp/get-docker.sh
-      sudo bash /tmp/get-docker.sh
+    # Upstream installer handles both apt and dnf distros, including
+    # repo setup and signing keys. Replaces the previous apt-only path.
+    # https://docs.docker.com/engine/install/
+    curl -fsSL https://get.docker.com -o /tmp/get-docker.sh
+    sudo bash /tmp/get-docker.sh
+    rm -f /tmp/get-docker.sh
 
+    # Ubuntu 22.04 + WSL 2 needs iptables-legacy. Fedora uses nftables; never needed.
+    if [[ "$wsl2" -eq 1 ]] && [ "$DOTFILES_DISTRO" = debian ]; then
+      SYS_VERS=$(grep VERSION_ID /etc/os-release | awk -F'"' '{print $2}')
       if [[ "$SYS_VERS" == "22.04" ]]; then
         echo -e "\033[0;33mEnsure to select 'iptables-legacy' when prompted\033[0m"
         sudo update-alternatives --config iptables
       fi
-
-      rm -f /tmp/get-docker.sh
     fi
 
     # Install docker-compose
@@ -379,10 +389,17 @@ run_installer() {
   run_preinstall
 
   # Install utils (Linux)
-  if [[ "$OS" == "Linux" ]]; then
-    sudo apt update -y && sudo apt install -y \
-      build-essential curl file git wget vim curl jq zip unzip zstd xclip
-  fi
+  case "$DOTFILES_PKG" in
+    apt)
+      sudo apt update -y
+      sudo apt install -y \
+        build-essential curl file git wget vim jq zip unzip zstd xclip
+      ;;
+    dnf)
+      sudo dnf install -y \
+        @development-tools curl file git wget vim jq zip unzip zstd xclip wl-clipboard
+      ;;
+  esac
 
   #sudo apt install -y linux-headers-$(uname -r) dnsutils
 
