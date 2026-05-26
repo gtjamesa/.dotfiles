@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source "$HOME/.dotfiles/shell/helpers/distro"
+
 SMB_CONF_FILE="/etc/samba/smb.conf"
 
 smb_conf() {
@@ -40,14 +42,27 @@ read PASSWORD
 stty echo
 echo -e "\n"
 
-sudo apt install -y samba
+case "$DOTFILES_PKG" in
+  apt) sudo apt install -y samba ;;
+  dnf) sudo dnf install -y samba ;;
+esac
 create_smb_share
 
 # Create local SMB user
 echo -e "${PASSWORD}\n${PASSWORD}\n" | sudo smbpasswd -L -a ${USERNAME}
 # Enable the user
 sudo smbpasswd -L -e ${USERNAME}
-sudo service smbd restart
+
+# Fedora's unit is `smb`, Debian's is `smbd` — pick whichever exists
+if systemctl list-unit-files | grep -q '^smbd\.service'; then
+  sudo systemctl restart smbd
+else
+  sudo systemctl restart smb
+fi
+
+# Fedora SELinux blocks Samba from serving $HOME by default — flip the
+# persistent policy boolean so the share at path=$HOME actually works
+[ "$DOTFILES_DISTRO" = fedora ] && sudo setsebool -P samba_enable_home_dirs on
 
 # Show instructions
 exec ./map

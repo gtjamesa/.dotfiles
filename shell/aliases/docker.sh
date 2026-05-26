@@ -16,11 +16,12 @@ docker-backup() {
 }
 
 docker-bench() {
-  DSRV="/lib/systemd/system/docker.service"
   DEST="$HOME/.cache/docker-bench-security"
 
-  if [[ ! -f "$DSRV" ]]; then
-    echo "Docker is not installed to ${DSRV}"
+  # Ask systemd where docker.service lives instead of hard-coding
+  # /lib/systemd/system/ (Debian) vs /usr/lib/systemd/system/ (Fedora)
+  if ! systemctl cat docker.service &>/dev/null; then
+    echo "Docker is not installed"
     return 1
   fi
 
