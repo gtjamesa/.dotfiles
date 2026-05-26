@@ -1,8 +1,13 @@
 #!/bin/bash
 
+source "$HOME/.dotfiles/shell/helpers/distro"
+
 # Check to see if the php executable is in the user's path
 if [[ -z $(which php) ]]; then
-  sudo apt install -y php8.2 php8.2-cli php8.2-common php8.2-opcache php8.2-readline
+  case "$DOTFILES_PKG" in
+    apt) sudo apt install -y php8.3 php8.3-cli php8.3-common php8.3-opcache php8.3-readline ;;
+    dnf) sudo dnf install -y php php-cli php-common php-opcache php-readline ;;
+  esac
 fi
 
 COMPOSER_PATH="/usr/local/bin/composer"
