@@ -160,11 +160,8 @@ install_node() {
   # Source pnpm helper now that node is on PATH
   [ -f "$HOME/.dotfiles/shell/js/pnpm" ] && source "$HOME/.dotfiles/shell/js/pnpm"
 
-  # Install pnpm
-  dotfiles-install-pnpm
-
-  # Install release-it
-  pnpm add -g release-it
+  # Install pnpm, yarn and release-it
+  dotfiles-install-node-pms
 }
 
 install_python() {
