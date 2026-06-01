@@ -1,8 +1,7 @@
 #!/bin/bash
 
-# Kali defaults
-#
-# To be sourced into main ohmyzsh themes to not lose functionality
+# Interactive zsh niceties (setopts, completion, plugins, ls/less colors)
+# Originally lifted from Kali's default zshrc; sourced after the ohmyzsh theme.
 
 #setopt autocd              # change directory just by typing its name
 #setopt correct            # auto correct mistakes
@@ -25,7 +24,11 @@ OS="$(uname)"
 if [[ "$OS" == "Linux" ]]; then
   SHARE_PATH="/usr/share"
 elif [[ "$OS" == "Darwin" ]]; then
-  SHARE_PATH="/usr/local/share"
+  if [ -d /opt/homebrew/share ]; then
+    SHARE_PATH="/opt/homebrew/share"
+  else
+    SHARE_PATH="/usr/local/share"
+  fi
 fi
 
 # enable syntax-highlighting

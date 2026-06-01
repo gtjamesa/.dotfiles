@@ -1,14 +1,21 @@
 #!/bin/bash
 
+# Pure environment + PATH only — sourced by .zshenv for every shell
+# (incl. non-interactive / Xcode). Slow tool init lives in loader, not here.
+
 # File editor
 export VISUAL=vim
 export EDITOR="$VISUAL"
 
-# Linuxbrew
+# Homebrew (Linux: linuxbrew; macOS: Apple Silicon /opt/homebrew, Intel /usr/local)
 if [[ $(uname) == "Linux" ]]; then
-  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+  [ -x /home/linuxbrew/.linuxbrew/bin/brew ] && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 elif [[ $(uname) == "Darwin" ]]; then
-  eval "$(/usr/local/bin/brew shellenv)"
+  if [ -x /opt/homebrew/bin/brew ]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+  elif [ -x /usr/local/bin/brew ]; then
+    eval "$(/usr/local/bin/brew shellenv)"
+  fi
 fi
 
 # dotfiles bin
@@ -17,7 +24,16 @@ export PATH="$HOME/.dotfiles/shell/bin:$PATH"
 # Composer
 export PATH="$HOME/.composer/vendor/bin:$PATH"
 
-# Node / Yarn
+# Node / Yarn — fnm (Fast Node Manager)
+# Put fnm's default node on PATH without invoking the fnm binary, so
+# non-interactive shells (Xcode build phases, cron) get `node` for free.
+# loader runs the full `fnm env` for interactive shells.
+# On Linux the --skip-shell installer drops fnm at $FNM_DIR/fnm; on macOS
+# brew puts it on PATH already, so the check below just no-ops.
+export FNM_DIR="$HOME/.local/share/fnm"
+[ -x "$FNM_DIR/fnm" ] && export PATH="$FNM_DIR:$PATH"
+[ -x "$FNM_DIR/aliases/default/bin/node" ] && \
+  export PATH="$FNM_DIR/aliases/default/bin:$PATH"
 export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
 
 # pipx
@@ -27,22 +43,15 @@ export PATH="$HOME/.local/bin:$HOME/.local:$PATH"
 export GOPATH="$HOME/go"
 export PATH="/usr/local/go/bin:$GOPATH/bin:$PATH"
 
-# Python (pyenv)
+# Rust (cargo)
+[ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
+
+# Python (pyenv) — PATH only; `pyenv init` runs in loader (interactive)
 export PYENV_ROOT="$HOME/.pyenv"
 command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
-if command -v pyenv 1>/dev/null 2>&1; then
-  eval "$(pyenv init -)"
-fi
 
 # Kubernetes
 export PATH="$HOME/.kubescape/bin:$PATH"
-
-# asdf
-source $(brew --prefix)/opt/asdf/libexec/asdf.sh
-#$(brew --prefix)/share/zsh/site-functions
-
-# zoxide
-eval "$(zoxide init zsh)"
 
 # claude
 export ENABLE_LSP_TOOL=1
@@ -50,3 +59,6 @@ export ENABLE_LSP_TOOL=1
 # Custom Software
 export PATH="/opt:$PATH"
 export PATH=$PATH:$HOME/.maestro/bin
+
+# Sentinel — loader checks this to skip a redundant re-source on non-Darwin.
+export DOTFILES_EXPORTS_LOADED=1

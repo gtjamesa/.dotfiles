@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# dotmod — enable/disable optional shell modules.
+# Sources live in shell/optional-available/ (tracked); enabling a module
+# symlinks it into shell/optional/ (machine-local), where loader glob-sources it.
+
+dotmod() {
+  local avail="$HOME/.dotfiles/shell/optional-available"
+  local enabled="$HOME/.dotfiles/shell/optional"
+  local cmd="$1" o
+  shift 2>/dev/null
+  [ -n "${ZSH_VERSION:-}" ] && setopt local_options null_glob
+
+  case "$cmd" in
+    list)
+      echo "available:"
+      for o in "$avail"/*.sh;   do [ -e "$o" ] && echo "  $(basename "$o" .sh)"; done
+      echo "enabled:"
+      for o in "$enabled"/*.sh; do [ -e "$o" ] && echo "  $(basename "$o" .sh)"; done
+      ;;
+    enable)
+      mkdir -p "$enabled"
+      for o in "$@"; do
+        if [ ! -f "$avail/$o.sh" ]; then
+          echo "dotmod: no such module: $o" >&2
+          continue
+        fi
+        if ln -sfn "$avail/$o.sh" "$enabled/$o.sh"; then
+          echo "enabled $o"
+        else
+          echo "dotmod: failed to enable $o" >&2
+        fi
+      done
+      echo "— open a new shell to apply"
+      ;;
+    disable)
+      for o in "$@"; do
+        rm -f "$enabled/$o.sh"
+        echo "disabled $o"
+      done
+      echo "— open a new shell to apply"
+      ;;
+    *)
+      echo "usage: dotmod {list|enable|disable} <module>..."
+      ;;
+  esac
+}

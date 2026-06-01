@@ -1,5 +1,0 @@
-#!/bin/bash
-
-export P4MERGE_BINARY="/mnt/c/Program Files/Perforce/p4merge.exe"
-export P4MERGE_PREPEND=""
-export P4MERGE_APPEND=""

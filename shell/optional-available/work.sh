@@ -1,14 +1,13 @@
 #!/bin/bash
 
+# Work: PHP/Laravel/getracker development. Enable with: dotmod enable work
+
 discord-export() {
   echo "Exporting channel as HTML"
   docker run --rm -v "$(pwd):/app/out" tyrrrz/discordchatexporter export -t "$DISCORD_BOT_TOKEN" -b -c "$1" -f HtmlDark
   echo "Exporting channel as JSON"
   docker run --rm -v "$(pwd):/app/out" tyrrrz/discordchatexporter export -t "$DISCORD_BOT_TOKEN" -b -c "$1" -f Json
 }
-
-#alias dc='docker-compose'
-#alias dce='docker-compose exec'
 
 # Docker aliases
 alias yaw='docker-compose exec node yarn dev'
@@ -21,9 +20,12 @@ alias vapor='php ./vendor/bin/vapor'
 alias sitespeed='docker run --rm -v "/mnt/d/Google Drive/Infrastructure:/sitespeed.io" sitespeedio/sitespeed.io:12.0.1 -b chrome'
 alias coach='docker run --rm -v "/mnt/d/Google Drive/Infrastructure:/sitespeed.io" sitespeedio/coach:4.5.0 --details --description -b chrome'
 
-alias ctop='docker run --rm -ti --name=ctop --volume /var/run/docker.sock:/var/run/docker.sock:ro quay.io/vektorlab/ctop:latest'
+# Laravel
+alias llog='clear; touch storage/logs/laravel-$(date +%F).log; tail -f -n 0 storage/logs/laravel-$(date +%F).log'
 
-alias dive='docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock wagoodman/dive:latest'
+rector() {
+  docker run --rm -v "$(pwd):/project" rector/rector:latest process "/project/$1" --config="/project/rector.yaml" --autoload-file /project/vendor/autoload.php
+}
 
 # Composer local dev
 composer-link() {
@@ -152,18 +154,6 @@ benv() {
   echo -e "${COLOR_GREEN}Created ${TAR_ARCHIVE}${COLOR_RESET}"
 }
 
-wsl-backup() {
-  if [[ -z "$1" ]]; then
-    echo "Usage: wsl-backup <destination>"
-    return 1
-  fi
-
-  DEST="$1"
-  FILE_PATH="$DEST/wsl-backup-$(date +%Y%m%d).tar.gz"
-
-  tar -cvzf "$FILE_PATH" "$HOME"
-}
-
 # Run PHP inside a local docker container using the "getracker/php-base" image
 lphp() {
   # grep -oP '"php": "(?:\^(?:\d\.\d)\|)?\^(?:\d\.\d)"' composer.json
@@ -229,4 +219,27 @@ EOF
   fi
 
   gh secret set NPM_TOKEN
+}
+
+ri() {
+  # If we have a package.json and it contains "np" then use that instead
+  if [ -f package.json ] && grep -q '"np":' package.json ; then
+    echo -e "[${COLOR_BLUE}"${COLOR_CYAN}\!${COLOR_RESET}"${COLOR_RESET}] ${COLOR_GREEN}Running \"yarn np\"${COLOR_RESET}"
+    yarn np
+    return 0
+  fi
+
+  # Create .release-it.json if it doesn't exist
+  if [ ! -f .release-it.json ] && [ -d .git ]; then
+  cat <<EOF > .release-it.json
+{
+  "npm": {
+    "ignoreVersion": true,
+    "publish": false
+  }
+}
+EOF
+  fi
+
+  release-it --only-version
 }

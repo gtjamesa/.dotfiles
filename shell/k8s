@@ -1,9 +1,15 @@
 #!/bin/bash
 
-# Auto completion
-command -v kubectl &>/dev/null && source <(kubectl completion zsh)
-command -v helm &>/dev/null && source <(helm completion zsh)
-command -v kustomize &>/dev/null && source <(kustomize completion zsh)
+# Auto completion — generated once into the omz completions dir, then loaded
+# by compinit. If we just wrote a new file, re-run compinit so this shell
+# picks it up (compinit in oh-my-zsh.sh ran earlier, before this file).
+_comp_dir="$HOME/.oh-my-zsh/completions"
+_wrote=0
+command -v kubectl   &>/dev/null && [ ! -f "$_comp_dir/_kubectl" ]   && kubectl completion zsh   > "$_comp_dir/_kubectl"   && _wrote=1
+command -v helm      &>/dev/null && [ ! -f "$_comp_dir/_helm" ]      && helm completion zsh      > "$_comp_dir/_helm"      && _wrote=1
+command -v kustomize &>/dev/null && [ ! -f "$_comp_dir/_kustomize" ] && kustomize completion zsh > "$_comp_dir/_kustomize" && _wrote=1
+[ "$_wrote" -eq 1 ] && autoload -Uz compinit && compinit
+unset _comp_dir _wrote
 
 kubecli() {
   NAMESPACE=""

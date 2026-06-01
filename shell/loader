@@ -2,55 +2,63 @@
 
 # Custom dotfiles loader script
 
-# Source all files inside a directory
+# Source all *.sh files in a directory (safe if dir is empty or missing)
 source_dir() {
-  echo "checking $1"
-
-  for file in "$1/*"; do
-    if [ -f "$file" ] ; then
-      . "$file"
-    fi
+  local dir="$1" file
+  [ -d "$dir" ] || return 0
+  [ -n "${ZSH_VERSION:-}" ] && setopt local_options null_glob
+  set --   # clear positionals so sourced files don't inherit source_dir's args
+  for file in "$dir"/*.sh; do
+    [ -f "$file" ] && [ -r "$file" ] && source "$file"
   done
 }
 
 # Ensure omz completions directory exists
 [ -d "$HOME/.oh-my-zsh/completions" ] || mkdir -p "$HOME/.oh-my-zsh/completions"
 
-# Exports
-[ -f ~/.dotfiles/shell/exports ] && source ~/.dotfiles/shell/exports
+# Exports — .zshenv normally sources this first. Re-source on Darwin so brew
+# prepends survive macOS's /etc/zprofile path_helper reorder.
+if [ -z "${DOTFILES_EXPORTS_LOADED:-}" ] || [ "$(uname)" = "Darwin" ]; then
+  [ -f ~/.dotfiles/shell/exports ] && source ~/.dotfiles/shell/exports
+fi
+
+# Interactive tool init — kept out of exports so non-interactive shells stay fast
+command -v pyenv >/dev/null 2>&1 && eval "$(pyenv init -)"
+_asdf="$(brew --prefix 2>/dev/null)/opt/asdf/libexec/asdf.sh"
+[ -f "$_asdf" ] && source "$_asdf"
+unset _asdf
+command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init zsh)"
+
 [ -f ~/.dotfiles/shell/helpers/colour ] && source ~/.dotfiles/shell/helpers/colour
-[ -f ~/.dotfiles/shell/nvm/nvm ] && source ~/.dotfiles/shell/nvm/nvm
-[ -f ~/.dotfiles/shell/js/bun ] && source ~/.dotfiles/shell/js/bun
+[ -f ~/.dotfiles/shell/fnm/fnm ] && source ~/.dotfiles/shell/fnm/fnm
 [ -f ~/.dotfiles/shell/js/pnpm ] && source ~/.dotfiles/shell/js/pnpm
 
 # Custom ZSH configuration
-[ -f ~/.dotfiles/shell/.zshrc.kali ] && source ~/.dotfiles/shell/.zshrc.kali
+[ -f ~/.dotfiles/shell/zsh-interactive ] && source ~/.dotfiles/shell/zsh-interactive
 
-# Custom aliases
-[ -f ~/.dotfiles/shell/custom-aliases ] && source ~/.dotfiles/shell/custom-aliases
-[ -f ~/.dotfiles/shell/work-aliases ] && source ~/.dotfiles/shell/work-aliases
+# Aliases (core domain files — always loaded)
+source_dir ~/.dotfiles/shell/aliases
 [ -f ~/.dotfiles/shell/git/helpers ] && source ~/.dotfiles/shell/git/helpers
 [ -f ~/.dotfiles/shell/k8s ] && source ~/.dotfiles/shell/k8s
 [ -f ~/.dotfiles/shell/helpers/asdf ] && source ~/.dotfiles/shell/helpers/asdf
 [ -f ~/.dotfiles/shell/helpers/dotfiles ] && source ~/.dotfiles/shell/helpers/dotfiles
+[ -f ~/.dotfiles/shell/helpers/dotmod ] && source ~/.dotfiles/shell/helpers/dotmod
 [ -f ~/.dotfiles/shell/helpers/helpers ] && source ~/.dotfiles/shell/helpers/helpers
 [ -f ~/.dotfiles/shell/helpers/rust ] && source ~/.dotfiles/shell/helpers/rust
 [ -f ~/.dotfiles/shell/helpers/ai ] && source ~/.dotfiles/shell/helpers/ai
-[ -f ~/.dotfiles/shell/helpers/audio ] && source ~/.dotfiles/shell/helpers/audio
-[ -f ~/.dotfiles/shell/helpers/installers ] && source ~/.dotfiles/shell/helpers/installers
 
 # fzf
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-# autocompletions
-command -v tailscale &>/dev/null && source <(tailscale completion zsh)
+# autocompletions — cached to the omz completions dir (no per-shell subprocess).
+# Re-run compinit when we generate a new file so this shell picks it up.
+if command -v tailscale &>/dev/null && [ ! -f "$HOME/.oh-my-zsh/completions/_tailscale" ]; then
+  tailscale completion zsh > "$HOME/.oh-my-zsh/completions/_tailscale"
+  autoload -Uz compinit && compinit
+fi
 
-# User specified optional aliases
-#source_dir ~/.dotfiles/shell/optional
-[ -f ~/.dotfiles/shell/optional/getracker.sh ] && source ~/.dotfiles/shell/optional/getracker.sh
+# User specified optional modules (symlinked here at install time)
+source_dir ~/.dotfiles/shell/optional
 
-# User custom configuration
-#source_dir ~/.dotfiles/custom
-[ -f ~/.dotfiles/custom/secrets.sh ] && source ~/.dotfiles/custom/secrets.sh
-[ -f ~/.dotfiles/custom/exports.sh ] && source ~/.dotfiles/custom/exports.sh
-[ -f ~/.dotfiles/custom/aliases.sh ] && source ~/.dotfiles/custom/aliases.sh
+# User custom configuration (machine-local, gitignored)
+source_dir ~/.dotfiles/custom

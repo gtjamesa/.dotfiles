@@ -13,7 +13,11 @@ ask_optional=0
 if [ "$OS" == "Linux" ]; then
   SHARE_PATH="/usr/share"
 elif [ "$OS" == "Darwin" ]; then
-  SHARE_PATH="/usr/local/share"
+  if [ -d /opt/homebrew/share ]; then
+    SHARE_PATH="/opt/homebrew/share"
+  else
+    SHARE_PATH="/usr/local/share"
+  fi
 fi
 
 for opt in "$@"; do
@@ -45,9 +49,10 @@ for opt in "$@"; do
 done
 
 detect_wsl() {
+  [ "$OS" == "Linux" ] || return 0
   [ -f /proc/sys/fs/binfmt_misc/WSLInterop ] && wsl2=1
-  grep -qi Microsoft /proc/version && wsl2=1
-  grep -qi Microsoft /proc/sys/kernel/osrelease && wsl2=1
+  grep -qi Microsoft /proc/version 2>/dev/null && wsl2=1
+  grep -qi Microsoft /proc/sys/kernel/osrelease 2>/dev/null && wsl2=1
 }
 
 # Install ohmyzsh
@@ -115,7 +120,11 @@ install_homebrew() {
   if [[ "$OS" == "Linux" ]]; then
     eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
   elif [[ "$OS" == "Darwin" ]]; then
-    eval "$(/usr/local/bin/brew shellenv)"
+    if [ -x /opt/homebrew/bin/brew ]; then
+      eval "$(/opt/homebrew/bin/brew shellenv)"
+    else
+      eval "$(/usr/local/bin/brew shellenv)"
+    fi
   fi
 }
 
@@ -126,33 +135,33 @@ install_dotfiles() {
 
   # Add vimrc
   symlink_file "$HOME/.dotfiles/shell/.vimrc" "$HOME/.vimrc"
+
+  # Add zshenv (env for non-interactive / GUI / Xcode shells)
+  symlink_file "$HOME/.dotfiles/shell/.zshenv" "$HOME/.zshenv"
 }
 
 install_node() {
-  # Install nvm package manager
-  # https://github.com/nvm-sh/nvm
-  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+  # Install fnm (Fast Node Manager). The official installer uses brew on macOS
+  # and downloads a binary on Linux; --skip-shell stops it editing .zshrc
+  # (loader handles fnm init itself).
+  # https://github.com/Schniz/fnm
+  curl -fsSL https://fnm.vercel.app/install | bash -s -- --skip-shell
 
-  # Source some stuff
-  [ -f "$HOME/.dotfiles/shell/nvm/nvm" ] && source "$HOME/.dotfiles/shell/nvm/nvm"
+  # Make fnm reachable in this script (Linux installer drops it in ~/.local/share/fnm)
+  export PATH="$HOME/.local/share/fnm:$PATH"
+
+  # Bring up fnm env for the rest of the installer
+  eval "$(fnm env --shell bash)"
+
+  # Install latest LTS node and set as default
+  fnm install --lts
+  fnm default "$(fnm current)"
+
+  # Source pnpm helper now that node is on PATH
   [ -f "$HOME/.dotfiles/shell/js/pnpm" ] && source "$HOME/.dotfiles/shell/js/pnpm"
 
-  # Symlink the default-packages file
-  symlink_file "$HOME/.dotfiles/shell/nvm/default-packages" "$NVM_DIR/default-packages"
-
-  # Install Node 20
-  nvm install 20
-
-  # Install pnpm
-  dotfiles-install-pnpm
-
-  # Install bun
-  curl -fsSL https://bun.sh/install | bash
-  [ -f "$HOME/.dotfiles/shell/js/bun" ] && source "$HOME/.dotfiles/shell/js/bun"
-  command -v bun-configure && bun-configure
-
-  # Install release-it
-  pnpm add -g release-it
+  # Install pnpm, yarn and release-it
+  dotfiles-install-node-pms
 }
 
 install_python() {
@@ -208,6 +217,10 @@ install_wslu() {
 
   [ ! -f /usr/local/bin/xdg-open ] && sudo ln -s /usr/bin/wslview /usr/local/bin/xdg-open
 
+  # Enable the WSL shell module
+  source "$HOME/.dotfiles/shell/helpers/dotmod"
+  dotmod enable wsl
+
 #  function url_validator {
 #  if [[ "$*" =~ ^https?:\/\/ ]]; then
 #    return 0
@@ -216,9 +229,36 @@ install_wslu() {
 #  fi
 }
 
+install_macos() {
+  # macOS-only setup — guarded by OS check in run_installer.
+
+  # Show hidden files in Finder
+  defaults write com.apple.finder AppleShowAllFiles -boolean true
+
+  # macOS dev tooling (zstd/jq come via apt on Linux)
+  brew install rbenv htop zstd jq ccache openssl@3
+
+  # Initialise rbenv and install the latest stable Ruby so `gem install`
+  # lands in rbenv's user-writable prefix (system Ruby on macOS is not
+  # gem-writable without sudo).
+  eval "$(rbenv init - bash)"
+  local ruby_ver
+  ruby_ver=$(rbenv install -l 2>/dev/null | grep -E '^[[:space:]]*[0-9.]+[[:space:]]*$' | tail -1 | tr -d '[:space:]')
+  if [ -n "$ruby_ver" ]; then
+    rbenv install -s "$ruby_ver"
+    rbenv global "$ruby_ver"
+    rbenv rehash
+  fi
+
+  # Ruby gems for iOS/macOS development (via rbenv's Ruby)
+  gem install bundler
+  gem install cocoapods
+}
+
 install_getracker() {
   if [[ "$getracker" -eq 1 ]]; then
-    symlink_file "$HOME/.dotfiles/shell/getracker" "$HOME/.dotfiles/shell/optional/getracker.sh"
+    source "$HOME/.dotfiles/shell/helpers/dotmod"
+    dotmod enable getracker
   fi
 }
 
@@ -229,6 +269,11 @@ install_composer() {
 }
 
 install_docker() {
+  # Docker on macOS means Docker Desktop — install it manually, skip here
+  if [[ "$OS" == "Darwin" ]]; then
+    return 0
+  fi
+
   # Install Docker if enabled
   if [[ "$docker" -eq 1 ]]; then
     echo "Install Docker"
@@ -330,9 +375,11 @@ run_preinstall() {
 run_installer() {
   run_preinstall
 
-  # Install utils
-  sudo apt update -y && sudo apt install -y \
-    build-essential curl file git wget vim curl jq zip unzip zstd xclip
+  # Install utils (Linux)
+  if [[ "$OS" == "Linux" ]]; then
+    sudo apt update -y && sudo apt install -y \
+      build-essential curl file git wget vim curl jq zip unzip zstd xclip
+  fi
 
   #sudo apt install -y linux-headers-$(uname -r) dnsutils
 
@@ -345,6 +392,11 @@ run_installer() {
   install_python
   install_asdf
   install_wslu
+
+  # macOS-specific setup
+  if [[ "$OS" == "Darwin" ]]; then
+    install_macos
+  fi
 
   install_optional
   fix_wsl

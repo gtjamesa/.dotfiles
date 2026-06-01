@@ -1,19 +1,17 @@
 #!/bin/bash
 
 export PNPM_HOME="$HOME/.local/share/pnpm"
-case ":$PATH:" in
-  *":$PNPM_HOME:"*) ;;
-  *) export PATH="$PNPM_HOME:$PATH" ;;
-esac
+case ":$PATH:" in *":$PNPM_HOME:"*) ;; *) export PATH="$PNPM_HOME:$PATH" ;; esac
+case ":$PATH:" in *":$PNPM_HOME/bin:"*) ;; *) export PATH="$PNPM_HOME/bin:$PATH" ;; esac
 
-# Fix pnpm being created in "~/.local/share/pnpm"
-# As we are installing with corepack,
-# we can load pnpm straight from the nvm directory for the current node version
-node_path=$(which node)
-nvm_dir=${node_path%/node}
-if [ -f "$HOME/.local/share/pnpm/pnpm" ] && [ -f "$nvm_dir/pnpm" ]; then
-  ln -sf "$nvm_dir/pnpm" "$HOME/.local/share/pnpm/pnpm"
+# Fix pnpm being created in "~/.local/share/pnpm" by corepack —
+# symlink it back to the node version's bin dir so pnpm is always findable.
+node_path=$(command -v node)
+node_bin_dir=${node_path%/node}
+if [ -f "$HOME/.local/share/pnpm/pnpm" ] && [ -f "$node_bin_dir/pnpm" ]; then
+  ln -sf "$node_bin_dir/pnpm" "$HOME/.local/share/pnpm/pnpm"
 fi
+unset node_path node_bin_dir
 
 command -v pn >/dev/null || alias pn='pnpm'
 command -v pncx >/dev/null || alias pncx='pnpm changeset'
@@ -25,4 +23,12 @@ command -v pncx >/dev/null || alias pncx='pnpm changeset'
 function dotfiles-install-pnpm() {
   corepack enable
   corepack prepare pnpm@latest --activate
+}
+
+# Install pnpm, yarn and release-it for the current node version — run after
+# switching node (fnm use ...) or installing a fresh one.
+function dotfiles-install-node-pms() {
+  dotfiles-install-pnpm
+  corepack prepare yarn@1.22.22 --activate
+  pnpm add -g release-it
 }

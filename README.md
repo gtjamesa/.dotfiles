@@ -37,6 +37,24 @@ This package provides a default configuration, but you can still provide custom 
 
 Once you have created the files, you can reload your shell by using `source ~/.zshrc`
 
+## Optional modules
+
+Optional shell modules — work aliases, desktop helpers, media tools, WSL, etc. — live in `shell/optional-available/` and are toggled with `dotmod`:
+
+```bash
+dotmod list                  # show available + enabled modules
+dotmod enable <name>...      # enable one or more modules
+dotmod disable <name>...     # disable
+```
+
+Core aliases load on every machine. After bootstrap, a desktop/laptop enables the full set with:
+
+```bash
+dotmod enable work media desktop-aliases audio installers
+```
+
+Servers stay on the core aliases only.
+
 ## Loader
 
 The main entrypoint to be included in your `.zshrc` file is listed below. *This is added automatically by the installation script*.
