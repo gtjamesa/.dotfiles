@@ -191,34 +191,57 @@ cl-help() {
 }
 
 create-npm-token() {
-  if [[ "$1" == "--help" || "$1" == "-h" ]]; then
-    cat <<EOF
-Usage: create-npm-token [TOKEN_NAME]
+  local perm="read-write" perm_label="RW" secret_name="NPM_TOKEN" org="" token_name=""
 
-Creates a 90-day read-write npm token scoped to @getracker and sets it as
-the NPM_TOKEN GitHub Actions secret on the current repo.
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -h|--help)
+        cat <<EOF
+Usage: create-npm-token [-r] [-n SECRET_NAME] [-o [ORG]] [TOKEN_NAME]
 
-TOKEN_NAME defaults to "<dirname> RW <YYYYMMDD>".
+Creates a 90-day npm token scoped to @getracker and sets it as a GitHub
+Actions secret.
+
+  -r, --read-only        Create a read-only token (for installing updates).
+                         Default is read-write (for publishing).
+  -n, --secret-name NAME GitHub secret name. Default: NPM_TOKEN.
+  -o, --org [ORG]        Set the secret at the org level (visibility: all)
+                         instead of on the current repo. ORG defaults to
+                         getracker.
+
+TOKEN_NAME defaults to "<dirname> <RW|RO> <YYYYMMDD>".
 EOF
-    return 0
-  fi
+        return 0
+        ;;
+      -r|--read-only) perm="read-only"; perm_label="RO"; shift ;;
+      -n|--secret-name) secret_name="$2"; shift 2 ;;
+      -o|--org)
+        if [[ -n "$2" && "$2" != -* ]]; then org="$2"; shift 2; else org="getracker"; shift; fi
+        ;;
+      *) token_name="$1"; shift ;;
+    esac
+  done
 
-  TOKEN_NAME="${1:-${PWD##*/} RW $(date +%Y%m%d)}"
+  token_name="${token_name:-${PWD##*/} ${perm_label} $(date +%Y%m%d)}"
 
-  echo -e "Creating ${COLOR_GREEN}${TOKEN_NAME}${COLOR_RESET}"
+  echo -e "Creating ${COLOR_GREEN}${token_name}${COLOR_RESET} (${perm})"
 
   if ! npm token create \
-    --name "$TOKEN_NAME" \
+    --name "$token_name" \
     --bypass-2fa --expires 90 \
-    --orgs-permission read-write \
+    --orgs-permission "$perm" \
     --orgs getracker \
-    --packages-and-scopes-permission read-write \
+    --packages-and-scopes-permission "$perm" \
     --scopes @getracker; then
     echo -e "${COLOR_RED}npm token create failed; aborting${COLOR_RESET}" >&2
     return 1
   fi
 
-  gh secret set NPM_TOKEN
+  if [[ -n "$org" ]]; then
+    gh secret set "$secret_name" --org "$org" --visibility all
+  else
+    gh secret set "$secret_name"
+  fi
 }
 
 ri() {
