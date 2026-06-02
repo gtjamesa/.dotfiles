@@ -44,6 +44,7 @@ help() {
 usage: $0 [OPTIONS]
     --help               Show this message
     --branch <name>      Clone/checkout this branch instead of the default (for testing)
+    --force-wsl2         Force WSL2 setup even if auto-detection misses it
     --all                Install all additional programs and aliases
     --[no-]composer      Enable/disable Composer installation (and supporting global packages)
     --[no-]docker        Enable/disable Docker configuration

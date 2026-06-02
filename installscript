@@ -33,7 +33,7 @@ for opt in "$@"; do
     getracker=1
     wsl2=0
     ;;
-  --wsl2) wsl2=1 ;;
+  --force-wsl2) wsl2=1 ;;
   --composer) composer=1 ;;
   --no-composer) composer=0 ;;
   --docker) docker=1 ;;
@@ -43,7 +43,7 @@ for opt in "$@"; do
   --ask-optional) ask_optional=1 ;;
   *)
     echo "unknown option: $opt"
-    help
+    echo "Please run the bootstrap script"
     exit 1
     ;;
   esac
