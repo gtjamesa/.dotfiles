@@ -196,7 +196,15 @@ fpi-archives() {
   sudo dnf install -y unzip p7zip p7zip-plugins unrar fuse-libs
 }
 
-# 8. NVIDIA — auto-detect hardware; branch on secure-boot.
+# 8. Btrfs management GUI — only when root is on btrfs (Fedora's default for
+# Workstation/KDE). Desktop-only tool, so it lives in the desktop installer
+# rather than the base installscript.
+fpi-btrfs() {
+  [ "$(findmnt -no FSTYPE /)" = btrfs ] || return 0
+  sudo dnf install -y btrfs-assistant
+}
+
+# 9. NVIDIA — auto-detect hardware; branch on secure-boot.
 # If MOK enrollment is needed, exits early with a copy-paste resume command
 # the user can run after reboot — no full installscript re-run required.
 fpi-nvidia() {
@@ -235,7 +243,7 @@ EOF
   echo "    modinfo -F version nvidia"
 }
 
-# 9. Boot tidy — disable network-wait (delays boot if not connected)
+# 10. Boot tidy — disable network-wait (delays boot if not connected)
 fpi-boot-tidy() {
   sudo systemctl disable NetworkManager-wait-online.service || true
 }
@@ -248,6 +256,7 @@ fedora-post-install() {
   fpi-vaapi
   fpi-openh264
   fpi-archives
+  fpi-btrfs
   fpi-nvidia
   fpi-boot-tidy
 }
