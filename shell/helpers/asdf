@@ -43,7 +43,7 @@ asdf-upgrade() {
       return 0
       ;;
     --no-local) install_local=0 ;;
-    --no-global) install_global=1 ;;
+    --no-global) install_global=0 ;;
     *)
       [ "$1" != "$opt" ] && install_version="$opt"
       ;;
@@ -53,6 +53,7 @@ asdf-upgrade() {
   asdf plugin update "$1"
   asdf install "$1" "$install_version"
 
-  [ "$install_local" -eq 1 ] && asdf local "$1" "$install_version"
-  [ "$install_global" -eq 1 ] && asdf global "$1" "$install_version"
+  # asdf 0.16+: `set` replaced `local`/`global` (--home writes ~/.tool-versions)
+  [ "$install_local" -eq 1 ] && asdf set "$1" "$install_version"
+  [ "$install_global" -eq 1 ] && asdf set --home "$1" "$install_version"
 }

@@ -92,11 +92,16 @@ install_tmux() {
   echo "---------------"
 
   # Install tmux
-  brew install tmux
+  case "$DOTFILES_PKG" in
+    apt)  sudo apt install -y tmux ;;
+    dnf)  sudo dnf install -y tmux ;;
+    brew) brew install tmux ;;
+  esac
 
-  # Add tmux plugins
+  # Add tmux plugins (tpm)
   mkdir -p "$HOME/.tmux/plugins"
-  git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
+  [ ! -d "$HOME/.tmux/plugins/tpm" ] && \
+    git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
 
   # Add tmux config
   symlink_file "$HOME/.dotfiles/shell/.tmux.conf" "$HOME/.tmux.conf"
@@ -106,26 +111,29 @@ install_fzf() {
   echo "Installing fzf"
   echo "--------------"
 
-  brew install fzf
-  $(brew --prefix)/opt/fzf/install --key-bindings --completion --no-update-rc
+  # Distro packages wire up key-bindings/completion at runtime (see loader);
+  # only brew needs its install script to generate ~/.fzf.zsh.
+  case "$DOTFILES_PKG" in
+    apt)  sudo apt install -y fzf ;;
+    dnf)  sudo dnf install -y fzf ;;
+    brew)
+      brew install fzf
+      "$(brew --prefix)"/opt/fzf/install --key-bindings --completion --no-update-rc
+      ;;
+  esac
 }
 
-# Install homebrew
-# https://docs.brew.sh/Homebrew-on-Linux
+# Install homebrew (macOS only — Linux uses apt/dnf directly)
+# https://brew.sh
 install_homebrew() {
   echo "Installing homebrew"
   echo "--------------------"
-  rm -rf "$HOME/.linuxbrew"
-  bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  NONINTERACTIVE=1 bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-  if [[ "$OS" == "Linux" ]]; then
-    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-  elif [[ "$OS" == "Darwin" ]]; then
-    if [ -x /opt/homebrew/bin/brew ]; then
-      eval "$(/opt/homebrew/bin/brew shellenv)"
-    else
-      eval "$(/usr/local/bin/brew shellenv)"
-    fi
+  if [ -x /opt/homebrew/bin/brew ]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+  else
+    eval "$(/usr/local/bin/brew shellenv)"
   fi
 }
 
@@ -166,16 +174,16 @@ install_node() {
 }
 
 install_python() {
-  # Install pyenv package manager
-  brew install pyenv
+  # Install pyenv. macOS uses brew; Linux clones the repo (not in apt/dnf).
+  case "$DOTFILES_PKG" in
+    brew) brew install pyenv ;;
+    *)    [ ! -d "$HOME/.pyenv" ] && git clone https://github.com/pyenv/pyenv.git "$HOME/.pyenv" ;;
+  esac
 
   # Install Python build dependencies
   # https://github.com/pyenv/pyenv/wiki#suggested-build-environment
   case "$DOTFILES_PKG" in
     apt)
-      # OpenSSL v1.1 from brew conflicts with Python 3.10 build on Linux
-      brew uninstall --ignore-dependencies --force openssl@1.1 2>/dev/null || true
-
       sudo apt update -y
       sudo apt install -y \
         make build-essential libssl-dev zlib1g-dev \
@@ -195,7 +203,11 @@ install_python() {
       ;;
   esac
 
-  pyenv install 2.7
+  # Put pyenv on PATH for the calls below (git-clone path needs this; brew
+  # already did). install/global don't need `pyenv init` — only the PATH.
+  export PYENV_ROOT="$HOME/.pyenv"
+  command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+
   pyenv install 3.10
   pyenv global 3.10
 
@@ -204,14 +216,30 @@ install_python() {
 }
 
 install_asdf() {
-  brew install asdf
-
-  # Source the asdf exports
-  source $(brew --prefix)/opt/asdf/libexec/asdf.sh
+  # asdf 0.16+ is a single Go binary. macOS uses brew; Linux fetches the
+  # latest GitHub release into ~/.local/bin (on PATH via shell/exports).
+  case "$DOTFILES_PKG" in
+    brew) brew install asdf ;;
+    *)
+      local arch tag
+      case "$(uname -m)" in
+        x86_64)        arch=amd64 ;;
+        aarch64|arm64) arch=arm64 ;;
+        *) echo "asdf: unsupported arch $(uname -m), skipping"; return 0 ;;
+      esac
+      tag=$(curl -fsSL https://api.github.com/repos/asdf-vm/asdf/releases/latest \
+              | grep -oP '"tag_name":\s*"\K[^"]+')
+      mkdir -p "$HOME/.local/bin"
+      curl -fsSL "https://github.com/asdf-vm/asdf/releases/download/${tag}/asdf-${tag}-linux-${arch}.tar.gz" \
+        | tar -xzf - -C "$HOME/.local/bin" asdf
+      export PATH="$HOME/.local/bin:$PATH"
+      ;;
+  esac
 
   symlink_file "$HOME/.dotfiles/shell/.tool-versions" "$HOME/.tool-versions"
 
-  # Source the "asdf-reload" function to add/install all plugins in .tool-versions
+  # No asdf.sh in 0.16+ — the shims dir (added to PATH in shell/exports) is
+  # enough. Source the "asdf-reload" function to install plugins/tool-versions.
   source ~/.dotfiles/shell/helpers/asdf
   asdf-reload
 }
@@ -400,7 +428,7 @@ run_installer() {
 
   #sudo apt install -y linux-headers-$(uname -r) dnsutils
 
-  install_homebrew
+  [ "$DOTFILES_PKG" = brew ] && install_homebrew
   install_zsh
   install_dotfiles
   install_tmux
