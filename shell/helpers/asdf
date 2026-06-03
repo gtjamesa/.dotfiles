@@ -2,6 +2,14 @@
 
 asdf-reload() {
   local desired current missing
+
+  # Never let a plugin's HTTPS clone hang waiting for credentials: a deleted/
+  # renamed/private plugin repo returns 401, which git turns into an interactive
+  # "Username for 'https://github.com'" prompt — blocking the whole installer.
+  # GIT_TERMINAL_PROMPT=0 makes git fail fast instead; `local -x` scopes it to
+  # this function (child git inherits it, the interactive shell doesn't).
+  local -x GIT_TERMINAL_PROMPT=0
+
   desired=$(awk '{print $1}' "$HOME/.tool-versions" | sort -u)
   current=$(asdf plugin list 2>/dev/null | sort -u)
   missing=$(comm -23 <(echo "$desired") <(echo "$current"))
