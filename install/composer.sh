@@ -26,7 +26,7 @@ fi
 php composer-setup.php --quiet
 rm composer-setup.php
 chmod +x composer.phar
-mv composer.phar "$COMPOSER_PATH"
+sudo mv composer.phar "$COMPOSER_PATH"
 
 # Install global composer requirements
 "$COMPOSER_PATH" global require \
