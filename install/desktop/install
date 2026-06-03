@@ -120,6 +120,14 @@ download-software() {
   esac
 }
 
+# Claude Code CLI — native installer drops it in ~/.local/bin (already on PATH
+# via shell/exports) and self-updates in the background.
+# https://code.claude.com/docs/en/quickstart
+install-claude-code() {
+  command -v claude >/dev/null 2>&1 && return 0
+  curl -fsSL https://claude.ai/install.sh | bash
+}
+
 install-flathub-packages() {
   PACKAGES=(
     # entertainment
@@ -265,6 +273,7 @@ fedora-post-install() {
 create-opt
 [ "$DOTFILES_DISTRO" = fedora ] && fedora-post-install
 download-software
+install-claude-code
 install-flathub-packages
 install-autostarts
 
