@@ -123,6 +123,18 @@ install_fzf() {
   esac
 }
 
+# zoxide — distro/brew package, not asdf: its asdf-plugins registry entry points
+# at a deleted repo (github.com/nyrst/asdf-zoxide, 404). loader inits it lazily.
+install_zoxide() {
+  echo "Installing zoxide"
+  echo "-----------------"
+  case "$DOTFILES_PKG" in
+    apt)  sudo apt install -y zoxide ;;
+    dnf)  sudo dnf install -y zoxide ;;
+    brew) brew install zoxide ;;
+  esac
+}
+
 # Install homebrew (macOS only — Linux uses apt/dnf directly)
 # https://brew.sh
 install_homebrew() {
@@ -433,6 +445,7 @@ run_installer() {
   install_dotfiles
   install_tmux
   install_fzf
+  install_zoxide
   install_node
   install_python
   install_asdf
