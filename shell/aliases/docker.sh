@@ -64,11 +64,6 @@ docker-bench() {
 #  if grep "$1"
 #}
 
-# Compose V2 ships as a CLI plugin invoked as `docker compose`. Alias the
-# legacy hyphenated command for backwards compat, unless a real docker-compose
-# binary is present (e.g. an older box still on the standalone install).
-command -v docker-compose >/dev/null 2>&1 || alias docker-compose='docker compose'
-
 alias dc='docker-compose'
 alias ctop='docker run --rm -ti --name=ctop --volume /var/run/docker.sock:/var/run/docker.sock:ro quay.io/vektorlab/ctop:latest'
 alias dive='docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock wagoodman/dive:latest'

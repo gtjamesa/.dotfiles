@@ -339,6 +339,22 @@ EOF
       dnf) sudo dnf install -y docker-compose-plugin ;;
     esac
 
+    # Back-compat shim: the Compose plugin provides only `docker compose`, no
+    # hyphenated binary. Install a real /usr/local/bin/docker-compose (not just a
+    # shell alias) so legacy callers work everywhere — scripts, Makefiles, cron —
+    # which an interactive-only alias can't reach. Overwrites the old standalone
+    # docker-compose binary that used to live at this same path.
+    sudo tee /usr/local/bin/docker-compose >/dev/null <<'EOF'
+#!/bin/sh
+# docker-compose -> `docker compose` shim.
+# Compose V2 is a Docker CLI plugin and ships no hyphenated `docker-compose`
+# command. This forwards legacy `docker-compose ...` calls to the plugin so
+# existing scripts/aliases keep working. Created by ~/.dotfiles installscript
+# (install_docker); safe to delete once nothing invokes `docker-compose`.
+exec docker compose "$@"
+EOF
+    sudo chmod +x /usr/local/bin/docker-compose
+
     # Enable docker at startup and add user to group
     sudo systemctl start docker
     sudo systemctl enable docker
