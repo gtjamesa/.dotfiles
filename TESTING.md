@@ -1,45 +1,42 @@
 # Testing a fresh install
 
-Smoke-test checklist after running `bootstrap` on a clean VM (Fedora/dnf or
-Debian-Ubuntu/apt). Run `--all` to exercise Docker/Composer too. Open a **new
-shell** (or `exec zsh`) before checking — and log out/in once so the `docker`
-group and default-shell change take effect.
+Quick smoke test after `bootstrap` on a clean VM (Fedora/dnf or Debian-Ubuntu/apt).
+The goal is to confirm everything is **wired up and reachable** — not to test every
+package. Open a new shell (`exec zsh`) and log out/in once first (default-shell and
+`docker` group changes need it).
 
 ## Shell base
-- [ ] Default shell is zsh — `echo $SHELL` ends in `zsh`; new terminals open in zsh
-- [ ] New shell loads with **no errors** and the custom theme/prompt shows
-- [ ] Autosuggestions (greyed text) + syntax highlighting (coloured commands) work
-- [ ] Distro detected — `echo $DOTFILES_OS $DOTFILES_DISTRO $DOTFILES_PKG` (e.g. `linux fedora dnf`)
-- [ ] Dotfiles symlinked — `ls -l ~/.zshrc ~/.vimrc ~/.tmux.conf` point into `~/.dotfiles`
+- [ ] Default shell is zsh; new terminals open in it (`echo $SHELL`)
+- [ ] New shell loads with no errors — custom prompt/theme, autosuggestions + syntax highlighting show
+- [ ] Distro detected — `echo $DOTFILES_OS $DOTFILES_DISTRO $DOTFILES_PKG`
+- [ ] Dotfiles symlinked into `~/.dotfiles` — `ls -l ~/.zshrc ~/.tmux.conf`
 
-## Core CLI tools
-- [ ] **fzf** — `Ctrl-R` opens fuzzy history search; `Ctrl-T` fuzzy file picker
-- [ ] **zoxide** — `cd` around a few dirs, then `z <partial>` jumps correctly (`command -v zoxide` set)
-- [ ] **tmux** — `tmux` starts; `prefix + I` fetches plugins (tpm) without error
-- [ ] **clipboard** — `echo hi | copy` then paste elsewhere (xclip on X11 / wl-clipboard on Wayland)
-- [ ] `git`, `vim`, `jq`, `zip`/`unzip`, `wget`, `curl` all present
+## CLI tools
+- [ ] **fzf** — `Ctrl-R` history search works (key-bindings sourced)
+- [ ] **zoxide** — `z <dir>` jumps (init loaded)
+- [ ] **tmux** — starts; `prefix + I` installs plugins
+- [ ] **clipboard** — `echo hi | copy` pastes elsewhere
 
 ## Languages & version managers
-- [ ] **node (fnm)** — `node -v` (LTS), `fnm current` set as default
-- [ ] **pnpm** — `pnpm -v`; `pnpm add -g <pkg>` succeeds with **no** "global bin directory is not in PATH" error; yarn + release-it present
-- [ ] **python (pyenv)** — `python --version` → 3.10.x; `pyenv global` shows 3.10
-- [ ] **asdf** — `asdf --version`; `asdf current` lists every tool with no "not installed" rows
-
-## asdf tools (from `shell/.tool-versions`)
-- [ ] Plugin install finished **without hanging** on a github username prompt
-- [ ] `kubectl version --client`, `helm version`, `k9s version` all run
-- [ ] Spot-check a couple more: `kustomize version`, `eksctl version`
+- [ ] node — `node -v` (LTS via fnm)
+- [ ] pnpm — `pnpm -v`; `pnpm add -g <pkg>` works (no "global bin directory is not in PATH")
+- [ ] python — `python --version` → 3.10 (pyenv)
+- [ ] asdf — `asdf current` lists tools with shims on PATH; install didn't hang on a git prompt
+- [ ] asdf tools reachable — `kubectl version --client`, `helm version`, `k9s version`
 
 ## Docker (`--docker`)
-- [ ] `docker run hello-world` works (after relog for group membership)
-- [ ] `docker compose version` — the V2 plugin
-- [ ] `docker-compose version` — the back-compat shim (`/usr/local/bin/docker-compose` → `~/.dotfiles/install/docker-compose`)
-- [ ] `id -nG | grep docker` — user is in the docker group
+- [ ] `docker run hello-world` works; user in docker group (`id -nG | grep docker`)
+- [ ] `docker compose version` (plugin) **and** `docker-compose version` (shim) both run
 
 ## Optional
-- [ ] **Composer** (`--composer`) — `composer --version`, `php -v` (8.3)
-- [ ] **GE Tracker** (`--getracker`) — getracker aliases available
-- [ ] **WSL only** — `xdg-open https://example.com` opens the Windows browser (wslu)
+- [ ] Composer (`--composer`) — `composer --version`, `php -v`
+- [ ] GE Tracker (`--getracker`) — aliases present
+- [ ] WSL — `xdg-open` opens the Windows browser (wslu)
 
-## Desktop (run separately)
-- [ ] `~/.dotfiles/install/desktop/install` — RPM Fusion/codecs, flathub, apps install cleanly
+## Desktop (`install/desktop/install` — graphical install only)
+- [ ] Installer completes without error
+- [ ] Fedora — RPM Fusion enabled (`dnf repolist | grep rpmfusion`) and flathub added (`flatpak remotes`)
+- [ ] `/opt/apps` set up and user-writable; JetBrains Toolbox + Navicat AppImage present
+- [ ] Native apps installed — spot-check one launches (1Password / TablePlus / AnyDesk)
+- [ ] Flatpaks installed — `flatpak list` spot-check (Spotify / Obsidian / Postman)
+- [ ] Shell modules enabled — `dotmod list` shows `work media desktop-aliases audio installers`
