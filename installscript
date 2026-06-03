@@ -330,10 +330,14 @@ EOF
       fi
     fi
 
-    # Install docker-compose
-    wget "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)"
-    sudo mv "docker-compose-$(uname -s)-$(uname -m)" /usr/local/bin/docker-compose
-    sudo chmod -v +x /usr/local/bin/docker-compose
+    # Compose V2 is a CLI plugin (`docker compose`), not the legacy standalone
+    # docker-compose binary. get.docker.com sets up Docker's package repo and
+    # usually pulls the plugin in; install it explicitly to be sure.
+    # https://docs.docker.com/compose/install/#plugin-linux-only
+    case "$DOTFILES_PKG" in
+      apt) sudo apt install -y docker-compose-plugin ;;
+      dnf) sudo dnf install -y docker-compose-plugin ;;
+    esac
 
     # Enable docker at startup and add user to group
     sudo systemctl start docker
