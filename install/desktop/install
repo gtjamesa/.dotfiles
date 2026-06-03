@@ -128,6 +128,16 @@ install-claude-code() {
   curl -fsSL https://claude.ai/install.sh | bash
 }
 
+# Sync Claude Code config into ~/.claude and ~/.agents — CLAUDE.md, settings.json
+# and agents symlinks plus authored/external skills, all from the repo. This
+# script runs in its own subshell, so source the helpers ai-sync needs (shell
+# functions aren't inherited; PATH is, so node/jq are found when run normally).
+sync-claude-code-config() {
+  source "$HOME/.dotfiles/shell/helpers/helpers"
+  source "$HOME/.dotfiles/shell/helpers/ai"
+  ai-sync
+}
+
 install-flathub-packages() {
   PACKAGES=(
     # entertainment
@@ -274,6 +284,7 @@ create-opt
 [ "$DOTFILES_DISTRO" = fedora ] && fedora-post-install
 download-software
 install-claude-code
+sync-claude-code-config
 install-flathub-packages
 install-autostarts
 
