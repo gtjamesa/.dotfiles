@@ -58,11 +58,12 @@
     "commit-commands@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
     "php-lsp@claude-plugins-official": true,
-    "laravel-simplifier@laravel": true
+    "laravel-simplifier@laravel": true,
+    "code-simplifier@claude-plugins-official": true
   },
+  "effortLevel": "xhigh",
   "skipDangerousModePermissionPrompt": true,
   "skipAutoPermissionPrompt": true,
   "voiceEnabled": false,
-  "effortLevel": "xhigh",
   "defaultMode": "auto"
 }
