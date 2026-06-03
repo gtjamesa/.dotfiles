@@ -1,0 +1,12 @@
+#!/bin/sh
+# docker-compose -> `docker compose` shim.
+#
+# Compose V2 is a Docker CLI plugin and ships no hyphenated `docker-compose`
+# command. This forwards legacy `docker-compose ...` calls to the plugin so
+# existing scripts, Makefiles, cron jobs and muscle memory keep working — a
+# shell alias would only cover interactive shells.
+#
+# Tracked in ~/.dotfiles (install/docker-compose) and symlinked to
+# /usr/local/bin/docker-compose by installscript (install_docker), so edits
+# here take effect live. Safe to delete once nothing invokes `docker-compose`.
+exec docker compose "$@"
