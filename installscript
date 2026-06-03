@@ -59,14 +59,7 @@ detect_wsl() {
 # Install ohmyzsh
 # https://github.com/ohmyzsh/ohmyzsh
 install_zsh() {
-  echo "Installing zsh"
-  echo "--------------------"
-  case "$DOTFILES_PKG" in
-    apt)  sudo apt install -y zsh ;;
-    dnf)  sudo dnf install -y zsh ;;
-    brew) brew install zsh ;;
-  esac
-
+  # The zsh package itself is installed in the core-package batch (run_installer).
   echo "Installing ohmyzsh"
   echo "--------------------"
   rm -rf "$HOME/.oh-my-zsh/"
@@ -88,16 +81,10 @@ install_zsh() {
 }
 
 install_tmux() {
-  echo "Installing tmux"
-  echo "---------------"
+  echo "Installing tmux plugins"
+  echo "-----------------------"
 
-  # Install tmux
-  case "$DOTFILES_PKG" in
-    apt)  sudo apt install -y tmux ;;
-    dnf)  sudo dnf install -y tmux ;;
-    brew) brew install tmux ;;
-  esac
-
+  # tmux itself is installed in the core-package batch (run_installer).
   # Add tmux plugins (tpm)
   mkdir -p "$HOME/.tmux/plugins"
   [ ! -d "$HOME/.tmux/plugins/tpm" ] && \
@@ -108,31 +95,14 @@ install_tmux() {
 }
 
 install_fzf() {
-  echo "Installing fzf"
-  echo "--------------"
-
-  # Distro packages wire up key-bindings/completion at runtime (see loader);
-  # only brew needs its install script to generate ~/.fzf.zsh.
-  case "$DOTFILES_PKG" in
-    apt)  sudo apt install -y fzf ;;
-    dnf)  sudo dnf install -y fzf ;;
-    brew)
-      brew install fzf
-      "$(brew --prefix)"/opt/fzf/install --key-bindings --completion --no-update-rc
-      ;;
-  esac
-}
-
-# zoxide — distro/brew package, not asdf: its asdf-plugins registry entry points
-# at a deleted repo (github.com/nyrst/asdf-zoxide, 404). loader inits it lazily.
-install_zoxide() {
-  echo "Installing zoxide"
-  echo "-----------------"
-  case "$DOTFILES_PKG" in
-    apt)  sudo apt install -y zoxide ;;
-    dnf)  sudo dnf install -y zoxide ;;
-    brew) brew install zoxide ;;
-  esac
+  # The fzf package is installed in the core-package batch. Distro packages
+  # wire up key-bindings/completion at runtime (see loader); only brew needs
+  # its install script to generate ~/.fzf.zsh.
+  if [ "$DOTFILES_PKG" = brew ]; then
+    echo "Configuring fzf"
+    echo "---------------"
+    "$(brew --prefix)"/opt/fzf/install --key-bindings --completion --no-update-rc
+  fi
 }
 
 # Install homebrew (macOS only — Linux uses apt/dnf directly)
@@ -425,27 +395,37 @@ run_preinstall() {
 run_installer() {
   run_preinstall
 
-  # Install utils (Linux)
+  # Homebrew first so the core-package batch below can use `brew`.
+  [ "$DOTFILES_PKG" = brew ] && install_homebrew
+
+  # Core packages — one transaction per package manager is much faster than
+  # invoking apt/dnf/brew once per tool. Tools needing extra setup keep their
+  # own functions below (oh-my-zsh, tpm, fzf key-bindings). zoxide is a plain
+  # package, not asdf: its asdf-plugins entry points at a deleted repo
+  # (github.com/nyrst/asdf-zoxide, 404); loader inits it lazily.
   case "$DOTFILES_PKG" in
     apt)
       sudo apt update -y
       sudo apt install -y \
-        build-essential curl file git wget vim jq zip unzip zstd xclip
+        build-essential curl file git wget vim jq zip unzip zstd xclip \
+        zsh tmux fzf zoxide
       ;;
     dnf)
       sudo dnf install -y \
-        @development-tools curl file git wget vim jq zip unzip zstd xclip wl-clipboard
+        @development-tools curl file git wget vim jq zip unzip zstd xclip wl-clipboard \
+        zsh tmux fzf zoxide
+      ;;
+    brew)
+      brew install zsh tmux fzf zoxide
       ;;
   esac
 
   #sudo apt install -y linux-headers-$(uname -r) dnsutils
 
-  [ "$DOTFILES_PKG" = brew ] && install_homebrew
   install_zsh
   install_dotfiles
   install_tmux
   install_fzf
-  install_zoxide
   install_node
   install_python
   install_asdf
