@@ -42,24 +42,16 @@ download-software-apt() {
   # Steam
   wget https://cdn.akamai.steamstatic.com/client/installer/steam.deb -O /tmp/steam.deb
 
-  # Table Plus
-  wget -qO - https://deb.tableplus.com/apt.tableplus.com.gpg.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/tableplus-archive.gpg > /dev/null
-  sudo add-apt-repository "deb [arch=amd64] https://deb.tableplus.com/debian/22 tableplus main"
-
   # AnyDesk
   wget "https://download.anydesk.com/linux/anydesk_${ANYDESK_VERSION}_amd64.deb" -O /tmp/anydesk.deb
 
   # asciinema
   sudo apt-add-repository -y ppa:zanchey/asciinema
 
-  # FirefoxPWA — https://github.com/filips123/PWAsForFirefox
-  curl -fsSL https://packagecloud.io/filips/FirefoxPWA/gpgkey | gpg --dearmor | sudo tee /usr/share/keyrings/firefoxpwa-keyring.gpg > /dev/null
-  echo "deb [signed-by=/usr/share/keyrings/firefoxpwa-keyring.gpg] https://packagecloud.io/filips/FirefoxPWA/any any main" | sudo tee /etc/apt/sources.list.d/firefoxpwa.list > /dev/null
-
   # Install configured software in one go if we can
   sudo apt update -y
   sudo apt install -y -f /tmp/1password-latest.deb /tmp/steam.deb /tmp/anydesk.deb
-  sudo apt install -y tableplus wine-installer asciinema firefoxpwa
+  sudo apt install -y wine-installer asciinema
 
   rm -f /tmp/1password-latest.deb /tmp/steam.deb /tmp/anydesk.deb
 }
@@ -79,15 +71,6 @@ repo_gpgcheck=1
 gpgkey=https://downloads.1password.com/linux/keys/1password.asc
 EOF
 
-  # TablePlus — official yum repo
-  sudo tee /etc/yum.repos.d/tableplus.repo > /dev/null <<'EOF'
-[tableplus]
-name=TablePlus
-baseurl=https://deb.tableplus.com/rpm/centos/8/x86_64
-enabled=1
-gpgcheck=0
-EOF
-
   # AnyDesk — official rpm repo
   sudo rpm --import https://keys.anydesk.com/repos/RPM-GPG-KEY
   sudo tee /etc/yum.repos.d/anydesk.repo > /dev/null <<'EOF'
@@ -99,11 +82,8 @@ gpgcheck=1
 gpgkey=https://keys.anydesk.com/repos/RPM-GPG-KEY
 EOF
 
-  # FirefoxPWA — PackageCloud's rpm bootstrap script handles repo+key
-  curl -fsSL https://packagecloud.io/install/repositories/filips/FirefoxPWA/script.rpm.sh | sudo bash
-
   # Install everything in one go — Steam from RPM Fusion, asciinema/wine from default repos
-  sudo dnf install -y 1password tableplus anydesk firefoxpwa steam asciinema wine
+  sudo dnf install -y 1password anydesk steam asciinema wine
 
   # KDE Spin gets kdeconnectd (Workstation users get the GNOME flatpak equivalent)
   case "${XDG_CURRENT_DESKTOP:-}" in
