@@ -14,6 +14,8 @@ visiblePlugin=gate#0
 outputDevice=alsa_output.pci-0000_0c_00.4.analog-stereo
 
 [Window]
+autostartOnLogin=true
 height=782
-visiblePage=pwPage
+visiblePage=inputPage
+visiblePresetSheetPage=autoloadingPage
 width=1324
