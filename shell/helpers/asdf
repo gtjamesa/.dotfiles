@@ -1,5 +1,29 @@
 #!/bin/bash
 
+asdf_fetch_binary() {
+  # Install/update the asdf 0.16+ Go binary for this platform. Shared by
+  # installscript (fresh installs) and shell/bin/asdf-migrate (legacy upgrades).
+  #   macOS  → brew (upgrade if already present, else install)
+  #   Linux  → standalone release binary into ~/.local/bin (on PATH via exports)
+  # Reads DOTFILES_OS/DOTFILES_PKG (set by helpers/distro) at call time.
+  case "$DOTFILES_PKG" in
+    brew) if brew list asdf >/dev/null 2>&1; then brew upgrade asdf; else brew install asdf; fi ;;
+    *)
+      local arch tag os="$DOTFILES_OS"
+      case "$(uname -m)" in
+        x86_64)        arch=amd64 ;;
+        aarch64|arm64) arch=arm64 ;;
+        *) echo "asdf: unsupported arch $(uname -m)"; return 1 ;;
+      esac
+      tag=$(curl -fsSL https://api.github.com/repos/asdf-vm/asdf/releases/latest \
+              | grep -oP '"tag_name":\s*"\K[^"]+') || return 1
+      mkdir -p "$HOME/.local/bin"
+      curl -fsSL "https://github.com/asdf-vm/asdf/releases/download/${tag}/asdf-${tag}-${os}-${arch}.tar.gz" \
+        | tar -xzf - -C "$HOME/.local/bin" asdf || return 1
+      export PATH="$HOME/.local/bin:$PATH" ;;
+  esac
+}
+
 asdf-reload() {
   local desired current missing
 

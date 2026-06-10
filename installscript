@@ -198,31 +198,16 @@ install_python() {
 }
 
 install_asdf() {
-  # asdf 0.16+ is a single Go binary. macOS uses brew; Linux fetches the
-  # latest GitHub release into ~/.local/bin (on PATH via shell/exports).
-  case "$DOTFILES_PKG" in
-    brew) brew install asdf ;;
-    *)
-      local arch tag
-      case "$(uname -m)" in
-        x86_64)        arch=amd64 ;;
-        aarch64|arm64) arch=arm64 ;;
-        *) echo "asdf: unsupported arch $(uname -m), skipping"; return 0 ;;
-      esac
-      tag=$(curl -fsSL https://api.github.com/repos/asdf-vm/asdf/releases/latest \
-              | grep -oP '"tag_name":\s*"\K[^"]+')
-      mkdir -p "$HOME/.local/bin"
-      curl -fsSL "https://github.com/asdf-vm/asdf/releases/download/${tag}/asdf-${tag}-linux-${arch}.tar.gz" \
-        | tar -xzf - -C "$HOME/.local/bin" asdf
-      export PATH="$HOME/.local/bin:$PATH"
-      ;;
-  esac
+  # asdf 0.16+ is a single Go binary. macOS uses brew; Linux fetches the latest
+  # GitHub release into ~/.local/bin (on PATH via shell/exports). asdf_fetch_binary
+  # is shared with shell/bin/asdf-migrate (the legacy → 0.16 upgrade script).
+  source ~/.dotfiles/shell/helpers/asdf
+  asdf_fetch_binary || { echo "asdf: binary install failed, skipping"; return 0; }
 
   symlink_file "$HOME/.dotfiles/shell/.tool-versions" "$HOME/.tool-versions"
 
   # No asdf.sh in 0.16+ — the shims dir (added to PATH in shell/exports) is
-  # enough. Source the "asdf-reload" function to install plugins/tool-versions.
-  source ~/.dotfiles/shell/helpers/asdf
+  # enough. asdf-reload installs the plugins/tool-versions.
   asdf-reload
 }
 
