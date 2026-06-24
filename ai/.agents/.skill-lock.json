@@ -6,9 +6,9 @@
       "sourceType": "github",
       "sourceUrl": "https://github.com/vercel-labs/skills.git",
       "skillPath": "skills/find-skills/SKILL.md",
-      "skillFolderHash": "3013fdeb8a11b10b1eb795ec3ae8bfca38f7c26d",
+      "skillFolderHash": "eb6a23305aea6e340d14b9de3766e721f9f4861b",
       "installedAt": "2026-02-09T08:38:52.110Z",
-      "updatedAt": "2026-06-04T09:41:31.883Z"
+      "updatedAt": "2026-06-24T06:17:40.089Z"
     },
     "docker-expert": {
       "source": "sickn33/antigravity-awesome-skills",
@@ -83,10 +83,9 @@
       "sourceType": "github",
       "sourceUrl": "https://github.com/mattpocock/skills.git",
       "skillPath": "skills/engineering/setup-matt-pocock-skills/SKILL.md",
-      "skillFolderHash": "949017b9af45304506a56f79635952f1d222a75b",
-      "pluginName": "mattpocock-skills",
+      "skillFolderHash": "8d7fc1569ee7c4a50827091a795daa490212506d",
       "installedAt": "2026-05-13T07:18:40.837Z",
-      "updatedAt": "2026-06-17T21:09:35.554Z"
+      "updatedAt": "2026-06-24T06:17:41.197Z"
     },
     "tdd": {
       "source": "mattpocock/skills",
@@ -123,10 +122,9 @@
       "sourceType": "github",
       "sourceUrl": "https://github.com/mattpocock/skills.git",
       "skillPath": "skills/engineering/triage/SKILL.md",
-      "skillFolderHash": "e1776d48fa83c923053bd39bfb77b767955f9869",
-      "pluginName": "mattpocock-skills",
+      "skillFolderHash": "3e7a49151929d884365035cb322de099c15b33d3",
       "installedAt": "2026-05-13T07:18:40.839Z",
-      "updatedAt": "2026-06-17T21:09:35.558Z"
+      "updatedAt": "2026-06-24T06:17:42.291Z"
     },
     "using-git-worktrees": {
       "source": "obra/superpowers",
@@ -192,10 +190,9 @@
       "sourceType": "github",
       "sourceUrl": "https://github.com/mattpocock/skills.git",
       "skillPath": "skills/productivity/teach/SKILL.md",
-      "skillFolderHash": "975430f7801bac2258ed18f4d80860024443b4f7",
-      "pluginName": "mattpocock-skills",
+      "skillFolderHash": "3b6a4245e2aaeacb308ba6175ab3e7f2e43b0c47",
       "installedAt": "2026-06-17T21:09:35.556Z",
-      "updatedAt": "2026-06-17T21:09:35.556Z"
+      "updatedAt": "2026-06-24T06:17:43.526Z"
     },
     "writing-great-skills": {
       "source": "mattpocock/skills",
