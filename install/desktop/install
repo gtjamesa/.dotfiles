@@ -83,7 +83,7 @@ gpgkey=https://keys.anydesk.com/repos/RPM-GPG-KEY
 EOF
 
   # Install everything in one go — Steam from RPM Fusion, asciinema/wine from default repos
-  sudo dnf install -y 1password anydesk steam asciinema wine
+  sudo dnf install -y 1password anydesk steam asciinema wine solaar
 
   # KDE Spin gets kdeconnectd (Workstation users get the GNOME flatpak equivalent)
   case "${XDG_CURRENT_DESKTOP:-}" in
@@ -125,7 +125,7 @@ install-flathub-packages() {
     # text
     io.typora.Typora md.obsidian.Obsidian org.gnome.meld \
     # utility
-    com.github.tchx84.Flatseal com.getpostman.Postman org.flameshot.Flameshot io.github.pwr_solaar.solaar \
+    com.github.tchx84.Flatseal com.getpostman.Postman org.flameshot.Flameshot \
     # games
     net.davidotek.pupgui2 com.obsproject.Studio io.github.trigg.discover_overlay
   )
@@ -133,10 +133,11 @@ install-flathub-packages() {
 }
 
 install-autostarts() {
-  SOLARR_AUTOSTART="$HOME/.config/autostart/solaar.desktop"
   sudo wget https://github.com/pwr-Solaar/Solaar/raw/refs/heads/master/rules.d/42-logitech-unify-permissions.rules -O /etc/udev/rules.d/42-logitech-unify-permissions.rules
-  wget https://github.com/pwr-Solaar/Solaar/raw/refs/heads/master/share/autostart/solaar.desktop -O "$SOLARR_AUTOSTART"
-  sed -i 's/Exec=solaar/Exec=flatpak run io.github.pwr_solaar.solaar/' "$SOLARR_AUTOSTART"
+  wget https://github.com/pwr-Solaar/Solaar/raw/refs/heads/master/share/autostart/solaar.desktop -O ~/.config/autostart/solaar.desktop
+
+  # reload udev rules after modifications
+  sudo udevadm control --reload-rules
 }
 
 # ----------------------------------------------------------------------------
