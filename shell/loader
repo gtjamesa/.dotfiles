@@ -24,10 +24,8 @@ fi
 
 # Interactive tool init — kept out of exports so non-interactive shells stay fast
 command -v pyenv >/dev/null 2>&1 && eval "$(pyenv init -)"
-_asdf="$(brew --prefix 2>/dev/null)/opt/asdf/libexec/asdf.sh"
-[ -f "$_asdf" ] && source "$_asdf"
-unset _asdf
 command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init zsh)"
+# asdf 0.16+ needs no init here — shims are on PATH via exports; completion cached below.
 
 [ -f ~/.dotfiles/shell/helpers/colour ] && source ~/.dotfiles/shell/helpers/colour
 [ -f ~/.dotfiles/shell/fnm/fnm ] && source ~/.dotfiles/shell/fnm/fnm
@@ -44,16 +42,36 @@ source_dir ~/.dotfiles/shell/aliases
 [ -f ~/.dotfiles/shell/helpers/dotfiles ] && source ~/.dotfiles/shell/helpers/dotfiles
 [ -f ~/.dotfiles/shell/helpers/dotmod ] && source ~/.dotfiles/shell/helpers/dotmod
 [ -f ~/.dotfiles/shell/helpers/helpers ] && source ~/.dotfiles/shell/helpers/helpers
+[ -f ~/.dotfiles/shell/helpers/distro ] && source ~/.dotfiles/shell/helpers/distro
 [ -f ~/.dotfiles/shell/helpers/rust ] && source ~/.dotfiles/shell/helpers/rust
 [ -f ~/.dotfiles/shell/helpers/ai ] && source ~/.dotfiles/shell/helpers/ai
 
-# fzf
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+# fzf key-bindings + completion. brew's installer writes ~/.fzf.zsh; modern
+# distro packages expose `fzf --zsh` (>=0.48); older ones ship snippets.
+if [ -f ~/.fzf.zsh ]; then
+  source ~/.fzf.zsh
+elif command -v fzf >/dev/null 2>&1; then
+  if fzf --zsh >/dev/null 2>&1; then
+    eval "$(fzf --zsh)"
+  else
+    for _f in /usr/share/fzf/shell/key-bindings.zsh \
+              /usr/share/doc/fzf/examples/key-bindings.zsh \
+              /usr/share/doc/fzf/examples/completion.zsh; do
+      [ -r "$_f" ] && source "$_f"
+    done
+    unset _f
+  fi
+fi
 
 # autocompletions — cached to the omz completions dir (no per-shell subprocess).
 # Re-run compinit when we generate a new file so this shell picks it up.
 if command -v tailscale &>/dev/null && [ ! -f "$HOME/.oh-my-zsh/completions/_tailscale" ]; then
   tailscale completion zsh > "$HOME/.oh-my-zsh/completions/_tailscale"
+  autoload -Uz compinit && compinit
+fi
+
+if command -v asdf &>/dev/null && [ ! -f "$HOME/.oh-my-zsh/completions/_asdf" ]; then
+  asdf completion zsh > "$HOME/.oh-my-zsh/completions/_asdf"
   autoload -Uz compinit && compinit
 fi
 

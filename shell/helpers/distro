@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Distro/OS detection — sourced wherever the install scripts or runtime aliases
+# need to branch on package manager. No functions, just env vars.
+#
+#   DOTFILES_OS      linux | darwin
+#   DOTFILES_DISTRO  debian | fedora | darwin (family — Mint/Ubuntu collapse to debian)
+#   DOTFILES_PKG     apt | dnf | brew
+
+DOTFILES_OS=$(uname | tr '[:upper:]' '[:lower:]')
+DOTFILES_DISTRO=
+DOTFILES_PKG=
+
+if [ "$DOTFILES_OS" = darwin ]; then
+  DOTFILES_DISTRO=darwin
+  DOTFILES_PKG=brew
+elif [ -r /etc/os-release ]; then
+  # shellcheck disable=SC1091
+  . /etc/os-release
+  case " ${ID:-} ${ID_LIKE:-} " in
+    *" fedora "*|*" rhel "*|*" centos "*) DOTFILES_DISTRO=fedora; DOTFILES_PKG=dnf ;;
+    *" debian "*|*" ubuntu "*)             DOTFILES_DISTRO=debian; DOTFILES_PKG=apt ;;
+  esac
+fi
+
+export DOTFILES_OS DOTFILES_DISTRO DOTFILES_PKG

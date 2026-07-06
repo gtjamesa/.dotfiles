@@ -1,0 +1,245 @@
+#!/usr/bin/env bash
+# kde-sync — sync KDE Plasma + GTK appearance (fonts, icons, colours, style)
+# between machines via the dotfiles repo. Copy-based, NOT symlinked: KConfig
+# saves atomically (temp file -> rename), which would clobber a symlink.
+#
+#   kde-sync save     live ~/.config + ~/.local/share  ->  repo (then commit)
+#   kde-sync load     repo  ->  live, install fonts + Darkly, reload Plasma
+#   kde-sync diff     show what differs between live and repo
+#   kde-sync reload   re-apply live config without copying
+#   kde-sync install-darkly   install the Darkly Qt style + matching GTK theme
+#   kde-sync install-fonts    install the Inter font family
+#
+# Manifest is the single source of truth for both directions. Machine-specific
+# state (panel layout, monitor config) is deliberately excluded.
+set -euo pipefail
+
+DOTFILES="${DOTFILES:-$HOME/.dotfiles}"
+source "$DOTFILES/shell/helpers/distro"
+
+STORE="$DOTFILES/config/kde"
+CONFIG_ROOT="${XDG_CONFIG_HOME:-$HOME/.config}"
+DATA_ROOT="${XDG_DATA_HOME:-$HOME/.local/share}"
+
+# Manifest: "<root>|<relative path>". A trailing dir is copied recursively.
+#   config -> $CONFIG_ROOT (~/.config)      data -> $DATA_ROOT (~/.local/share)
+MANIFEST=(
+  "config|kdeglobals"              # fonts, icon theme, widget style, colours, look-and-feel
+  "config|kwinrc"                  # window decorations + effects
+  "config|gtkrc"
+  "config|gtkrc-2.0"
+  "config|gtk-3.0/settings.ini"
+  "config|gtk-4.0/settings.ini"
+  "config|kdedefaults"             # default look-and-feel package (carries cursor theme)
+  "data|color-schemes"             # custom *.colors
+  # "data|icons"                   # uncomment to track a downloaded icon set
+  # "data|aurorae/themes"          # uncomment to track custom window decorations
+)
+# Top-level kcminputrc is NOT tracked: it is per-device pointer state (libinput
+# accel keyed by USB id). The cursor theme lives in kdedefaults/kcminputrc above.
+
+# Machine-/time-specific lines stripped from every saved file (and from live
+# before `diff` compares), so a scrubbed repo reads in-sync. Each is a grep -E regex.
+SCRUB=(
+  '^gtk-xft-dpi='             # display DPI / scaling
+  '^ColorSchemeHash='         # hash KDE regenerates locally
+  '^Speedbar Width='          # file-dialog sidebar width (px)
+  '^# created by KDE Plasma'  # timestamp KDE rewrites into gtkrc on every change
+)
+# Whole INI sections dropped likewise — machine/workflow state, not appearance.
+# Matched by section-name prefix, so [Tiling][uuid][uuid] matches "Tiling".
+SCRUB_SECTIONS=(Desktops Tiling)
+
+c_grn=$'\e[32m'; c_yel=$'\e[33m'; c_red=$'\e[31m'; c_dim=$'\e[2m'; c_rst=$'\e[0m'
+say()  { printf '%s\n' "$*"; }
+ok()   { printf '%s%s%s\n' "$c_grn" "$*" "$c_rst"; }
+warn() { printf '%s%s%s\n' "$c_yel" "$*" "$c_rst"; }
+skip() { printf '%s%s%s\n' "$c_dim" "$*" "$c_rst"; }
+
+# Strip blocklisted lines and whole SCRUB_SECTIONS from a file in place. Files
+# with nothing to strip are left byte-for-byte, so untouched configs never churn.
+scrub_file() {
+  local f=$1 t lre sre secs
+  local IFS='|'; lre="${SCRUB[*]}"; sre="^\\[(${SCRUB_SECTIONS[*]})\\]"
+  IFS=' ';      secs="${SCRUB_SECTIONS[*]}"
+  grep -qE "$lre" "$f" 2>/dev/null || grep -qE "$sre" "$f" 2>/dev/null || return 0
+  t=$(mktemp)
+  awk -v lre="$lre" -v secs="$secs" '
+    BEGIN { n = split(secs, s, " ") }
+    /^\[/    { drop = 0; for (i = 1; i <= n; i++) if (index($0, "[" s[i] "]") == 1) drop = 1 }
+    drop     { next }
+    $0 ~ lre { next }
+             { print }
+  ' "$f" >"$t"
+  mv "$t" "$f"
+}
+
+# Scrub every regular file under a path in place.
+scrub_tree() {
+  local f
+  while IFS= read -r -d '' f; do scrub_file "$f"; done < <(find "$1" -type f -print0)
+}
+
+# resolve "<root>|<rel>" -> live path + repo path, via nameref out-vars
+resolve() {
+  local entry=$1; local -n _live=$2 _repo=$3
+  local root=${entry%%|*} rel=${entry#*|}
+  case $root in
+    config) _live="$CONFIG_ROOT/$rel" ;;
+    data)   _live="$DATA_ROOT/$rel" ;;
+    *) warn "bad manifest root: $root"; return 1 ;;
+  esac
+  _repo="$STORE/$root/$rel"
+}
+
+cmd_save() {
+  local entry live repo n=0
+  for entry in "${MANIFEST[@]}"; do
+    resolve "$entry" live repo
+    if [[ ! -e $live ]]; then skip "skip  ${live/#$HOME/~}  (absent)"; continue; fi
+    mkdir -p "$(dirname "$repo")"
+    rm -rf "$repo"
+    cp -a "$live" "$repo"
+    scrub_tree "$repo"
+    ok   "saved ${live/#$HOME/~}"
+    n=$((n+1))
+  done
+  say
+  ok "$n item(s) -> $STORE"
+  say "${c_dim}Review and commit:  git -C \"$DOTFILES\" add config/kde && git -C \"$DOTFILES\" commit$c_rst"
+}
+
+cmd_load() {
+  install_fonts
+  install_darkly
+  local entry live repo n=0
+  for entry in "${MANIFEST[@]}"; do
+    resolve "$entry" live repo
+    if [[ ! -e $repo ]]; then skip "skip  ${repo/#$DOTFILES/repo}  (not tracked yet)"; continue; fi
+    mkdir -p "$(dirname "$live")"
+    [[ -e $live ]] && cp -a "$live" "$live.kde-sync.bak"
+    rm -rf "$live"
+    cp -a "$repo" "$live"
+    ok   "loaded ${live/#$HOME/~}"
+    n=$((n+1))
+  done
+  say
+  ok "$n item(s) applied (existing files backed up to *.kde-sync.bak)"
+  cmd_reload
+}
+
+cmd_diff() {
+  local entry live repo cmp tmp any=0
+  for entry in "${MANIFEST[@]}"; do
+    resolve "$entry" live repo
+    [[ -e $live || -e $repo ]] || continue
+    cmp=$live; tmp=
+    if [[ -e $live ]]; then          # compare repo against what `save` would store
+      tmp=$(mktemp -d); cp -a "$live" "$tmp/c"; scrub_tree "$tmp/c"; cmp="$tmp/c"
+    fi
+    if ! diff -rq "$repo" "$cmp" >/dev/null 2>&1; then
+      warn "differs: ${live/#$HOME/~}"
+      diff -ru "$repo" "$cmp" 2>/dev/null | sed 's/^/  /' || true
+      any=1
+    fi
+    [[ -n $tmp ]] && rm -rf "$tmp"
+  done
+  [[ $any -eq 0 ]] && ok "live and repo are in sync"
+}
+
+cmd_reload() {
+  say "Reloading Plasma…"
+  qdbus6 org.kde.KWin /KWin reconfigure >/dev/null 2>&1 || \
+    qdbus org.kde.KWin /KWin reconfigure >/dev/null 2>&1 || true
+  if command -v plasmashell >/dev/null; then
+    if command -v systemctl >/dev/null && systemctl --user --quiet is-active plasma-plasmashell 2>/dev/null; then
+      systemctl --user restart plasma-plasmashell.service || true
+    else
+      (kquitapp6 plasmashell || kquitapp5 plasmashell) >/dev/null 2>&1 || true
+      (setsid kstart plasmashell || setsid kstart6 plasmashell) >/dev/null 2>&1 || true
+    fi
+  fi
+  warn "Cursor and icon-theme changes may need a full log out / log in to fully apply."
+}
+
+pkg_install() {
+  case $DOTFILES_PKG in
+    dnf)  sudo dnf install -y "$@" ;;
+    apt)  sudo apt-get install -y "$@" ;;
+    brew) brew install "$@" ;;
+    *) warn "install manually: $*"; return 1 ;;
+  esac
+}
+
+# Shallow-clone a repo to a temp dir and run a command inside it, then clean up.
+with_clone() {
+  local url=$1; shift
+  local tmp; tmp=$(mktemp -d)
+  git clone --single-branch --depth=1 "$url" "$tmp/repo"
+  ( cd "$tmp/repo" && "$@" )
+  rm -rf "$tmp"
+}
+
+# Qt/KDE style — upstream's version-matched RPM on Fedora, source build elsewhere.
+install_darkly_qt() {
+  find /usr/lib* "$HOME/.local/lib" -name 'darkly*.so' 2>/dev/null | grep -q . \
+    && { skip "Darkly (Qt) already installed"; return 0; }
+  warn "Installing Darkly (Qt)…"
+  if [[ $DOTFILES_PKG == dnf ]]; then
+    local ver rpm_url
+    ver=$( . /etc/os-release && printf '%s' "${VERSION_ID:-}" )
+    rpm_url=$(curl -fsSL https://api.github.com/repos/Bali10050/Darkly/releases/latest \
+      | grep -oE "https://[^\"]*\.fc${ver}\.x86_64\.rpm" | head -n1)
+    if [[ -n $rpm_url ]]; then
+      say "Official RPM: $rpm_url"; pkg_install "$rpm_url"
+    else
+      warn "No official fc${ver} RPM; falling back to COPR deltacopy/darkly"
+      sudo dnf copr enable -y deltacopy/darkly; pkg_install Darkly
+    fi
+  else
+    with_clone https://github.com/Bali10050/Darkly.git ./install.sh QT6
+  fi
+}
+
+# Matching GTK 3/4 + libadwaita theme; builds from SCSS (needs sassc).
+install_darkly_gtk() {
+  [[ -d "$DATA_ROOT/themes/Darkly" ]] && { skip "Darkly (GTK) already installed"; return 0; }
+  warn "Installing Darkly (GTK)…"
+  command -v sassc >/dev/null || pkg_install sassc
+  with_clone https://github.com/wrymt/darkly-gtk.git ./install.sh -l
+}
+
+install_darkly() {
+  install_darkly_qt
+  install_darkly_gtk
+  ok "Darkly installed"
+}
+
+# Inter font (referenced by every tracked font key). On Fedora the variable
+# build ships an enabled fontconfig alias making it the preferred sans-serif.
+install_fonts() {
+  # grep consumes all of fc-list (no -q): -q would SIGPIPE fc-list and trip pipefail.
+  if command -v fc-list >/dev/null && fc-list 2>/dev/null | grep -iw inter >/dev/null; then
+    skip "Inter font already installed"; return 0
+  fi
+  warn "Installing Inter font…"
+  case $DOTFILES_PKG in
+    dnf)  pkg_install rsms-inter-vf-fonts ;;
+    apt)  pkg_install fonts-inter ;;
+    brew) brew install --cask font-inter ;;
+    *) warn "install the Inter font manually"; return 1 ;;
+  esac
+}
+
+usage() { sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//'; }
+
+case "${1:-}" in
+  save)   cmd_save ;;
+  load)   cmd_load ;;
+  diff)   cmd_diff ;;
+  reload) cmd_reload ;;
+  install-darkly) install_darkly ;;
+  install-fonts)  install_fonts ;;
+  ""|-h|--help|help) usage ;;
+  *) warn "unknown command: $1"; usage; exit 1 ;;
+esac

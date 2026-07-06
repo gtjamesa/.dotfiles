@@ -2,6 +2,7 @@
 
 # Load helper functions
 source "$HOME/.dotfiles/shell/helpers/helpers"
+source "$HOME/.dotfiles/shell/helpers/distro"
 
 OS="$(uname)"
 wsl2=0
@@ -32,7 +33,7 @@ for opt in "$@"; do
     getracker=1
     wsl2=0
     ;;
-  --wsl2) wsl2=1 ;;
+  --force-wsl2) wsl2=1 ;;
   --composer) composer=1 ;;
   --no-composer) composer=0 ;;
   --docker) docker=1 ;;
@@ -42,7 +43,7 @@ for opt in "$@"; do
   --ask-optional) ask_optional=1 ;;
   *)
     echo "unknown option: $opt"
-    help
+    echo "Please run the bootstrap script"
     exit 1
     ;;
   esac
@@ -58,14 +59,7 @@ detect_wsl() {
 # Install ohmyzsh
 # https://github.com/ohmyzsh/ohmyzsh
 install_zsh() {
-  echo "Installing zsh"
-  echo "--------------------"
-  if [[ "$OS" == "Linux" ]]; then
-    sudo apt install -y zsh
-  elif [[ "$OS" == "Darwin" ]]; then
-    brew install zsh
-  fi
-
+  # The zsh package itself is installed in the core-package batch (run_installer).
   echo "Installing ohmyzsh"
   echo "--------------------"
   rm -rf "$HOME/.oh-my-zsh/"
@@ -87,44 +81,41 @@ install_zsh() {
 }
 
 install_tmux() {
-  echo "Installing tmux"
-  echo "---------------"
+  echo "Installing tmux plugins"
+  echo "-----------------------"
 
-  # Install tmux
-  brew install tmux
-
-  # Add tmux plugins
+  # tmux itself is installed in the core-package batch (run_installer).
+  # Add tmux plugins (tpm)
   mkdir -p "$HOME/.tmux/plugins"
-  git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
+  [ ! -d "$HOME/.tmux/plugins/tpm" ] && \
+    git clone https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
 
   # Add tmux config
   symlink_file "$HOME/.dotfiles/shell/.tmux.conf" "$HOME/.tmux.conf"
 }
 
 install_fzf() {
-  echo "Installing fzf"
-  echo "--------------"
-
-  brew install fzf
-  $(brew --prefix)/opt/fzf/install --key-bindings --completion --no-update-rc
+  # The fzf package is installed in the core-package batch. Distro packages
+  # wire up key-bindings/completion at runtime (see loader); only brew needs
+  # its install script to generate ~/.fzf.zsh.
+  if [ "$DOTFILES_PKG" = brew ]; then
+    echo "Configuring fzf"
+    echo "---------------"
+    "$(brew --prefix)"/opt/fzf/install --key-bindings --completion --no-update-rc
+  fi
 }
 
-# Install homebrew
-# https://docs.brew.sh/Homebrew-on-Linux
+# Install homebrew (macOS only — Linux uses apt/dnf directly)
+# https://brew.sh
 install_homebrew() {
   echo "Installing homebrew"
   echo "--------------------"
-  rm -rf "$HOME/.linuxbrew"
-  bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  NONINTERACTIVE=1 bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-  if [[ "$OS" == "Linux" ]]; then
-    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-  elif [[ "$OS" == "Darwin" ]]; then
-    if [ -x /opt/homebrew/bin/brew ]; then
-      eval "$(/opt/homebrew/bin/brew shellenv)"
-    else
-      eval "$(/usr/local/bin/brew shellenv)"
-    fi
+  if [ -x /opt/homebrew/bin/brew ]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+  else
+    eval "$(/usr/local/bin/brew shellenv)"
   fi
 }
 
@@ -165,26 +156,40 @@ install_node() {
 }
 
 install_python() {
-  # Install pyenv package manager
-  brew install pyenv
+  # Install pyenv. macOS uses brew; Linux clones the repo (not in apt/dnf).
+  case "$DOTFILES_PKG" in
+    brew) brew install pyenv ;;
+    *)    [ ! -d "$HOME/.pyenv" ] && git clone https://github.com/pyenv/pyenv.git "$HOME/.pyenv" ;;
+  esac
 
   # Install Python build dependencies
   # https://github.com/pyenv/pyenv/wiki#suggested-build-environment
-  if [[ $(uname) == "Linux" ]]; then
-    # Ensure that OpenSSL v1.1 is not installed via Brew
-    # as this will cause Python 3.10 install to fail
-    brew uninstall --ignore-dependencies --force openssl@1.1
+  case "$DOTFILES_PKG" in
+    apt)
+      sudo apt update -y
+      sudo apt install -y \
+        make build-essential libssl-dev zlib1g-dev \
+        libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
+        libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev \
+        python3.10-dev openssl
+      ;;
+    dnf)
+      sudo dnf install -y \
+        @development-tools openssl-devel zlib-devel \
+        bzip2-devel readline-devel sqlite-devel wget curl llvm \
+        ncurses-devel xz xz-devel tk-devel libxml2-devel xmlsec1-devel libffi-devel \
+        openssl
+      ;;
+    brew)
+      brew install openssl readline sqlite3 xz zlib tcl-tk
+      ;;
+  esac
 
-    sudo apt update -y && sudo apt install -y \
-      make build-essential libssl-dev zlib1g-dev \
-      libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm \
-      libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev \
-      python3.10-dev openssl
-  elif [[ $(uname) == "Darwin" ]]; then
-    brew install openssl readline sqlite3 xz zlib tcl-tk
-  fi
+  # Put pyenv on PATH for the calls below (git-clone path needs this; brew
+  # already did). install/global don't need `pyenv init` — only the PATH.
+  export PYENV_ROOT="$HOME/.pyenv"
+  command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
 
-  pyenv install 2.7
   pyenv install 3.10
   pyenv global 3.10
 
@@ -193,15 +198,16 @@ install_python() {
 }
 
 install_asdf() {
-  brew install asdf
-
-  # Source the asdf exports
-  source $(brew --prefix)/opt/asdf/libexec/asdf.sh
+  # asdf 0.16+ is a single Go binary. macOS uses brew; Linux fetches the latest
+  # GitHub release into ~/.local/bin (on PATH via shell/exports). asdf_fetch_binary
+  # is shared with shell/bin/asdf-migrate (the legacy → 0.16 upgrade script).
+  source ~/.dotfiles/shell/helpers/asdf
+  asdf_fetch_binary || { echo "asdf: binary install failed, skipping"; return 0; }
 
   symlink_file "$HOME/.dotfiles/shell/.tool-versions" "$HOME/.tool-versions"
 
-  # Source the "asdf-reload" function to add/install all plugins in .tool-versions
-  source ~/.dotfiles/shell/helpers/asdf
+  # No asdf.sh in 0.16+ — the shims dir (added to PATH in shell/exports) is
+  # enough. asdf-reload installs the plugins/tool-versions.
   asdf-reload
 }
 
@@ -211,9 +217,16 @@ install_wslu() {
   fi
 
   # https://github.com/wslutilities/wslu
-  sudo add-apt-repository -y ppa:wslutilities/wslu
-  sudo apt update -y
-  sudo apt install -y wslu
+  case "$DOTFILES_PKG" in
+    apt)
+      sudo add-apt-repository -y ppa:wslutilities/wslu
+      sudo apt update -y
+      sudo apt install -y wslu
+      ;;
+    dnf)
+      sudo dnf install -y wslu
+      ;;
+  esac
 
   [ ! -f /usr/local/bin/xdg-open ] && sudo ln -s /usr/bin/wslview /usr/local/bin/xdg-open
 
@@ -278,42 +291,46 @@ install_docker() {
   if [[ "$docker" -eq 1 ]]; then
     echo "Install Docker"
 
-    # Not running in WSL 2
-    if [[ "$wsl2" -eq 0 ]]; then
-      sudo apt install -y docker.io docker-doc
-    else
-      SYS_VERS=$(grep VERSION_ID /etc/os-release | awk -F'"' '{print $2}')
-
-      echo "-----------------------------------------------"
-      echo "Installing Docker in WSL 2"
-      echo "Ensure to select 'iptables-legacy' when prompted"
-      echo "-----------------------------------------------"
-
-      # Enable systemd
-      if [ ! -f /etc/wsl.conf ]; then
-        cat <<EOF | sudo tee /etc/wsl.conf
+    # WSL 2 prep: enable systemd
+    if [[ "$wsl2" -eq 1 ]] && [ ! -f /etc/wsl.conf ]; then
+      cat <<EOF | sudo tee /etc/wsl.conf
 [boot]
 systemd=true
 EOF
-      fi
+    fi
 
-      # https://nickjanetakis.com/blog/install-docker-in-wsl-2-without-docker-desktop
-      # https://dev.to/bowmanjd/install-docker-on-windows-wsl-without-docker-desktop-34m9
-      curl -fsSL https://get.docker.com -o /tmp/get-docker.sh
-      sudo bash /tmp/get-docker.sh
+    # Upstream installer handles both apt and dnf distros, including
+    # repo setup and signing keys. Replaces the previous apt-only path.
+    # https://docs.docker.com/engine/install/
+    curl -fsSL https://get.docker.com -o /tmp/get-docker.sh
+    sudo bash /tmp/get-docker.sh
+    rm -f /tmp/get-docker.sh
 
+    # Ubuntu 22.04 + WSL 2 needs iptables-legacy. Fedora uses nftables; never needed.
+    if [[ "$wsl2" -eq 1 ]] && [ "$DOTFILES_DISTRO" = debian ]; then
+      SYS_VERS=$(grep VERSION_ID /etc/os-release | awk -F'"' '{print $2}')
       if [[ "$SYS_VERS" == "22.04" ]]; then
         echo -e "\033[0;33mEnsure to select 'iptables-legacy' when prompted\033[0m"
         sudo update-alternatives --config iptables
       fi
-
-      rm -f /tmp/get-docker.sh
     fi
 
-    # Install docker-compose
-    wget "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)"
-    sudo mv "docker-compose-$(uname -s)-$(uname -m)" /usr/local/bin/docker-compose
-    sudo chmod -v +x /usr/local/bin/docker-compose
+    # Compose V2 is a CLI plugin (`docker compose`), not the legacy standalone
+    # docker-compose binary. get.docker.com sets up Docker's package repo and
+    # usually pulls the plugin in; install it explicitly to be sure.
+    # https://docs.docker.com/compose/install/#plugin-linux-only
+    case "$DOTFILES_PKG" in
+      apt) sudo apt install -y docker-compose-plugin ;;
+      dnf) sudo dnf install -y docker-compose-plugin ;;
+    esac
+
+    # Back-compat shim: the Compose plugin provides only `docker compose`, no
+    # hyphenated binary. Symlink the repo-tracked shim onto the system PATH (not
+    # just a shell alias) so legacy callers work everywhere — scripts, Makefiles,
+    # cron — which an interactive-only alias can't reach. sudo (not symlink_file)
+    # since /usr/local/bin is root-owned; -f overwrites the old standalone
+    # docker-compose binary that used to live at this path.
+    sudo ln -sf "$HOME/.dotfiles/install/docker-compose" /usr/local/bin/docker-compose
 
     # Enable docker at startup and add user to group
     sudo systemctl start docker
@@ -375,15 +392,33 @@ run_preinstall() {
 run_installer() {
   run_preinstall
 
-  # Install utils (Linux)
-  if [[ "$OS" == "Linux" ]]; then
-    sudo apt update -y && sudo apt install -y \
-      build-essential curl file git wget vim curl jq zip unzip zstd xclip
-  fi
+  # Homebrew first so the core-package batch below can use `brew`.
+  [ "$DOTFILES_PKG" = brew ] && install_homebrew
+
+  # Core packages — one transaction per package manager is much faster than
+  # invoking apt/dnf/brew once per tool. Tools needing extra setup keep their
+  # own functions below (oh-my-zsh, tpm, fzf key-bindings). zoxide is a plain
+  # package, not asdf: its asdf-plugins entry points at a deleted repo
+  # (github.com/nyrst/asdf-zoxide, 404); loader inits it lazily.
+  case "$DOTFILES_PKG" in
+    apt)
+      sudo apt update -y
+      sudo apt install -y \
+        build-essential curl file git wget vim jq zip unzip zstd xclip \
+        zsh tmux fzf zoxide
+      ;;
+    dnf)
+      sudo dnf install -y \
+        @development-tools curl file git wget vim jq zip unzip zstd xclip wl-clipboard \
+        zsh tmux fzf zoxide
+      ;;
+    brew)
+      brew install zsh tmux fzf zoxide
+      ;;
+  esac
 
   #sudo apt install -y linux-headers-$(uname -r) dnsutils
 
-  install_homebrew
   install_zsh
   install_dotfiles
   install_tmux
@@ -430,6 +465,11 @@ echo "-- Press prefix + I (capital i, as in Install) to fetch the plugins"
 echo
 if [[ "$docker" -eq 1 ]]; then
   echo "- You may have to logout/login for Docker to work properly"
+  echo
+fi
+if [[ "$OS" == "Linux" ]]; then
+  echo "- To install desktop apps (Jetbrains, 1Password, etc.) run:"
+  echo -e "  \033[0;34m~/.dotfiles/install/desktop/install\033[0m"
   echo
 fi
 echo "#################################"

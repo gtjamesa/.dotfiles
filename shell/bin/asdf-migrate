@@ -1,0 +1,169 @@
+#!/bin/bash
+#
+# asdf-migrate — upgrade a machine from the legacy shell-based asdf (<=0.15,
+# installed via brew and exposed by sourcing asdf.sh) to the 0.16+ Go binary,
+# in place, WITHOUT losing installed plugins / tool versions / data (all of
+# which live in ASDF_DATA_DIR, default ~/.asdf, and are preserved).
+#
+#   Linux  → installs the standalone 0.16+ binary to ~/.local/bin, then
+#            `brew uninstall asdf` to drop the orphaned linuxbrew formula.
+#   macOS  → `brew upgrade asdf` (stays brew-managed).
+#
+# Idempotent: re-running on an already-migrated box just reshims and exits.
+#
+# Usage: asdf-migrate [--fix]
+#   --fix   also comment out stray asdf.sh sourcing found in machine-local rc
+#           files (default: warn only — never edits user-owned login files).
+
+set -u
+
+FIX=0
+[ "${1:-}" = "--fix" ] && FIX=1
+
+source ~/.dotfiles/shell/helpers/distro
+source ~/.dotfiles/shell/helpers/helpers
+source ~/.dotfiles/shell/helpers/asdf
+
+data="${ASDF_DATA_DIR:-$HOME/.asdf}"
+
+# asdf >= 0.16 ?  Parse the first maj.min and compare numerically (a naive
+# regex would false-positive on "0.15" matching the "15." substring).
+is_016() {
+  local v maj min
+  v=$(asdf --version 2>/dev/null | grep -oE 'v?[0-9]+\.[0-9]+' | head -1)
+  v=${v#v}
+  [ -n "$v" ] || return 1
+  maj=${v%%.*}; min=${v#*.}
+  [ "$maj" -gt 0 ] 2>/dev/null && return 0
+  [ "$maj" -eq 0 ] 2>/dev/null && [ "$min" -ge 16 ] 2>/dev/null && return 0
+  return 1
+}
+
+brew_has_asdf() { command -v brew >/dev/null 2>&1 && brew list asdf >/dev/null 2>&1; }
+
+# --- 1. Normalise PATH so detection sees a usable binary if one exists -------
+# (On a freshly-pulled machine the legacy `asdf` has fallen off PATH because
+# asdf.sh is no longer sourced — re-expose any standalone/brew binary first.)
+export PATH="$HOME/.local/bin:$data/shims:$PATH"
+if [ "$DOTFILES_OS" = darwin ]; then
+  eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null)" || true
+  eval "$(/usr/local/bin/brew shellenv 2>/dev/null)"  || true
+fi
+hash -r
+
+# --- 2. Detect (brew-centric — the legacy fleet has no git clones) -----------
+legacy=0
+# A still-legacy brew formula ships libexec/asdf.sh:
+brew_has_asdf && [ -e "$(brew --prefix asdf 2>/dev/null)/libexec/asdf.sh" ] && legacy=1
+# On Linux any linuxbrew asdf is orphaned cruft we want gone (→ standalone):
+[ "$DOTFILES_PKG" != brew ] && brew_has_asdf && legacy=1
+# Binary not callable but data exists → the freshly-pulled-machine symptom:
+{ ! command -v asdf >/dev/null 2>&1 && [ -d "$data/shims" ]; } && legacy=1
+# A callable asdf that's too old:
+command -v asdf >/dev/null 2>&1 && ! is_016 && legacy=1
+# Defensive only (not expected on this fleet): a git-clone style ~/.asdf:
+[ -d "$data/.git" ] && legacy=1
+[ -e "$data/asdf.sh" ] && legacy=1
+
+if is_016 && [ "$legacy" -eq 0 ]; then
+  echo "asdf already on 0.16+ ($(asdf --version 2>/dev/null)) — reshimming only."
+  asdf reshim 2>/dev/null
+  echo "Nothing to migrate."
+  exit 0
+fi
+
+echo "Legacy asdf detected — migrating to 0.16+ (data in $data is preserved)."
+
+# --- 3. Snapshot metadata, then confirm -------------------------------------
+# Data is preserved in place, so no full tar — we only stash enough to rebuild
+# via `asdf-reload` in the unlikely event the data dir is lost.
+bk="$HOME/.asdf-migrate-backup/$(date +%Y%m%d-%H%M%S)"
+mkdir -p "$bk"
+asdf plugin list >"$bk/plugins.txt" 2>/dev/null || true
+[ -e "$HOME/.tool-versions" ] && cp -L "$HOME/.tool-versions" "$bk/" 2>/dev/null
+echo "Backed up plugin list + .tool-versions to $bk"
+
+confirm "Proceed with the asdf 0.16+ migration?"
+[ "$?" -eq 1 ] || { echo "Aborted."; exit 0; }
+
+# --- 4. Install the new binary, then assert it resolves ----------------------
+asdf_fetch_binary || { echo "asdf: binary install failed."; exit 1; }
+if [ "$DOTFILES_OS" = darwin ]; then
+  eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null)" || true
+  eval "$(/usr/local/bin/brew shellenv 2>/dev/null)"  || true
+fi
+hash -r
+is_016 || { echo "asdf: 0.16+ binary not on PATH after install — aborting before cleanup."; exit 1; }
+echo "Installed $(asdf --version 2>/dev/null)."
+
+# --- 5. Drop the legacy brew asdf (the real cleanup for this fleet) ----------
+# Only where brew is NOT the chosen manager (Linux): the standalone ~/.local/bin
+# binary now wins, so remove the orphaned linuxbrew formula + its asdf.sh. On
+# macOS the `brew upgrade` above already replaced the legacy formula. Data lives
+# in ~/.asdf (outside the cellar), so this is non-destructive.
+if [ "$DOTFILES_PKG" != brew ] && brew_has_asdf; then
+  echo "Removing orphaned linuxbrew asdf (data in $data is untouched)…"
+  brew uninstall asdf || true
+fi
+# Defensive (no-op on this fleet): strip non-data top-level entries from a
+# git-clone-style ~/.asdf, keeping the data dirs + plugin-index.
+if [ -d "$data/.git" ] || [ -e "$data/asdf.sh" ]; then
+  find "$data/" -maxdepth 1 -mindepth 1 \
+    -not -name downloads -not -name plugins -not -name installs -not -name shims \
+    -not -name plugin-index -exec rm -rf {} +
+fi
+
+# --- 6. Regenerate shims (old shims reference the old bash version) ----------
+hash -r
+asdf reshim 2>/dev/null
+
+# --- 7. Refresh cached completions (loader regenerates + compinit next shell) -
+rm -f "$HOME/.oh-my-zsh/completions/_asdf" "$HOME"/.zcompdump* 2>/dev/null
+
+# --- 8. Warn on stray asdf.sh sourcing in machine-local rc files -------------
+rc_files=()
+for f in "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.zprofile" "$HOME/.profile" \
+         "$HOME/.bash_profile" "$HOME"/.dotfiles/shell/optional/* "$HOME"/.dotfiles/custom/*; do
+  [ -f "$f" ] && rc_files+=("$f")
+done
+if [ "${#rc_files[@]}" -gt 0 ]; then
+  hits=$(grep -nE 'asdf\.sh|asdf/lib/asdf' "${rc_files[@]}" 2>/dev/null)
+  if [ -n "$hits" ]; then
+    echo
+    echo "Found legacy asdf.sh sourcing — remove these lines:"
+    echo "$hits"
+    if [ "$FIX" -eq 1 ]; then
+      echo "$hits" | cut -d: -f1 | sort -u | while read -r f; do
+        cp "$f" "$f.pre-asdf-migrate"
+        awk '/asdf\.sh|asdf\/lib\/asdf/ && $0 !~ /^[[:space:]]*#/ \
+               { print "# " $0 "  # disabled by asdf-migrate"; next } { print }' \
+          "$f.pre-asdf-migrate" > "$f"
+        echo "  patched $f (backup: $f.pre-asdf-migrate)"
+      done
+    else
+      echo "(re-run with --fix to comment these out automatically, with a backup)"
+    fi
+  fi
+fi
+
+# --- 9. Verify + summary -----------------------------------------------------
+echo
+echo "=== asdf-migrate summary ==="
+is_016 && echo "PASS  asdf $(asdf --version 2>/dev/null)" || echo "FAIL  asdf not >= 0.16"
+plugins=$(asdf plugin list 2>/dev/null | grep -c .)
+[ "${plugins:-0}" -gt 0 ] && echo "PASS  $plugins plugins present" \
+  || echo "WARN  no plugins — run 'asdf-reload' to reinstall from ~/.tool-versions"
+kpath=$(command -v kubectl 2>/dev/null || true)
+case "$kpath" in
+  "$data/shims/"*) echo "PASS  kubectl resolves via shims ($kpath)" ;;
+  "")              echo "WARN  kubectl not found (ok if not yet installed)" ;;
+  *)               echo "WARN  kubectl resolves to $kpath (not a shim)" ;;
+esac
+markers=0
+[ -d "$data/.git" ] && markers=1
+[ -e "$data/asdf.sh" ] && markers=1
+[ "$DOTFILES_PKG" != brew ] && brew_has_asdf && markers=1
+[ "$markers" -eq 0 ] && echo "PASS  no legacy markers remain" \
+  || echo "WARN  legacy markers still present"
+echo "Backup: $bk"
+echo "Open a NEW shell to pick up the migrated asdf."

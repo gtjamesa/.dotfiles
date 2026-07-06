@@ -1,0 +1,10 @@
+[Plugins]
+shakecursorEnabled=false
+zoomEnabled=false
+
+[Xwayland]
+Scale=1
+
+[org.kde.kdecoration2]
+library=org.kde.darkly
+theme=Darkly

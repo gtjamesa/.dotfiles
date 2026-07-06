@@ -1,7 +1,39 @@
 #!/bin/bash
 
+asdf_fetch_binary() {
+  # Install/update the asdf 0.16+ Go binary for this platform. Shared by
+  # installscript (fresh installs) and shell/bin/asdf-migrate (legacy upgrades).
+  #   macOS  → brew (upgrade if already present, else install)
+  #   Linux  → standalone release binary into ~/.local/bin (on PATH via exports)
+  # Reads DOTFILES_OS/DOTFILES_PKG (set by helpers/distro) at call time.
+  case "$DOTFILES_PKG" in
+    brew) if brew list asdf >/dev/null 2>&1; then brew upgrade asdf; else brew install asdf; fi ;;
+    *)
+      local arch tag os="$DOTFILES_OS"
+      case "$(uname -m)" in
+        x86_64)        arch=amd64 ;;
+        aarch64|arm64) arch=arm64 ;;
+        *) echo "asdf: unsupported arch $(uname -m)"; return 1 ;;
+      esac
+      tag=$(curl -fsSL https://api.github.com/repos/asdf-vm/asdf/releases/latest \
+              | grep -oP '"tag_name":\s*"\K[^"]+') || return 1
+      mkdir -p "$HOME/.local/bin"
+      curl -fsSL "https://github.com/asdf-vm/asdf/releases/download/${tag}/asdf-${tag}-${os}-${arch}.tar.gz" \
+        | tar -xzf - -C "$HOME/.local/bin" asdf || return 1
+      export PATH="$HOME/.local/bin:$PATH" ;;
+  esac
+}
+
 asdf-reload() {
   local desired current missing
+
+  # Never let a plugin's HTTPS clone hang waiting for credentials: a deleted/
+  # renamed/private plugin repo returns 401, which git turns into an interactive
+  # "Username for 'https://github.com'" prompt — blocking the whole installer.
+  # GIT_TERMINAL_PROMPT=0 makes git fail fast instead; `local -x` scopes it to
+  # this function (child git inherits it, the interactive shell doesn't).
+  local -x GIT_TERMINAL_PROMPT=0
+
   desired=$(awk '{print $1}' "$HOME/.tool-versions" | sort -u)
   current=$(asdf plugin list 2>/dev/null | sort -u)
   missing=$(comm -23 <(echo "$desired") <(echo "$current"))
@@ -43,7 +75,7 @@ asdf-upgrade() {
       return 0
       ;;
     --no-local) install_local=0 ;;
-    --no-global) install_global=1 ;;
+    --no-global) install_global=0 ;;
     *)
       [ "$1" != "$opt" ] && install_version="$opt"
       ;;
@@ -53,6 +85,7 @@ asdf-upgrade() {
   asdf plugin update "$1"
   asdf install "$1" "$install_version"
 
-  [ "$install_local" -eq 1 ] && asdf local "$1" "$install_version"
-  [ "$install_global" -eq 1 ] && asdf global "$1" "$install_version"
+  # asdf 0.16+: `set` replaced `local`/`global` (--home writes ~/.tool-versions)
+  [ "$install_local" -eq 1 ] && asdf set "$1" "$install_version"
+  [ "$install_global" -eq 1 ] && asdf set --home "$1" "$install_version"
 }

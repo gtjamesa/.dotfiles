@@ -1,15 +1,27 @@
 #!/bin/bash
 
+BRANCH=""
+
 cloneRepo() {
-  # Install Git
-  sudo apt update -y && sudo apt install -y git
+  # Install Git — distro helper doesn't exist yet (git clone brings it down),
+  # so sniff the package manager inline
+  if command -v dnf >/dev/null; then
+    sudo dnf install -y git
+  else
+    sudo apt update -y && sudo apt install -y git
+  fi
 
   # Clone repository
   if [[ ! -d ~/.dotfiles ]]; then
-    git clone https://github.com/gtjamesa/.dotfiles.git ~/.dotfiles
+    if [[ -n $BRANCH ]]; then
+      git clone --branch "$BRANCH" https://github.com/gtjamesa/.dotfiles.git ~/.dotfiles
+    else
+      git clone https://github.com/gtjamesa/.dotfiles.git ~/.dotfiles
+    fi
   else
     cd ~/.dotfiles
     git fetch origin
+    [[ -n $BRANCH ]] && git checkout "$BRANCH"
     git pull
   fi
 
@@ -31,6 +43,8 @@ help() {
   cat << EOF
 usage: $0 [OPTIONS]
     --help               Show this message
+    --branch <name>      Clone/checkout this branch instead of the default (for testing)
+    --force-wsl2         Force WSL2 setup even if auto-detection misses it
     --all                Install all additional programs and aliases
     --[no-]composer      Enable/disable Composer installation (and supporting global packages)
     --[no-]docker        Enable/disable Docker configuration
@@ -41,11 +55,25 @@ usage: $0 [OPTIONS]
 EOF
 }
 
-for opt in "$@"; do
-  case $opt in
+# Extract --branch here; forward everything else to installscript
+ARGS=()
+while [[ $# -gt 0 ]]; do
+  case $1 in
     --help)
       help
       exit 0
+      ;;
+    --branch)
+      BRANCH="$2"
+      shift 2
+      ;;
+    --branch=*)
+      BRANCH="${1#*=}"
+      shift
+      ;;
+    *)
+      ARGS+=("$1")
+      shift
       ;;
   esac
 done
@@ -56,5 +84,5 @@ echo 'This will reset your terminal. Are you sure you want to to this? (y/n) '
 read -p 'Answer: ' reply
 
 if [[ $reply =~ ^[Yy]$ ]]; then
-  bootstrapTerminal
+  bootstrapTerminal "${ARGS[@]}"
 fi

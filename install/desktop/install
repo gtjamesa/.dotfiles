@@ -1,13 +1,14 @@
 #!/bin/bash
 
-if [ "$(uname)" != "Linux" ]; then
+source "$HOME/.dotfiles/shell/helpers/distro"
+
+if [ "$DOTFILES_OS" != linux ]; then
   echo "Installer can only be run on Linux"
   exit
 fi
 
 JETBRAINS_TOOLBOX_VERSION="3.4.3.81140"
 ANYDESK_VERSION="6.3.0-1"
-OS_NAME=$(grep 'NAME=' /etc/os-release | head -1 | awk -F'"' '{print $2}')
 
 sudo -v
 
@@ -20,26 +21,26 @@ create-opt() {
   done
 }
 
-# Download software that may not exist in apt/flathub
-download-software() {
-  # Jetbrains Toolbox
+# Tools that ship the same artefact on every distro — extracted so each
+# per-distro download helper stays focused on the divergent bits
+download-software-portable() {
+  # Jetbrains Toolbox (tarball)
   wget "https://download.jetbrains.com/toolbox/jetbrains-toolbox-${JETBRAINS_TOOLBOX_VERSION}.tar.gz" -O /tmp/jetbrains-toolbox.tar.gz
   tar -xzvf /tmp/jetbrains-toolbox.tar.gz -C /opt/apps --strip-components=1
   rm -f /tmp/jetbrains-toolbox.tar.gz
 
+  # Navicat Premium (AppImage — needs fuse-libs on Fedora; covered by fpi-archives)
+  wget https://dn.navicat.com/download/navicat16-premium-en.AppImage -O /opt/apps/navicat.AppImage
+  chmod +x /opt/apps/navicat.AppImage
+}
+
+# Debian/Ubuntu/Mint .deb + apt repo setup
+download-software-apt() {
   # 1Password
   wget https://downloads.1password.com/linux/debian/amd64/stable/1password-latest.deb -O /tmp/1password-latest.deb
 
   # Steam
   wget https://cdn.akamai.steamstatic.com/client/installer/steam.deb -O /tmp/steam.deb
-
-  # Navicat Premium
-  wget https://dn.navicat.com/download/navicat16-premium-en.AppImage -O /opt/apps/navicat.AppImage
-  chmod +x /opt/apps/navicat.AppImage
-
-  # Table Plus
-  wget -qO - https://deb.tableplus.com/apt.tableplus.com.gpg.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/tableplus-archive.gpg > /dev/null
-  sudo add-apt-repository "deb [arch=amd64] https://deb.tableplus.com/debian/22 tableplus main"
 
   # AnyDesk
   wget "https://download.anydesk.com/linux/anydesk_${ANYDESK_VERSION}_amd64.deb" -O /tmp/anydesk.deb
@@ -47,17 +48,74 @@ download-software() {
   # asciinema
   sudo apt-add-repository -y ppa:zanchey/asciinema
 
-  # FirefoxPWA
-  # https://github.com/filips123/PWAsForFirefox
-  curl -fsSL https://packagecloud.io/filips/FirefoxPWA/gpgkey | gpg --dearmor | sudo tee /usr/share/keyrings/firefoxpwa-keyring.gpg > /dev/null
-  echo "deb [signed-by=/usr/share/keyrings/firefoxpwa-keyring.gpg] https://packagecloud.io/filips/FirefoxPWA/any any main" | sudo tee /etc/apt/sources.list.d/firefoxpwa.list > /dev/null
-
   # Install configured software in one go if we can
   sudo apt update -y
   sudo apt install -y -f /tmp/1password-latest.deb /tmp/steam.deb /tmp/anydesk.deb
-  sudo apt install -y tableplus wine-installer asciinema firefoxpwa
+  sudo apt install -y wine-installer asciinema
 
   rm -f /tmp/1password-latest.deb /tmp/steam.deb /tmp/anydesk.deb
+}
+
+# Fedora rpm repo + key setup. Assumes fpi-repos already enabled RPM Fusion
+# (Steam comes from rpmfusion-nonfree).
+download-software-dnf() {
+  # 1Password — official RPM repo + signing key
+  sudo rpm --import https://downloads.1password.com/linux/keys/1password.asc
+  sudo tee /etc/yum.repos.d/1password.repo > /dev/null <<'EOF'
+[1password]
+name=1Password Stable Channel
+baseurl=https://downloads.1password.com/linux/rpm/stable/$basearch
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://downloads.1password.com/linux/keys/1password.asc
+EOF
+
+  # AnyDesk — official rpm repo
+  sudo rpm --import https://keys.anydesk.com/repos/RPM-GPG-KEY
+  sudo tee /etc/yum.repos.d/anydesk.repo > /dev/null <<'EOF'
+[anydesk]
+name=AnyDesk Fedora - stable
+baseurl=https://rpm.anydesk.com/fedora/$basearch/
+enabled=1
+gpgcheck=1
+gpgkey=https://keys.anydesk.com/repos/RPM-GPG-KEY
+EOF
+
+  # Install everything in one go — Steam from RPM Fusion, asciinema/wine from default repos
+  sudo dnf install -y 1password anydesk steam asciinema wine solaar
+
+  # KDE Spin gets kdeconnectd (Workstation users get the GNOME flatpak equivalent)
+  case "${XDG_CURRENT_DESKTOP:-}" in
+    *KDE*) sudo dnf install -y kdeconnectd ;;
+  esac
+}
+
+# Download software that may not exist in apt/flathub
+download-software() {
+  download-software-portable
+  case "$DOTFILES_PKG" in
+    apt) download-software-apt ;;
+    dnf) download-software-dnf ;;
+  esac
+}
+
+# Claude Code CLI — native installer drops it in ~/.local/bin (already on PATH
+# via shell/exports) and self-updates in the background.
+# https://code.claude.com/docs/en/quickstart
+install-claude-code() {
+  command -v claude >/dev/null 2>&1 && return 0
+  curl -fsSL https://claude.ai/install.sh | bash
+}
+
+# Sync Claude Code config into ~/.claude and ~/.agents — CLAUDE.md, settings.json
+# and agents symlinks plus authored/external skills, all from the repo. This
+# script runs in its own subshell, so source the helpers ai-sync needs (shell
+# functions aren't inherited; PATH is, so node/jq are found when run normally).
+sync-claude-code-config() {
+  source "$HOME/.dotfiles/shell/helpers/helpers"
+  source "$HOME/.dotfiles/shell/helpers/ai"
+  ai-sync
 }
 
 install-flathub-packages() {
@@ -67,7 +125,7 @@ install-flathub-packages() {
     # text
     io.typora.Typora md.obsidian.Obsidian org.gnome.meld \
     # utility
-    com.github.tchx84.Flatseal com.getpostman.Postman org.flameshot.Flameshot io.github.pwr_solaar.solaar \
+    com.github.tchx84.Flatseal com.getpostman.Postman org.flameshot.Flameshot \
     # games
     net.davidotek.pupgui2 com.obsproject.Studio io.github.trigg.discover_overlay
   )
@@ -75,15 +133,139 @@ install-flathub-packages() {
 }
 
 install-autostarts() {
-  SOLARR_AUTOSTART="$HOME/.config/autostart/solaar.desktop"
   sudo wget https://github.com/pwr-Solaar/Solaar/raw/refs/heads/master/rules.d/42-logitech-unify-permissions.rules -O /etc/udev/rules.d/42-logitech-unify-permissions.rules
-  wget https://github.com/pwr-Solaar/Solaar/raw/refs/heads/master/share/autostart/solaar.desktop -O "$SOLARR_AUTOSTART"
-  sed -i 's/Exec=solaar/Exec=flatpak run io.github.pwr_solaar.solaar/' "$SOLARR_AUTOSTART"
+  wget https://github.com/pwr-Solaar/Solaar/raw/refs/heads/master/share/autostart/solaar.desktop -O ~/.config/autostart/solaar.desktop
+
+  # reload udev rules after modifications
+  sudo udevadm control --reload-rules
+}
+
+# ----------------------------------------------------------------------------
+# Fedora-only post-install — RPM Fusion, flathub, codecs, firmware, NVIDIA.
+# Mirrors https://github.com/devangshekhawat/Fedora-44-Post-Install-Guide
+# Each fpi-* step is idempotent; the entry point calls them in order.
+# ----------------------------------------------------------------------------
+
+# 1. RPM Fusion (free + nonfree) + Terra (third-party packages)
+fpi-repos() {
+  sudo dnf install -y \
+    https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm \
+    https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
+  sudo dnf install -y --nogpgcheck \
+    --repofrompath 'terra,https://repos.fyralabs.com/terra$releasever' terra-release
+  sudo dnf group upgrade -y core
+}
+
+# 2. System update + firmware (fwupdmgr is a no-op in VMs)
+fpi-update() {
+  sudo dnf -y update
+  fwupdmgr refresh --force || true
+  fwupdmgr update -y --no-reboot-check || true
+}
+
+# 3. Flathub remote — install-flathub-packages below depends on this
+fpi-flathub() {
+  flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+}
+
+# 4. Media codecs + ffmpeg swap (replaces ffmpeg-free with full ffmpeg)
+fpi-codecs() {
+  sudo dnf4 group install -y multimedia
+  sudo dnf swap -y 'ffmpeg-free' 'ffmpeg' --allowerasing
+  sudo dnf update -y @multimedia --setopt="install_weak_deps=False" \
+    --exclude=PackageKit-gstreamer-plugin
+  sudo dnf group install -y sound-and-video
+}
+
+# 5. VA-API hardware video accel (Intel default; AMD-only swap fails harmlessly)
+fpi-vaapi() {
+  sudo dnf install -y ffmpeg-libs libva libva-utils
+  sudo dnf swap -y libva-intel-media-driver intel-media-driver --allowerasing || true
+  sudo dnf install -y mesa-va-drivers-freeworld
+}
+
+# 6. Firefox OpenH264 (WebRTC, video calls)
+fpi-openh264() {
+  sudo dnf install -y openh264 gstreamer1-plugin-openh264 mozilla-openh264
+  sudo dnf config-manager setopt fedora-cisco-openh264.enabled=1
+}
+
+# 7. Archive support + AppImage fuse runtime (Navicat needs fuse-libs)
+fpi-archives() {
+  sudo dnf install -y unzip p7zip p7zip-plugins unrar fuse-libs
+}
+
+# 8. Btrfs management GUI — only when root is on btrfs (Fedora's default for
+# Workstation/KDE). Desktop-only tool, so it lives in the desktop installer
+# rather than the base installscript.
+fpi-btrfs() {
+  [ "$(findmnt -no FSTYPE /)" = btrfs ] || return 0
+  sudo dnf install -y btrfs-assistant
+}
+
+# 9. NVIDIA — auto-detect hardware; branch on secure-boot.
+# If MOK enrollment is needed, exits early with a copy-paste resume command
+# the user can run after reboot — no full installscript re-run required.
+fpi-nvidia() {
+  lspci | grep -qi 'vga.*nvidia\|3d.*nvidia' || return 0   # no NVIDIA, no-op
+
+  echo "NVIDIA GPU detected"
+  local sb_state
+  sb_state=$(mokutil --sb-state 2>/dev/null || echo "SecureBoot disabled")
+
+  if echo "$sb_state" | grep -qi 'enabled' \
+     && [ ! -f /etc/pki/akmods/certs/public_key.der ]; then
+    echo "Secure Boot is enabled — installing MOK signing prereqs"
+    sudo dnf install -y kmodtool akmods mokutil openssl
+    sudo kmodgenca -a
+    sudo mokutil --import /etc/pki/akmods/certs/public_key.der
+    cat <<'EOF'
+
+============================================================
+REBOOT REQUIRED to complete MOK enrollment.
+On reboot, the UEFI MOK Manager prompts you to enroll the new
+key: "Enroll MOK" -> "Continue" -> enter the password you set.
+
+Then resume the NVIDIA install with:
+
+    source ~/.dotfiles/shell/helpers/distro \
+      && source ~/.dotfiles/install/desktop/install \
+      && fpi-nvidia
+
+============================================================
+EOF
+    return 0
+  fi
+
+  sudo dnf install -y akmod-nvidia xorg-x11-drv-nvidia-cuda
+  echo "akmod will build the kernel module in the background — verify in a few minutes with:"
+  echo "    modinfo -F version nvidia"
+}
+
+# 10. Boot tidy — disable network-wait (delays boot if not connected)
+fpi-boot-tidy() {
+  sudo systemctl disable NetworkManager-wait-online.service || true
+}
+
+fedora-post-install() {
+  fpi-repos
+  fpi-update
+  fpi-flathub
+  fpi-codecs
+  fpi-vaapi
+  fpi-openh264
+  fpi-archives
+  fpi-btrfs
+  fpi-nvidia
+  fpi-boot-tidy
 }
 
 # Run the desktop installer
 create-opt
+[ "$DOTFILES_DISTRO" = fedora ] && fedora-post-install
 download-software
+install-claude-code
+sync-claude-code-config
 install-flathub-packages
 install-autostarts
 

@@ -17,10 +17,15 @@ The installation script supports the following options:
 ```bash
 usage: bootstrap [OPTIONS]
     --help               Show this message
+    --branch <name>      Clone/checkout this branch instead of the default (for testing)
+    --force-wsl2         Force WSL2 setup even if auto-detection misses it
     --all                Install all additional programs and aliases
     --[no-]composer      Enable/disable Composer installation (and supporting global packages)
     --[no-]docker        Enable/disable Docker configuration
     --[no-]getracker     Enable/disable GE Tracker specific aliases
+
+  Post-Install options
+    --ask-optional       Ask questions again to enable optional aliases/configuration
 ```
 
 To use the options, you must first download the bootstrap file. 

@@ -63,7 +63,9 @@
   },
   "effortLevel": "xhigh",
   "skipDangerousModePermissionPrompt": true,
+  "theme": "dark",
   "skipAutoPermissionPrompt": true,
   "voiceEnabled": false,
-  "defaultMode": "auto"
+  "defaultMode": "auto",
+  "tui": "fullscreen"
 }
