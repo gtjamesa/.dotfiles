@@ -1,5 +1,9 @@
+[Effect-overview]
+BorderActivate=0,7
+
 [Plugins]
 shakecursorEnabled=false
+virtualdesktopsonlyonprimaryEnabled=true
 zoomEnabled=false
 
 [Xwayland]

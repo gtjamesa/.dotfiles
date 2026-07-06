@@ -25,7 +25,8 @@ DATA_ROOT="${XDG_DATA_HOME:-$HOME/.local/share}"
 #   config -> $CONFIG_ROOT (~/.config)      data -> $DATA_ROOT (~/.local/share)
 MANIFEST=(
   "config|kdeglobals"              # fonts, icon theme, widget style, colours, look-and-feel
-  "config|kwinrc"                  # window decorations + effects
+  "config|kwinrc"                  # window decoration + behaviour: kwin scripts, hot corners, effects
+  "config|kglobalshortcutsrc"      # global keyboard shortcuts (kwin, plasma, custom launches)
   "config|gtkrc"
   "config|gtkrc-2.0"
   "config|gtk-3.0/settings.ini"
@@ -45,6 +46,7 @@ SCRUB=(
   '^ColorSchemeHash='         # hash KDE regenerates locally
   '^Speedbar Width='          # file-dialog sidebar width (px)
   '^# created by KDE Plasma'  # timestamp KDE rewrites into gtkrc on every change
+  '^switch-to-activity-'      # shortcut keyed by per-machine activity UUID
 )
 # Whole INI sections dropped likewise — machine/workflow state, not appearance.
 # Matched by section-name prefix, so [Tiling][uuid][uuid] matches "Tiling".

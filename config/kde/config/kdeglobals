@@ -105,7 +105,6 @@ ForegroundPositive=36,173,89
 ForegroundVisited=115,115,158
 
 [General]
-ColorScheme=Darkly
 UseSystemBell=true
 XftAntialias=true
 XftHintStyle=hintslight

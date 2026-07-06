@@ -1,8 +1,15 @@
 # KDE / GTK appearance
 
-> **⚠️ WIP** — the theme is still being tweaked, so the captured config is not
-> final, and `load` / `install-darkly` haven't yet been exercised on a second
-> machine. Expect churn until this settles.
+> **⚠️ WIP — transitional.** Target architecture: capture the KDE appearance with
+> Plasma 6.6's built-in **Save Current Theme** (a Global Theme package, applied via
+> `plasma-apply-lookandfeel`), and keep `kde-sync` only for what that doesn't cover:
+> **font install + font settings, GTK theming, behaviour (keyboard shortcuts, kwin
+> scripts, hot corners), and Darkly asset install** — plus installing/applying the
+> saved theme package on a second machine. Today the script
+> still copies the full KDE config (`kdeglobals`/`kwinrc`/`kdedefaults`); that part
+> retires once a Global Theme is saved and we confirm what 6.6 actually captures
+> (notably whether it includes fonts — the `defaults` format suggests not). Theme
+> still being tweaked; expect churn until it settles.
 
 Synced by `shell/bin/kde-sync`. **Copy-based, not symlinked** — KConfig saves
 atomically (temp file → `rename()`), which would clobber a symlink on first write.
@@ -14,6 +21,11 @@ kde-sync diff            show what live config differs from what's committed
 kde-sync install-darkly  install the Darkly Qt/GTK style only
 kde-sync install-fonts   install the Inter font family only
 ```
+
+**Before installing on a second machine:** keep tweaking on the source machine,
+then run `kde-sync diff` to review everything that's drifted and `kde-sync save`
+to capture it (and commit) — so the laptop's `load` pulls the complete, current
+config rather than a half-finished snapshot.
 
 ## What's tracked
 
@@ -29,7 +41,8 @@ cursor theme itself lives in `kdedefaults/kcminputrc`, which *is* tracked).
 files so it doesn't follow you between machines (`diff` scrubs a throwaway copy of
 live the same way, so a clean repo still reads in-sync). Stripped lines:
 `gtk-xft-dpi` (display DPI), `ColorSchemeHash` (regenerated locally), `Speedbar Width`
-(file-dialog px), and the `# created by KDE Plasma` timestamp in `gtkrc`. Dropped
+(file-dialog px), the `# created by KDE Plasma` timestamp in `gtkrc`, and
+`switch-to-activity-<uuid>` shortcuts (keyed to a per-machine activity id). Dropped
 sections: `kwinrc`'s `[Desktops]` (virtual-desktop ids) and `[Tiling]` (tile
 layouts) — its `[Plugins]` and decoration sections are kept. Edit `SCRUB` /
 `SCRUB_SECTIONS` at the top of `kde-sync` to adjust.
