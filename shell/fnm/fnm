@@ -5,4 +5,4 @@
 # / package.json engines auto-switching.
 command -v fnm >/dev/null 2>&1 || return 0
 
-eval "$(fnm env --use-on-cd --shell zsh)"
+eval "$(fnm env --use-on-cd --corepack-enabled --shell zsh)"
