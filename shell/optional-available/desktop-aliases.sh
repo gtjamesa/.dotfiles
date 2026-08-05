@@ -43,12 +43,21 @@ nvidia-flatpak-update() {
     return 1
   fi
 
-  DRIVER_VERSION=$(awk '{print $8}' "${VERSION_FILE}" | head -1)
+  # Field position varies between proprietary/open kernel module strings, so match the version itself
+  DRIVER_VERSION=$(grep -oP '\d+\.\d+(\.\d+)?' "${VERSION_FILE}" | head -1)
+
+  if [ -z "${DRIVER_VERSION}" ]; then
+    echo "Could not parse driver version from ${VERSION_FILE}"
+    return 1
+  fi
+
   FLATPAK_VERSION="${DRIVER_VERSION//./-}"
 
   echo -e "Installing flatpak drivers for version ${COLOR_GREEN}${DRIVER_VERSION}${COLOR_RESET}\n"
 
-  flatpak install --user flathub "org.freedesktop.Platform.GL.nvidia-${FLATPAK_VERSION}/x86_64" "org.freedesktop.Platform.GL32.nvidia-${FLATPAK_VERSION}/x86_64"
+  flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+
+  flatpak install --system flathub "org.freedesktop.Platform.GL.nvidia-${FLATPAK_VERSION}/x86_64" "org.freedesktop.Platform.GL32.nvidia-${FLATPAK_VERSION}/x86_64"
 }
 
 runelite-flatpak-link() {
