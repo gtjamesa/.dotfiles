@@ -62,10 +62,11 @@
     "code-simplifier@claude-plugins-official": true
   },
   "effortLevel": "xhigh",
+  "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
   "theme": "dark",
   "skipAutoPermissionPrompt": true,
   "voiceEnabled": false,
   "defaultMode": "auto",
-  "tui": "fullscreen"
+  "enableWorkflows": false
 }

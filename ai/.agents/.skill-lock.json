@@ -256,6 +256,15 @@
       "pluginName": "mattpocock-skills",
       "installedAt": "2026-07-24T09:55:22.336Z",
       "updatedAt": "2026-07-24T09:55:22.336Z"
+    },
+    "gh-stack": {
+      "source": "github/gh-stack",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/github/gh-stack.git",
+      "skillPath": "skills/gh-stack/SKILL.md",
+      "skillFolderHash": "c29ba25c9c07534c27f1a3253bd0ca3846c4f8c7",
+      "installedAt": "2026-08-08T11:57:47.840Z",
+      "updatedAt": "2026-08-08T11:57:47.840Z"
     }
   },
   "dismissed": {
