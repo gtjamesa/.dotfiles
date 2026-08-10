@@ -6,7 +6,7 @@
 #   fconcat <dst> <src>...              join clips
 #   ffps    <file.gif>                  report the true frame rate
 #   fsplit  <file> [workdir]            -> frames/ (source PNGs) + out/ (render target)
-#   fgif    [output] [workdir]          rebuild from out/, or frames/ if out/ is empty
+#   fgif    [--mp4] [output] [workdir]  rebuild from out/, or frames/ if out/ is empty
 
 # Clip a section of a video using ffmpeg
 fclip() {
@@ -54,6 +54,11 @@ fconcat() {
 # 15fps file). Recover the real rate by testing candidates: re-derive the delays
 # each would produce, keep the one that reproduces the file exactly.
 _media_fps() {
+  # GIFs only — magick happily reports %T for a video too, rounding 1/30s to a
+  # 3cs delay and claiming 33.333fps. Callers fall back to the container rate.
+  [ "$(ffprobe -v error -select_streams v:0 -show_entries stream=codec_name \
+    -of default=nw=1:nk=1 "$1" 2>/dev/null)" = gif ] || return 1
+
   magick identify -format '%T\n' "$1" 2>/dev/null | awk '
     function fmt(x,   s) { s = sprintf("%.3f", x); sub(/0+$/, "", s); sub(/\.$/, "", s); return s }
     function gcd(a, b,   t) { while (b) { t = b; b = a % b; a = t } return a }
@@ -83,6 +88,14 @@ _media_fps() {
 
       print fmt(raw), fmt(raw), "variable"
     }'
+}
+
+# Keep rationals internally — they're what -framerate wants, and the only exact
+# spelling of 30000/1001 — but every displayed rate gets decimalised, because
+# that number is typed by hand into Natron's frame rate field.
+_media_dec() {
+  awk -F/ '{ s = sprintf("%.3f", NF > 1 ? $1 / $2 : $1)
+             sub(/0+$/, "", s); sub(/\.$/, "", s); print s }' <<< "$1"
 }
 
 # Count *.png — not `ls | wc -l`, which lists the cwd when the glob matches nothing
@@ -152,7 +165,8 @@ EOF
 
   read -r fpsarg fps kind <<< "$(_media_fps "$file")"
   [ -n "$fpsarg" ] || { fpsarg=$(ffprobe -v error -select_streams v:0 \
-    -show_entries stream=r_frame_rate -of default=nw=1:nk=1 "$file"); fps=$fpsarg kind=container; }
+    -show_entries stream=r_frame_rate -of default=nw=1:nk=1 "$file")
+    fps=$(_media_dec "$fpsarg") kind=container; }
   n=$(_media_count "$wd/frames")
 
   printf 'fpsarg=%s\nkind=%s\n' "$fpsarg" "$kind" > "$wd/.media-timing"
@@ -165,23 +179,31 @@ EOF
   _media_out "$COLOR_GREEN" "$n frames" "-> $wd/frames · $fps fps ($kind) · render to $wd/out · then: fgif"
 }
 
-# Rebuild a GIF from rendered frames at the recorded rate
+# Rebuild a GIF (or MP4) from rendered frames at the recorded rate
 fgif() {
-  local out="${1:-final.gif}" wd="${2:-.}" src fpsarg kind n i d f
+  local mp4=0 vfr=0 out wd src fpsarg kind n i d f list abs
+
+  [ "$1" = "--mp4" ] && { mp4=1; shift; }
 
   if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
     cat <<'EOF'
-Usage: fgif [output.gif] [workdir]
+Usage: fgif [--mp4] [output] [workdir]
 
-  Rebuild a GIF at the rate fsplit recorded, reading <workdir>/out — or
+  Rebuild at the rate fsplit recorded, reading <workdir>/out — or
   <workdir>/frames if out/ is empty. Falls back to the source's own per-frame
   delays automatically when the source was genuinely variable.
 
-  output.gif   defaults to final.gif; written relative to the CWD, not workdir
-  workdir      defaults to the current directory
+  --mp4     write H.264 instead of a GIF; implied by an .mp4 output name
+  output    defaults to final.gif, or final.mp4 with --mp4; written relative
+            to the CWD, not workdir
+  workdir   defaults to the current directory
 EOF
     return 1
   fi
+
+  [ "$mp4" = 1 ] && out="${1:-final.mp4}" || out="${1:-final.gif}"
+  wd="${2:-.}"
+  case "$out" in *.mp4) mp4=1 ;; esac
 
   [ -n "${ZSH_VERSION:-}" ] && setopt local_options null_glob
 
@@ -193,7 +215,41 @@ EOF
   kind=$(sed -n 's/^kind=//p' "$wd/.media-timing" 2>/dev/null)
   [ -n "$fpsarg" ] || { fpsarg=15 kind="assumed"; }
 
-  if [ "$kind" = variable ] && [ "$(grep -c . "$wd/.media-delays" 2>/dev/null)" -eq "$n" ]; then
+  # String compare, not -eq: a missing delays file yields "" and would error out
+  [ "$kind" = variable ] \
+    && [ "$(grep -c . "$wd/.media-delays" 2>/dev/null)" = "$n" ] && vfr=1
+
+  if [ "$mp4" = 1 ]; then
+    # trunc: libx264 refuses odd dimensions under yuv420p
+    set -- -c:v libx264 -crf 18 -pix_fmt yuv420p \
+      -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" -movflags +faststart "$out"
+
+    if [ "$vfr" = 1 ]; then
+      # Video has no -delay, so feed a concat list of per-frame durations. The
+      # trailing repeat is what gives the final frame its duration rather than
+      # 1ms. `option framerate 1000` is load-bearing on every entry: without it
+      # concat rounds durations to the image demuxer's 1/25 default (7 6 12 ->
+      # 8 4 12) and drops that repeat. -safe 0 resolves relative paths against
+      # the list file's own directory, hence the absolute ones.
+      list=$(mktemp) || return 1
+      i=1
+      for f in "$src"/*.png; do
+        case "$f" in /*) abs="$f" ;; *) abs="$PWD/$f" ;; esac
+        d=$(sed -n "${i}p" "$wd/.media-delays")
+        printf "file '%s'\noption framerate 1000\nduration %d.%02d\n" \
+          "$abs" "$((d / 100))" "$((d % 100))"
+        i=$((i + 1))
+      done > "$list"
+      printf "file '%s'\noption framerate 1000\n" "$abs" >> "$list"
+
+      ffmpeg -loglevel error -y -f concat -safe 0 -i "$list" -fps_mode vfr "$@" \
+        || { rm -f "$list"; return 1; }
+      rm -f "$list"
+    else
+      ffmpeg -loglevel error -y -framerate "$fpsarg" -pattern_type glob -i "$src/*.png" "$@" \
+        || return 1
+    fi
+  elif [ "$vfr" = 1 ]; then
     # Positional params instead of an array — bash and zsh index arrays differently
     set --
     i=1
@@ -210,5 +266,6 @@ EOF
       -loop 0 "$out" || return 1
   fi
 
-  _media_out "$COLOR_GREEN" "$out" "<- $src · $n frames · $fpsarg fps ($kind) · $(du -h "$out" | cut -f1)"
+  _media_out "$COLOR_GREEN" "$out" \
+    "<- $src · $n frames · $(_media_dec "$fpsarg") fps ($kind) · $(du -h "$out" | cut -f1)"
 }
