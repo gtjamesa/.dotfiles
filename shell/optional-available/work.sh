@@ -224,6 +224,13 @@ EOF
 
   token_name="${token_name:-${PWD##*/} ${perm_label} $(date +%Y%m%d)}"
 
+  # npm logins lapse after ~2h; fail early with guidance instead of stalling on a
+  # half-expired auth state.
+  if ! npm whoami >/dev/null 2>&1; then
+    echo -e "${COLOR_RED}npm auth expired/absent — run 'npm login' first ('npm whoami' must pass)${COLOR_RESET}" >&2
+    return 1
+  fi
+
   echo -e "Creating ${COLOR_GREEN}${token_name}${COLOR_RESET} (${perm})"
 
   if ! npm token create \
