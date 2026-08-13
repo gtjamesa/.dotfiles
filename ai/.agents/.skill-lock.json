@@ -15,9 +15,9 @@
       "sourceType": "github",
       "sourceUrl": "https://github.com/sickn33/antigravity-awesome-skills.git",
       "skillPath": "skills/docker-expert/SKILL.md",
-      "skillFolderHash": "4de306f28c3b66e8bb0419b574930bbce43ae47d",
+      "skillFolderHash": "ac8fbe7507377c5dc8ae7eb56a790ae36edf44ff",
       "installedAt": "2026-02-11T12:32:13.144Z",
-      "updatedAt": "2026-06-04T09:41:30.822Z"
+      "updatedAt": "2026-08-13T07:08:21.108Z"
     },
     "bruno-collection-generator": {
       "source": "patricio0312rev/skills",
@@ -176,16 +176,6 @@
       "pluginName": "mattpocock-skills",
       "installedAt": "2026-06-17T21:09:35.556Z",
       "updatedAt": "2026-08-08T12:19:09.677Z"
-    },
-    "writing-great-skills": {
-      "source": "mattpocock/skills",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/mattpocock/skills.git",
-      "skillPath": "skills/productivity/writing-great-skills/SKILL.md",
-      "skillFolderHash": "81d36946d48842f90358d8af54e3cdcc141f8e01",
-      "pluginName": "mattpocock-skills",
-      "installedAt": "2026-06-17T21:09:35.558Z",
-      "updatedAt": "2026-07-24T09:55:22.337Z"
     },
     "code-review": {
       "source": "mattpocock/skills",
