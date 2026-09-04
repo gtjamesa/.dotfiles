@@ -9,15 +9,17 @@ ztar() {
   # tar -I 'zstd -7' -cf rr-cache.tar.zst .git/rr-cache
   # tar -I zstd -xf rr-cache.tar.zst
 
-  if [ -z "$1" ] || [ "$1" == "--help" ]; then
+  if [ -z "$1" ] || [ "$1" = "--help" ]; then
     cat << EOF
 Usage: $0 [args] <FILE> [FILE(s)]
     -x                   Extract
+    --rm                 Remove source file(s) after successful compression
 
 Compress:
     $ ztar README.md                  Compress README.md to README.md.zst
     $ ztar tmp.tar.zst /tmp           Compress /tmp to tmp.tar.zst
     $ ztar tmp.tar.zst file1 file2    Compress file1 and file2 to tmp.tar.zst
+    $ ztar --rm README.md             Compress, then delete README.md
 
 Extract:
     $ ztar -x README.md.zst           Extract README.md.zst to README.md
@@ -28,17 +30,27 @@ EOF
 
   extract=0
   is_dir=0
-  filename="$1"
-  files=("${@:2}")
+  remove=0
 
-  for opt in "$@"; do
-    case $opt in
+  # Strip leading flags so $1/$# refer to the filename and its sources
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
     -x)
       extract=1
-      filename="$2"
+      shift
+      ;;
+    --rm)
+      remove=1
+      shift
+      ;;
+    *)
+      break
       ;;
     esac
   done
+
+  filename="$1"
+  files=("${@:2}")
 
   # Extract
   if [ "$extract" -eq 1 ]; then
@@ -71,13 +83,23 @@ EOF
       fi
 
       # Should be a file here so use default behaviour
-#      echo zstd -7 "$filename"
-      zstd -7 "$filename"
-      return 0
+      # zstd's own --rm only unlinks on success
+      if [ "$remove" -eq 1 ]; then
+#        echo zstd -7 --rm "$filename"
+        zstd -7 --rm "$filename"
+      else
+#        echo zstd -7 "$filename"
+        zstd -7 "$filename"
+      fi
+      return $?
     fi
 
     # Compress multiple files into a tar archive
 #    echo tar -I 'zstd -7' -cf "$filename" "${files[@]}"
-    tar -I 'zstd -7' -cf "$filename" "${files[@]}"
+    tar -I 'zstd -7' -cf "$filename" "${files[@]}" || return $?
+
+    if [ "$remove" -eq 1 ]; then
+      rm -rf "${files[@]}"
+    fi
   fi
 }
