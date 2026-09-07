@@ -10,6 +10,39 @@ _git_is_worktree() {
   [[ "$(git rev-parse --git-dir)" != "$(git rev-parse --git-common-dir)" ]]
 }
 
+# Path of the worktree that has $1 checked out (empty if none)
+_git_worktree_for_branch() {
+  git worktree list --porcelain | awk -v b="refs/heads/$1" '
+    /^worktree /{ wt = substr($0, 10) }
+    $0 == "branch " b { print wt; exit }
+  '
+}
+
+# Remove the worktree (if any) holding $1, then delete the local + remote branch
+_git_cleanup_branch() {
+  local branch="$1"
+  [ -z "$branch" ] && return 1
+
+  local main_wt wt
+  main_wt="$(_git_main_worktree)"
+  wt="$(_git_worktree_for_branch "$branch")"
+
+  if [ -n "$wt" ] && [ "$wt" != "$main_wt" ]; then
+    # can't remove the worktree we're standing in
+    case "$PWD/" in "$wt"/*) cd "$main_wt" ;; esac
+
+    git worktree unlock "$wt" 2>/dev/null
+    if ! git worktree remove "$wt"; then
+      echo "worktree still has local changes, remove it with: git worktree remove --force $wt"
+      return 1
+    fi
+  fi
+
+  git show-ref --verify --quiet "refs/heads/$branch" && git branch -D "$branch"
+  git push origin --delete "$branch" 2>/dev/null
+  return 0
+}
+
 gcom() {
   if _git_is_worktree; then
     cd "$(_git_main_worktree)"
@@ -127,30 +160,17 @@ fi
 
 # approve and merge a PR
 function gham() {
-  gh pr review -a "$1"
+  local pr=${1:+"$1"}
 
-  if _git_is_worktree; then
-    gh pr merge "$1" || gh pr merge --admin "$1"
+  gh pr review -a $pr
 
-    if [ "$?" -eq 0 ]; then
-      echo "PR merged successfully"
-      local wt_dir="$(pwd)"
-      local branch="$(git branch --show-current)"
-      cd "$(_git_main_worktree)"
-      git worktree remove "$wt_dir"
-      git push origin --delete "$branch" 2>/dev/null
-    fi
-  else
-    gh pr merge -d "$1"
+  local branch
+  branch="$(gh pr view $pr --json headRefName -q .headRefName)"
 
-    if [ "$?" -ne 0 ]; then
-      gh pr merge -d --admin "$1"
-    fi
+  gh pr merge $pr || gh pr merge --admin $pr || return 1
 
-    if [ "$?" -eq 0 ]; then
-      echo "PR merged successfully"
-    fi
-  fi
+  echo "PR merged successfully"
+  _git_cleanup_branch "$branch"
 }
 
 # Shell adaption of https://nitaym.github.io/ourstheirs/
