@@ -31,9 +31,17 @@ Description of the change
 
 `packagename` should be the name of the package contained within the project's `package.json` file.
 
-## GitHub
+## Git
 
+- Create worktrees under `.claude/worktrees`
 - Your primary method of interacting with GitHub should be the GitHub CLI (`gh`)
+
+## Code
+
+- A comment records state, not narrative: the failure or behaviour, the
+  issue/PR id, the non-obvious constraint (ie enum states, ordering)
+  - The id is the pointer — rationale stays in the issue/PR
+  - Five lines is the ceiling
 
 ## Plans
 
