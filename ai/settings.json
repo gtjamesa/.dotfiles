@@ -53,7 +53,8 @@
       "mcp__ide__getDiagnostics"
     ]
   },
-  "model": "opus[1m]",
+  "model": "claude-opus-4-8",
+  "enableWorkflows": false,
   "enabledPlugins": {
     "commit-commands@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
@@ -62,11 +63,43 @@
     "code-simplifier@claude-plugins-official": true
   },
   "effortLevel": "xhigh",
+  "modelSettings": {
+    "claude-fable-5-1": {
+      "effortLevel": "high"
+    }
+  },
   "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
   "theme": "dark",
-  "skipAutoPermissionPrompt": true,
+  "agentPushNotifEnabled": true,
+  "autoMode": {
+    "environment": [
+      "### Org-wide",
+      "**Organization**: ge-tracker (GitHub org; repo ge-tracker/zencord)",
+      "**Cloud provider(s)**: AWS (aws CLI in shell history) — no further specifics gathered",
+      "**Repository visibility**: private (ge-tracker/zencord, via gh)",
+      "**Internal sharing / snippet hosting**: None configured — treat public paste/gist services as outside the trust boundary",
+      "**Secrets management**: CI secrets referenced by name only: GITHUB_TOKEN, NPM_INSTALL_TOKEN, TURBO_TOKEN — no values gathered",
+      "**Default / protected branches**: main (default; protected via gh — Rulesets: 1 listed, names redacted; treat as protected even though classic branch-protection list is empty)",
+      "**CI/CD deploy targets**: DockerHub (getracker/<workspace>) and ECR, multi-arch build/deploy per .github workflow (build.yaml/release.yml); Kubernetes referenced via kubectl/k in shell history but no cluster names gathered",
+      "**Network posture**: None configured",
+      "**Source control**: github.com:ge-tracker/zencord.git (origin) — this repo and its remote only",
+      "**Trusted internal domains**: None configured",
+      "**Trusted cloud buckets**: None configured",
+      "**Key internal services**: Zendesk (custom fork github.com/ge-tracker/node-zendesk, used for zendesk integration); turborepo-remote-cache (ducktors/turborepo-remote-cache, org-level TURBO_API/TURBO_TEAM/TURBO_TOKEN)",
+      "**Internal package registry**: None configured — all packages are private, none publish to npm",
+      "**Sensitive data locations & audiences**: .env, .env.example, bot/.env, bot/.env.example, ticket-ai/.env, ticket-ai/.env.example (git-ignored env/config files); bot/config/config.json (git-ignored, holds creds, schedules, rate limits, encryption keys per CLAUDE.md) — share only with audiences cleared at the [named+specifics] bar",
+      "**Data retention / declassification**: None configured",
+      "**Sensitive remote targets**: any namespace/host/container with `prod` or `production` as a whole word/segment; note docs/adr/0004-ticket-ai-tracer-bullet-prod-scoped-to-9621.md references a prod-scoped tracer bullet",
+      "**Protected deployment namespaces / environments**: None configured — fall back to the Sensitive remote targets heuristic",
+      "**Protected IaC scopes**: IAM, RBAC, networking, quota, and node-pool resources; anything whose name or tag carries `prod` or `production` as a whole word or name segment",
+      "### User-specific",
+      "**Primary use of Claude Code**: software development (Discord bot / Zendesk integration work in ge-tracker/zencord)",
+      "**Trusted repo**: /home/james/projects/getracker/npm/zencord (github.com:ge-tracker/zencord.git, private) — confidential material (non-secret) OK to commit/push here; secrets and sensitive personal/entrusted data are never cleared by visibility",
+      "**Org-specific CLIs**: gh (GitHub CLI, per CLAUDE.md 'primary method of interacting with GitHub'); pnpm/turbo (pn, per repo tooling); kubectl/k (seen in shell history, cluster scope unconfirmed)",
+      "routine under bot/, cluster-api/, web-ui/, ticket-ai/ prefixes within this repo"
+    ]
+  },
   "voiceEnabled": false,
-  "defaultMode": "auto",
-  "enableWorkflows": false
+  "defaultMode": "auto"
 }
