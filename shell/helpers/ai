@@ -4,8 +4,9 @@
 #   CLAUDE.md / settings.json   - tracked, symlinked into ~/.claude
 #   skills/<name>/              - authored skills, tracked, symlinked into ~/.claude/skills
 #   .agents/.skill-lock.json    - tracked; lockfile for `npx skills` externals
-# `npx skills` copies external skills straight into ~/.claude/skills (not tracked);
-# ai-sync rebuilds them from the lockfile so machines stay in sync.
+#   .agents/skills/<name>/      - external skill store, gitignored, rebuilt from the lockfile
+# ai-sync rebuilds externals into the store and symlinks them into ~/.claude/skills
+# (the layout the skills CLI produces for a multi-agent install; -a claude-code copies).
 _AI_DOTFILES="$HOME/.dotfiles/ai"
 
 # Ensure $2 is a symlink to $1, backing up whatever was there. Counts changes.
@@ -16,6 +17,24 @@ _ai_link() {
   fi
   symlink_file "$target" "$link"
   echo "  linked $link -> $target"
+  _ai_changes=$(( ${_ai_changes:-0} + 1 ))
+}
+
+# Symlink a stored external skill into ~/.claude/skills, relative form matching
+# the skills CLI (../../.agents/skills/<name>). Strips a stray copied dir first,
+# since backup_file only clears a symlink or file, not a real directory.
+_ai_ext_link() {
+  local name="$1"
+  local store="$HOME/.agents/skills/$name"
+  local dest="$HOME/.claude/skills/$name"
+  local rel="../../.agents/skills/$name"
+  [ -f "$store/SKILL.md" ] || return 0
+  if [ -L "$dest" ] && [ "$(readlink "$dest")" = "$rel" ]; then
+    return 0
+  fi
+  [ ! -L "$dest" ] && [ -d "$dest" ] && rm -rf "$dest"
+  symlink_file "$rel" "$dest"
+  echo "  linked $dest -> $rel"
   _ai_changes=$(( ${_ai_changes:-0} + 1 ))
 }
 
@@ -59,12 +78,16 @@ EOF
 # any machine after pulling the dotfiles repo.
 ai-sync() {
   if [ "$1" = "--help" ]; then
-    echo "Usage: ai-sync"
+    echo "Usage: ai-sync [--update]"
     echo "Verifies and repairs the Claude Code layout: ~/.claude and ~/.agents"
     echo "symlinks, authored skills, and external skills restored from the lockfile."
     echo "Idempotent - safe to run on any machine after pulling the dotfiles repo."
+    echo "  --update  also refresh external skills to latest upstream (needs network)"
     return 0
   fi
+
+  local do_update=0
+  [ "$1" = "--update" ] && do_update=1
 
   if [ ! -d "$_AI_DOTFILES" ]; then
     echo "ai-sync: $_AI_DOTFILES not found - is the dotfiles repo cloned?"
@@ -84,29 +107,55 @@ ai-sync() {
   _ai_link "$_AI_DOTFILES/settings.json" "$claude_dir/settings.json"
   _ai_link "$_AI_DOTFILES/.agents"       "$HOME/.agents"
 
-  # Restore external skills from the lockfile. `npx skills` copies each skill
-  # straight into ~/.claude/skills; a skill counts as installed once that path
-  # is a real folder with a SKILL.md (a symlink there is the old layout - drop it).
+  # Restore external skills into the store, then symlink them into ~/.claude/skills.
+  # `skills add -a claude-code` (single agent) COPIES a real dir into ~/.claude/skills
+  # rather than using the store, so we copy-install, fold the dir into the store, and
+  # link it. Store has SKILL.md = installed. A copied dir from an older run is folded in.
+  local store_dir="$HOME/.agents/skills"
   if [ -f "$lock" ] && command -v jq >/dev/null 2>&1; then
+    mkdir -p "$store_dir"
     local src name dest
     local -a missing
+
+    # Fold stray copied dirs (older ai-sync runs) into the store.
+    for name in $(jq -r '.skills | keys[]' "$lock"); do
+      dest="$skills_dir/$name"
+      if [ ! -L "$dest" ] && [ -f "$dest/SKILL.md" ] && [ ! -f "$store_dir/$name/SKILL.md" ]; then
+        rm -rf "$store_dir/$name"; mv "$dest" "$store_dir/$name"
+        echo "  folded copied $name into the store"
+        _ai_changes=$(( _ai_changes + 1 ))
+      fi
+    done
+
+    # Reinstall whatever the store still lacks, grouped by source, then fold in.
     for src in $(jq -r '.skills[].source' "$lock" | sort -u); do
       missing=()
       for name in $(jq -r --arg s "$src" '.skills | to_entries[] | select(.value.source == $s) | .key' "$lock"); do
-        dest="$skills_dir/$name"
-        if [ -L "$dest" ] || [ ! -f "$dest/SKILL.md" ]; then
-          [ -L "$dest" ] && rm -f "$dest"
-          missing+=("$name")
-        fi
+        [ -f "$store_dir/$name/SKILL.md" ] || missing+=("$name")
       done
-      if [ ${#missing[@]} -gt 0 ]; then
-        echo "  restoring from $src: ${missing[*]}"
-        npx -y skills@latest add "$src" -g -a claude-code -s "${missing[@]}" -y
-        _ai_changes=$(( _ai_changes + ${#missing[@]} ))
-      fi
+      [ ${#missing[@]} -eq 0 ] && continue
+      echo "  restoring from $src: ${missing[*]}"
+      npx -y skills@latest add "$src" -g -a claude-code -s "${missing[@]}" -y
+      for name in "${missing[@]}"; do
+        dest="$skills_dir/$name"
+        [ ! -L "$dest" ] && [ -f "$dest/SKILL.md" ] && { rm -rf "$store_dir/$name"; mv "$dest" "$store_dir/$name"; }
+      done
+      _ai_changes=$(( _ai_changes + ${#missing[@]} ))
+    done
+
+    # Symlink every stored skill into ~/.claude/skills.
+    for name in $(jq -r '.skills | keys[]' "$lock"); do
+      _ai_ext_link "$name"
     done
   elif [ -f "$lock" ]; then
     echo "  jq not found - skipping external skill restore"
+  fi
+
+  # --update: refresh the store to latest upstream; symlinks follow. Kept out of the
+  # default repair so a plain ai-sync stays offline and fast.
+  if [ "$do_update" -eq 1 ] && [ -f "$lock" ] && command -v npx >/dev/null 2>&1; then
+    echo "ai-sync: updating external skills"
+    npx -y skills@latest update -g -y
   fi
 
   # Link authored skills into ~/.claude/skills
