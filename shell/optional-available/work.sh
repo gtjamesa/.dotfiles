@@ -191,32 +191,36 @@ cl-help() {
 }
 
 create-npm-token() {
-  local perm="read-write" perm_label="RW" secret_name="NPM_TOKEN" org="" token_name=""
+  local perm="read-write" perm_label="RW" secret_name="NPM_TOKEN" org="" token_name="" dependabot=false
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
       -h|--help)
         cat <<EOF
-Usage: create-npm-token [-r] [-n SECRET_NAME] [-o [ORG]] [TOKEN_NAME]
+Usage: create-npm-token [-r] [-d] [-n SECRET_NAME] [-o [ORG]] [TOKEN_NAME]
 
 Creates a 90-day npm token scoped to @getracker and sets it as a GitHub
 Actions secret.
 
   -r, --read-only        Create a read-only token (for installing updates).
                          Default is read-write (for publishing).
+  -d, --dependabot       Also set it as a Dependabot secret (same name/scope).
+                         Dependabot can't read Actions secrets.
   -n, --secret-name NAME GitHub secret name. Default: NPM_TOKEN.
-  -o, --org [ORG]        Set the secret at the org level (visibility: all)
+  -o, --org [ORG]        Set the secret at the org level (visibility: private)
                          instead of on the current repo. ORG defaults to
-                         getracker.
+                         ge-tracker.
 
 TOKEN_NAME defaults to "<dirname> <RW|RO> <YYYYMMDD>".
 EOF
         return 0
         ;;
       -r|--read-only) perm="read-only"; perm_label="RO"; shift ;;
+      -d|--dependabot) dependabot=true; shift ;;
       -n|--secret-name) secret_name="$2"; shift 2 ;;
       -o|--org)
-        if [[ -n "$2" && "$2" != -* ]]; then org="$2"; shift 2; else org="getracker"; shift; fi
+        # GitHub org is ge-tracker; npm org is getracker
+        if [[ -n "$2" && "$2" != -* ]]; then org="$2"; shift 2; else org="ge-tracker"; shift; fi
         ;;
       *) token_name="$1"; shift ;;
     esac
@@ -233,21 +237,40 @@ EOF
 
   echo -e "Creating ${COLOR_GREEN}${token_name}${COLOR_RESET} (${perm})"
 
+  # Read-only = CI installs: no 2FA bypass or org perms needed (npm CI/CD docs)
+  local -a write_flags=()
+  if [[ "$perm" == "read-write" ]]; then
+    write_flags=(--bypass-2fa --orgs-permission "$perm" --orgs getracker)
+  fi
+
   if ! npm token create \
     --name "$token_name" \
-    --bypass-2fa --expires 90 \
-    --orgs-permission "$perm" \
-    --orgs getracker \
+    --expires 90 \
+    "${write_flags[@]}" \
     --packages-and-scopes-permission "$perm" \
     --scopes @getracker; then
     echo -e "${COLOR_RED}npm token create failed; aborting${COLOR_RESET}" >&2
     return 1
   fi
 
+  local -a scope_flags=()
   if [[ -n "$org" ]]; then
-    gh secret set "$secret_name" --org "$org" --visibility all
-  else
-    gh secret set "$secret_name"
+    scope_flags=(--org "$org" --visibility private)
+  fi
+
+  # Read once, pipe via stdin (keeps token out of argv) so -d needs one paste
+  local token
+  printf 'Paste the token: ' >&2
+  read -rs token
+  echo >&2
+  if [[ -z "$token" ]]; then
+    echo -e "${COLOR_RED}No token entered; secret not set${COLOR_RESET}" >&2
+    return 1
+  fi
+
+  printf '%s' "$token" | gh secret set "$secret_name" "${scope_flags[@]}" || return 1
+  if [[ "$dependabot" == true ]]; then
+    printf '%s' "$token" | gh secret set "$secret_name" "${scope_flags[@]}" --app dependabot
   fi
 }
 
