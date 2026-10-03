@@ -80,7 +80,7 @@ A dev client cannot log a Jagex Account in directly. The user does the following
 3. Launch RuneLite via the Jagex launcher once. This writes `~/.runelite/credentials.properties`.
 4. The dev client (`./gradlew run`) now logs in with it.
 
-`credentials.properties` logs into the account without a password. Leave it untouched: never read, print, copy or commit it. To revert, delete the file. *End sessions* in runescape.com account settings revokes it.
+`credentials.properties` logs into the account without a password, so its contents are off limits (SKILL.md *Hard rule: Jagex account credentials*). To revert, the user deletes the file. *End sessions* in runescape.com account settings revokes it.
 
 ## Logging
 

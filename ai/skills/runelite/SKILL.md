@@ -16,6 +16,10 @@ A maintainer reads every line before it reaches users. Oversized AI-written subm
 - **Plain.** Names use game terms (`trackedNpcs`, `onBossDeath`). Methods read top to bottom and are short enough to see whole. Use ordinary loops and conditionals over clever streams, generics or indirection. Comments state only what the code can't: a game quirk, an ordering constraint, the in-game meaning of a value.
 - **Familiar.** Match the repo's existing code and the core precedent, so the reviewer recognises every pattern.
 
+## Hard rule: Jagex account credentials
+
+Under no circumstances read, print, copy or commit the contents of `~/.runelite/credentials.properties`. To learn whether it exists, test for the file (`test -f`) without opening it. Logs in `~/.runelite/logs/` are fine to read.
+
 ## Before writing code
 
 1. **Read the hub rules.** The plugin's `AGENTS.md` is the reviewers' guidance written for agents. It covers threading, HTTP, file IO, config, packaging and testing, and lists the *Plugin Rules & Restrictions*. Repos generated before the template shipped it have none; in that case read https://github.com/runelite/example-plugin/raw/refs/heads/master/AGENTS.md in full. Check the requested feature against every restriction before designing it. A forbidden feature is rejected however well it is built: boss-mechanic prediction, menu entries that send actions, injected input. **Done when** the feature clears each restriction, or you have told the user which rule it hits.
