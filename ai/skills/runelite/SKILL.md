@@ -7,6 +7,15 @@ description: RuneLite plugin development for Old School RuneScape (OSRS). Use wh
 
 A plugin is a Guice-injected `Plugin` subclass. It reacts to events on the event bus and draws through overlays, infoboxes and side panels. Hub plugins ship as **source**: RuneLite's packager builds them from a pinned commit, and a human reviews every line against the **hub rules**. Two questions decide whether code is right: which **thread** it runs on, and whether the hub will accept it.
 
+## Hard rule: reviewable code
+
+A maintainer reads every line before it reaches users. Oversized AI-written submissions that no human has read are now the hub's biggest review cost ([OSRS Wiki and RuneLite are increasingly under strain from low-effort AI development](https://oldschool.runescape.wiki/w/User:Cook_Me_Plox/OSRS_Wiki_and_RuneLite_are_increasingly_under_strain_from_low-effort_AI_development)). So every change is **reviewable**: well structured, minimal, and readable in one pass by someone new to the plugin. This rule outranks generality, future-proofing and completeness.
+
+- **Minimal.** Build the smallest design that does what was asked. The default shape is the plugin class, its config and an overlay ([`references/structure.md`](references/structure.md)). A new class earns its place by holding its own state or being used from two places. An interface, base class, factory, manager or generic helper earns its place by having two concrete uses today.
+- **In scope.** Build the request and nothing beside it. Config items and features come from the user; propose extras rather than building them. Handle the states the game actually produces (a closed interface, an off-screen projection), not hypothetical ones.
+- **Plain.** Names use game terms (`trackedNpcs`, `onBossDeath`). Methods read top to bottom and are short enough to see whole. Use ordinary loops and conditionals over clever streams, generics or indirection. Comments state only what the code can't: a game quirk, an ordering constraint, the in-game meaning of a value.
+- **Familiar.** Match the repo's existing code and the core precedent, so the reviewer recognises every pattern.
+
 ## Before writing code
 
 1. **Read the hub rules.** The plugin's `AGENTS.md` is the reviewers' guidance written for agents. It covers threading, HTTP, file IO, config, packaging and testing, and lists the *Plugin Rules & Restrictions*. Repos generated before the template shipped it have none; in that case read https://github.com/runelite/example-plugin/raw/refs/heads/master/AGENTS.md in full. Check the requested feature against every restriction before designing it. A forbidden feature is rejected however well it is built: boss-mechanic prediction, menu entries that send actions, injected input. **Done when** the feature clears each restriction, or you have told the user which rule it hits.
@@ -14,6 +23,8 @@ A plugin is a Guice-injected `Plugin` subclass. It reacts to events on the event
 3. **Check the build.** Code compiles to **Java 11**, so no records, switch expressions, text blocks or `instanceof` patterns. Without a `run` task, *Verifying* can't offer `./gradlew run`: add one, as a separate commit. Further modernising is optional and also separate: [`references/setup.md`](references/setup.md).
 
 ## Looking things up
+
+Every id, name and mechanic in code comes from one of these sources. Recalled game knowledge and wiki prose are often wrong; when no source confirms a fact, ask the user to check it in game.
 
 - **Signatures:** API javadoc https://static.runelite.net/runelite-api/apidocs/ and client javadoc https://static.runelite.net/runelite-client/apidocs/.
 - **Core source** (`runelite/runelite`):
@@ -38,6 +49,7 @@ All `Client` state belongs to the **client thread**, the game loop. Read and wri
   Hop over with `clientThread.invoke(...)`. Hop back for Swing with `SwingUtilities.invokeLater`.
 - `invoke` runs inline when already on the client thread, and queues otherwise. `invokeLater` always queues. A `BooleanSupplier` that returns `false` is re-queued, which is the idiom for "retry until the widget exists". `invokeAtTickEnd` runs at the end of the current **client** tick, just before `PostClientTick`, not the game tick.
 - Blocking IO stays off the client thread (`AGENTS.md` *Threading*).
+- Images ship in the jar. Remote data (the wiki, an API) is fetched once and cached, never per frame or tick, since every install multiplies the load on that service.
 
 ## Lifecycle
 
@@ -65,7 +77,9 @@ Use `net.runelite.api.gameval.*` for every id. Most older plugin code, and most 
 
 ## Verifying
 
-`./gradlew build` (compile + tests) is the only check you can run. In-game behaviour is the user's to confirm: finish as `AGENTS.md` *Testing* says. Offer `./gradlew run`, say exactly what to test, and wait.
+1. `./gradlew build` (compile + tests) is the only check you can run.
+2. Re-read the whole diff as the hub reviewer, against *Hard rule: reviewable code*. Delete or inline whatever fails it. **Done when** every class, method, field and config item traces to the request, a hub rule or a core precedent, and none can be removed without losing behaviour.
+3. In-game behaviour is the user's to confirm: finish as `AGENTS.md` *Testing* says. Offer `./gradlew run`, say exactly what to test, and wait.
 
 ## References
 

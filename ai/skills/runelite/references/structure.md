@@ -33,13 +33,13 @@ One package holds:
 - `XConfig`
 - `XOverlay`, which takes the plugin and config by constructor injection and reads plugin state in `render`
 
-Split out `@Singleton` helpers once the plugin class grows: a region matcher, a tracker. A helper that subscribes to events is registered on `startUp` (`eventBus.register(helper)`) and unregistered on `shutDown`. Registering it misses the spawn replay; see SKILL.md *Lifecycle*.
+Split out a `@Singleton` helper (a region matcher, a tracker) only when it meets SKILL.md *Hard rule: reviewable code*. A helper that subscribes to events is registered on `startUp` (`eventBus.register(helper)`) and unregistered on `shutDown`. Registering it misses the spawn replay; see SKILL.md *Lifecycle*.
 
 Group by feature (`friendnotes/`, `features/<area>/`) rather than by kind (`overlays/`, `util/`).
 
 ## Dev-only debug plugin
 
-Put a second plugin under `src/test` with `@PluginDescriptor(developerPlugin = true)`, and load it beside the real one: `ExternalPluginManager.loadBuiltin(XPlugin.class, XDebugPlugin.class)`. Use it for overlays that dump internal state. It never ships, because the packager only takes `src/main`. Worth it at any size.
+Put a second plugin under `src/test` with `@PluginDescriptor(developerPlugin = true)`, and load it beside the real one: `ExternalPluginManager.loadBuiltin(XPlugin.class, XDebugPlugin.class)`. Use it for overlays that dump internal state. It never ships, because the packager only takes `src/main`. Add one when the user wants to see internal state in game.
 
 ## Very large plugin: component loader
 
