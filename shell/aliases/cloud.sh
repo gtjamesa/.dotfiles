@@ -22,8 +22,9 @@ ngrok-docker() {
   DOCKER_NETWORK=${3:-bridge}
   SUBDOMAIN="${4}.ngrok.io"
 
-  CMD="docker run --rm -it --name ngrok -p 4040:4040 --link ${DOCKER_CONTAINER} --network ${DOCKER_NETWORK} -v ${HOME}/.ngrok2/:/home/ngrok/.config/ngrok/ wernight/ngrok ngrok http --domain=${SUBDOMAIN} ${DOCKER_CONTAINER}:${DOCKER_PORT}"
+  # ngrok/ngrok entrypoint reads /var/lib/ngrok/ngrok.yml
+  CMD="docker run --rm -it --name ngrok -p 4040:4040 --link ${DOCKER_CONTAINER} --network ${DOCKER_NETWORK} -v ${HOME}/.ngrok2/ngrok.yml:/var/lib/ngrok/ngrok.yml:ro ngrok/ngrok http ${DOCKER_CONTAINER}:${DOCKER_PORT} --url=https://${SUBDOMAIN}"
   echo "$CMD"
   tmux new-window "$CMD"
-  tmux rename-window ngrok
+  tmux rename-window "ngrok-${4}"
 }
