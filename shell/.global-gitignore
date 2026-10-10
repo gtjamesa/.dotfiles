@@ -120,3 +120,4 @@ http-client.private.env.json
 
 # Claude
 .claude/settings.local.json
+.claude/worktrees/
