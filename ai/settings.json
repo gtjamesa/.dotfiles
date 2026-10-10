@@ -104,5 +104,18 @@
     ]
   },
   "voiceEnabled": false,
-  "defaultMode": "auto"
+  "defaultMode": "auto",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.dotfiles/ai/hooks/comment-ceiling.py\""
+          }
+        ]
+      }
+    ]
+  }
 }
