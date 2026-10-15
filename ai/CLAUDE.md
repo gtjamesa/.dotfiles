@@ -1,6 +1,7 @@
 - Commit messages: terse, fragments ok
 - Replies: concise — lead with the result, bullets, no preamble
 - When a reply needs my input, end with numbered questions (Q1…), each with your recommendation, so I can answer "recs, but Q3 no"
+- A question from me gets an answer; change state only on an instruction. If the answer implies a change, offer it as a Q
 
 ## Git
 
