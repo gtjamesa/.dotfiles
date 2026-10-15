@@ -90,7 +90,7 @@ The top-level world view is the normal map. Since Sailing, a boat is a `WorldEnt
   - `getItemPrice(id)` (GE price, `long`)
   - `getImage(id[, qty, stackable])` (async: may be blank until loaded; `.addTo(label)` for Swing)
   - `canonicalize(id)` maps noted or placeholder ids to the base item
-- `ItemVariationMapping.getVariations(id)`: every variant of an item (ornament, charged, degraded). Use it instead of hand-listing ids.
+- `ItemVariationMapping.getVariations(id)`: every variant of an item (ornament, charged, degraded). Use it instead of hand-listing ids. Its groups come from `item_variations.json` in the client jar (`unzip -p client-<ver>.jar item_variations.json`); read the group there to confirm which ids it covers.
 - Equipment: `client.getItemContainer(InventoryID.WORN)` indexed by `EquipmentInventorySlot.X.getSlotIdx()`. For any player (including others), `player.getPlayerComposition().getEquipmentId(KitType.WEAPON)`.
 - `client.getItemContainer(...)` is **null** until the server has sent that container. The bank is null until opened this session.
 

@@ -66,6 +66,7 @@ The template also has a `shadowJar` task, which builds a standalone dev-client j
 
 `./gradlew run` starts RuneLite with the plugin side-loaded, plus `-ea --developer-mode --debug`. It blocks until the client window closes, so start it in the background.
 
+- `./gradlew: permission denied` means `gradlew` lost its executable bit in git (`git ls-files -s gradlew` shows `100644`). Use `sh ./gradlew` meanwhile, and fix it with `git update-index --chmod=+x gradlew` in its own commit.
 - The launcher is the test class: `ExternalPluginManager.loadBuiltin(MyPlugin.class); RuneLite.main(args);`. `loadBuiltin` is varargs, so it can also load a dev-only plugin from `src/test` (see [`structure.md`](structure.md)).
 - If the repo has no `run` task, add the block above. The alternative is an IntelliJ Application config on the test class with VM options `-ea` and program args `--developer-mode --debug`. A `.run/<Name>.run.xml` committed to the repo shares that config.
 - `--developer-mode` enables the dev tools sidebar ([`devtools.md`](devtools.md)). `--debug` sets the root logger to DEBUG, which is noisy, so drop it to see only the plugin's package logger.

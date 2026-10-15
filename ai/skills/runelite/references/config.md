@@ -47,7 +47,7 @@ MyConfig provideConfig(ConfigManager configManager)
 ```
 
 - A `default` method body is the default value.
-- Items sort by `position`, then `name`. Sections sort the same way.
+- Items sort by `position`, then `name`. Sections sort the same way, in one ordering shared with top-level items: a section at position 2 sits between top-level items at 1 and 3.
 - `@ConfigSection` goes on a `String` **field**. An item's `section` must equal that field's *value*. Reference the constant.
 - `@ConfigItem` fields beyond the required `keyName`/`name`/`description`:
   - `position`, `section`.

@@ -1,6 +1,6 @@
 ---
 name: runelite
-description: RuneLite plugin development for Old School RuneScape (OSRS). Use when building, debugging or reviewing a RuneLite plugin (a repo with `runelite-plugin.properties`), or submitting or updating one on the Plugin Hub.
+description: RuneLite (OSRS) plugin work. Load before reading or changing code in a repo with `runelite-plugin.properties`, however small the change, and when reviewing a plugin or submitting or updating one on the Plugin Hub.
 ---
 
 # RuneLite plugins
@@ -23,7 +23,7 @@ Under no circumstances read, print, copy or commit the contents of `~/.runelite/
 ## Before writing code
 
 1. **Read the hub rules.** The plugin's `AGENTS.md` is the reviewers' guidance written for agents. It covers threading, HTTP, file IO, config, packaging and testing, and lists the *Plugin Rules & Restrictions*. Repos generated before the template shipped it have none; in that case read https://github.com/runelite/example-plugin/raw/refs/heads/master/AGENTS.md in full. Check the requested feature against every restriction before designing it. A forbidden feature is rejected however well it is built: boss-mechanic prediction, menu entries that send actions, injected input. **Done when** the feature clears each restriction, or you have told the user which rule it hits.
-2. **Find the precedent.** A core plugin almost always does something close: read it before inventing an approach. Core plugins are the reference for correct API usage. Hub plugins are a weaker second; their API usage "is not always correct". Core plugin classes are on the classpath but are not API and change without notice, so copy the logic rather than importing it.
+2. **Find the precedent.** A core plugin almost always does something close: read it before inventing an approach. Core plugins are the reference for correct API usage. Hub plugins are a weaker second; their API usage "is not always correct". Core plugin classes are on the classpath but are not API and change without notice, so copy the logic rather than importing it. Find it by grepping core plugins for the gameval constant you are about to use: `git grep -l VarPlayerID.COM_MODE upstream/master -- runelite-client/src/main/java/net/runelite/client/plugins/` finds `AttackStylesPlugin`.
 3. **Check the build.** Code compiles to **Java 11**, so no records, switch expressions, text blocks or `instanceof` patterns. Without a `run` task, *Verifying* can't offer `./gradlew run`: add one, as a separate commit. Further modernising is optional and also separate: [`references/setup.md`](references/setup.md).
 
 ## Looking things up
@@ -34,9 +34,11 @@ Every id, name and mechanic in code comes from one of these sources. Recalled ga
 - **Core source** (`runelite/runelite`):
   - Precedent lives in `runelite-client/src/main/java/net/runelite/client/plugins/`.
   - Game ids live in `runelite-api/src/main/java/net/runelite/api/gameval/`. They are excluded from the javadoc, so the source is the only place to look them up.
+  - `upstream/master` can run ahead of the release the plugin compiles against. For that exact release, read the `runelite-api` sources jar in the Gradle cache, present once an IDE has fetched it: `unzip -p ~/.gradle/caches/modules-2/files-2.1/net.runelite/runelite-api/<ver>/*/runelite-api-<ver>-sources.jar net/runelite/api/gameval/ItemID.java | grep -n -B3 '= 4718;'`, with `<ver>` the newest release directory there.
   - If `~/projects/runelite/runelite` exists, it is a fork with upstream as remote `upstream`. Run `git fetch upstream`, then read `upstream/master` (`git show upstream/master:<path>`, `git grep <pat> upstream/master`), since the checkout may be stale. Otherwise use `gh api` or raw.githubusercontent.com.
   - `~/projects/runelite/` also holds the user's own plugins and clones of `plugin-hub`, `cs2-scripts` and `sailing`.
 - **Ids by in-game name:** Chisel https://chisel.weirdgloop.org/moid/. The OSRS Wiki shows ids in infoboxes once *Preferences › Gadgets › advanced data* is enabled. The cache viewer is https://abextm.github.io/cache2/#/viewer.
+- **Wiki infobox fields** (ids, combat style, bonuses) are structured data, unlike the prose. Read them from the page's wikitext: `curl -sL -A '<plugin-name>' 'https://oldschool.runescape.wiki/w/Dharok%27s_greataxe?action=raw' | grep -E '^\|(id[0-9]*|combatstyle) ='`.
 - **Coordinates and regions:** https://mejrs.github.io/osrs.
 - **In game:** the dev tools ([`references/devtools.md`](references/devtools.md)).
 
