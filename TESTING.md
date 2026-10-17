@@ -37,7 +37,7 @@ package. Open a new shell (`exec zsh`) and log out/in once first (default-shell 
 - [ ] Installer completes without error
 - [ ] Fedora — RPM Fusion enabled (`dnf repolist | grep rpmfusion`) and flathub added (`flatpak remotes`)
 - [ ] `/opt/apps` set up and user-writable; JetBrains Toolbox + Navicat AppImage present
-- [ ] Native apps installed — spot-check one launches (1Password / TablePlus / AnyDesk)
+- [ ] Native apps installed — spot-check one launches (1Password / TablePlus / RustDesk)
 - [ ] Claude Code — `claude --version` (native install in `~/.local/bin`); config synced — `ls -l ~/.claude/settings.json ~/.agents` link into `~/.dotfiles` (ai-sync)
 - [ ] Flatpaks installed — `flatpak list` spot-check (Spotify / Obsidian / Postman)
 - [ ] Shell modules enabled — `dotmod list` shows `work media desktop-aliases audio installers`

@@ -26,7 +26,7 @@ Function Install-Packages {
         7zip 7zip-zstd `
         adobereader obsidian typora `
         powertoys cpu-z ueli rufus sharex whatsapp 1password wireguard openvpn wiztree f.lux.install `
-        jetbrainstoolbox anydesk.install P4Merge `
+        jetbrainstoolbox rustdesk P4Merge `
         spotify discord grammarly-for-windows googledrive googlechrome `
         vlc
 

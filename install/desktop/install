@@ -8,7 +8,7 @@ if [ "$DOTFILES_OS" != linux ]; then
 fi
 
 JETBRAINS_TOOLBOX_VERSION="3.4.3.81140"
-ANYDESK_VERSION="6.3.0-1"
+RUSTDESK_VERSION="1.5.0"
 
 sudo -v
 
@@ -42,18 +42,18 @@ download-software-apt() {
   # Steam
   wget https://cdn.akamai.steamstatic.com/client/installer/steam.deb -O /tmp/steam.deb
 
-  # AnyDesk
-  wget "https://download.anydesk.com/linux/anydesk_${ANYDESK_VERSION}_amd64.deb" -O /tmp/anydesk.deb
+  # RustDesk
+  wget "https://github.com/rustdesk/rustdesk/releases/download/${RUSTDESK_VERSION}/rustdesk-${RUSTDESK_VERSION}-x86_64.deb" -O /tmp/rustdesk.deb
 
   # asciinema
   sudo apt-add-repository -y ppa:zanchey/asciinema
 
   # Install configured software in one go if we can
   sudo apt update -y
-  sudo apt install -y -f /tmp/1password-latest.deb /tmp/steam.deb /tmp/anydesk.deb
+  sudo apt install -y -f /tmp/1password-latest.deb /tmp/steam.deb /tmp/rustdesk.deb
   sudo apt install -y wine-installer asciinema
 
-  rm -f /tmp/1password-latest.deb /tmp/steam.deb /tmp/anydesk.deb
+  rm -f /tmp/1password-latest.deb /tmp/steam.deb /tmp/rustdesk.deb
 }
 
 # Fedora rpm repo + key setup. Assumes fpi-repos already enabled RPM Fusion
@@ -71,19 +71,10 @@ repo_gpgcheck=1
 gpgkey=https://downloads.1password.com/linux/keys/1password.asc
 EOF
 
-  # AnyDesk — official rpm repo
-  sudo rpm --import https://keys.anydesk.com/repos/RPM-GPG-KEY
-  sudo tee /etc/yum.repos.d/anydesk.repo > /dev/null <<'EOF'
-[anydesk]
-name=AnyDesk Fedora - stable
-baseurl=https://rpm.anydesk.com/fedora/$basearch/
-enabled=1
-gpgcheck=1
-gpgkey=https://keys.anydesk.com/repos/RPM-GPG-KEY
-EOF
-
-  # Install everything in one go — Steam from RPM Fusion, asciinema/wine from default repos
-  sudo dnf install -y 1password anydesk steam asciinema wine solaar
+  # Install everything in one go — Steam from RPM Fusion, asciinema/wine from
+  # default repos, RustDesk rpm straight from GitHub releases (no repo)
+  sudo dnf install -y 1password steam asciinema wine solaar \
+    "https://github.com/rustdesk/rustdesk/releases/download/${RUSTDESK_VERSION}/rustdesk-${RUSTDESK_VERSION}-0.x86_64.rpm"
 
   # KDE Spin gets kdeconnectd (Workstation users get the GNOME flatpak equivalent)
   case "${XDG_CURRENT_DESKTOP:-}" in
