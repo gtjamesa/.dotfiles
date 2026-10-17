@@ -14,6 +14,7 @@ package. Open a new shell (`exec zsh`) and log out/in once first (default-shell 
 ## CLI tools
 - [ ] **fzf** — `Ctrl-R` history search works (key-bindings sourced)
 - [ ] **zoxide** — `z <dir>` jumps (init loaded)
+- [ ] **fd** — `fd --version` (Debian/Ubuntu: `~/.local/bin/fd` → `fdfind`)
 - [ ] **tmux** — starts; `prefix + I` installs plugins
 - [ ] **clipboard** — `echo hi | copy` pastes elsewhere
 
