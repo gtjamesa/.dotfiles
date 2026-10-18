@@ -58,7 +58,7 @@ The template also has a `shadowJar` task, which builds a standalone dev-client j
 
 **Older repos** predate this shape. Signs are `sourceCompatibility = '1.8'`, no `run` task, no repository `content` filter, and no `build=` in the properties file.
 
-- A missing `run` task and a missing `build=` need fixing.
+- Add a missing `build=standard` and `version=` to the properties file: the hub can't review a plugin without `build`, and without `version` users see a commit hash. Offer a missing `run` task, in its own PR.
 - With `build=standard` the packager ignores the rest of `build.gradle`, but `AGENTS.md` still asks for the template's structure. Port the blocks above when the user wants it, keeping the repo's `group` and `version`.
 - Always commit build changes separately from feature work.
 

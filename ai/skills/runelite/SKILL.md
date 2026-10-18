@@ -13,8 +13,8 @@ A maintainer reads every line before it reaches users. Oversized AI-written subm
 
 - **Minimal.** Build the smallest design that does what was asked. The default shape is the plugin class, its config and an overlay ([`references/structure.md`](references/structure.md)). A new class earns its place by holding its own state or being used from two places. An interface, base class, factory, manager or generic helper earns its place by having two concrete uses today.
 - **In scope.** Build the request and nothing beside it. Config items and features come from the user; propose extras rather than building them. Handle the states the game actually produces (a closed interface, an off-screen projection), not hypothetical ones.
-- **Plain.** Names use game terms (`trackedNpcs`, `onBossDeath`). Methods read top to bottom and are short enough to see whole. Use ordinary loops and conditionals over clever streams, generics or indirection. Comments state only what the code can't: a game quirk, an ordering constraint, the in-game meaning of a value.
-- **Familiar.** Match the repo's existing code and the core precedent, so the reviewer recognises every pattern.
+- **Plain.** Names use game terms (`trackedNpcs`, `onBossDeath`). Methods read top to bottom and are short enough to see whole. Use ordinary loops and conditionals over generics or indirection. A stream with one map, filter or collect step is plain; use a loop once it nests, branches or needs a comment. Comments state only what the code can't: a game quirk, an ordering constraint, the in-game meaning of a value.
+- **Familiar.** Match the repo's existing code and the core precedent, so the reviewer recognises every pattern. Where two plain forms exist, use the one the file already uses.
 
 ## Hard rule: Jagex account credentials
 
@@ -23,8 +23,8 @@ Under no circumstances read, print, copy or commit the contents of `~/.runelite/
 ## Before writing code
 
 1. **Read the hub rules.** The plugin's `AGENTS.md` is the reviewers' guidance written for agents. It covers threading, HTTP, file IO, config, packaging and testing, and lists the *Plugin Rules & Restrictions*. Repos generated before the template shipped it have none; in that case read https://github.com/runelite/example-plugin/raw/refs/heads/master/AGENTS.md in full. Check the requested feature against every restriction before designing it. A forbidden feature is rejected however well it is built: boss-mechanic prediction, menu entries that send actions, injected input. **Done when** the feature clears each restriction, or you have told the user which rule it hits.
-2. **Find the precedent.** A core plugin almost always does something close: read it before inventing an approach. Core plugins are the reference for correct API usage. Hub plugins are a weaker second; their API usage "is not always correct". Core plugin classes are on the classpath but are not API and change without notice, so copy the logic rather than importing it. Find it by grepping core plugins for the gameval constant you are about to use: `git grep -l VarPlayerID.COM_MODE upstream/master -- runelite-client/src/main/java/net/runelite/client/plugins/` finds `AttackStylesPlugin`.
-3. **Check the build.** Code compiles to **Java 11**, so no records, switch expressions, text blocks or `instanceof` patterns. Without a `run` task, *Verifying* can't offer `./gradlew run`: add one, as a separate commit. Further modernising is optional and also separate: [`references/setup.md`](references/setup.md).
+2. **Find the precedent.** A core plugin almost always does something close: read it before inventing an approach. Core plugins are the reference for correct API usage, but can lag the API: check each `Client` call you copy against the deprecated table in [`references/api.md`](references/api.md). Hub plugins are a weaker second; their API usage "is not always correct". Core plugin classes are on the classpath but are not API and change without notice, so copy the logic rather than importing it. Find it by grepping core plugins for the gameval constant you are about to use: `git grep -l VarPlayerID.COM_MODE upstream/master -- runelite-client/src/main/java/net/runelite/client/plugins/` finds `AttackStylesPlugin`.
+3. **Check the build.** Code compiles to **Java 11**, so no records, switch expressions, text blocks or `instanceof` patterns. Without a `run` task, *Verifying* can't offer `./gradlew run`: offer to add one, in its own PR. Further modernising is optional and also separate: [`references/setup.md`](references/setup.md).
 
 ## Looking things up
 
@@ -84,7 +84,7 @@ Use `net.runelite.api.gameval.*` for every id. Most older plugin code, and most 
 ## Verifying
 
 1. `./gradlew build` (compile + tests) is the only check you can run.
-2. Re-read the whole diff as the hub reviewer, against *Hard rule: reviewable code*. Delete or inline whatever fails it. **Done when** every class, method, field and config item traces to the request, a hub rule or a core precedent, and none can be removed without losing behaviour.
+2. Dispatch a fresh subagent as the hub reviewer, with the diff, the request and this file's path: it reads the diff cold, as the maintainer will. Delete or inline whatever it finds failing *Hard rule: reviewable code*. **Done when** every class, method, field, parameter, guard, comment, test and config item traces to the request, a hub rule or a core precedent, and none can be removed without losing behaviour.
 3. In-game behaviour is the user's to confirm: finish as `AGENTS.md` *Testing* says. Offer `./gradlew run`, say exactly what to test, and wait.
 
 ## References
