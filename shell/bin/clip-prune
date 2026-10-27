@@ -10,6 +10,9 @@ set -euo pipefail
 MAX_AGE_DAYS=14
 RECORDINGS=/mnt/storage/Videos/Recordings
 
+# A failure is otherwise only visible in the journal
+trap '[ $? = 0 ] || notify-send -u critical "clip-prune failed" "journalctl --user -u clip-prune" 2>/dev/null || true' EXIT
+
 dirs=()
 dry_run=0
 
