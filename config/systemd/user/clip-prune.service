@@ -1,0 +1,6 @@
+[Unit]
+Description=Delete raw OBS clips older than 14 days
+
+[Service]
+Type=oneshot
+ExecStart=%h/.dotfiles/shell/bin/clip-prune

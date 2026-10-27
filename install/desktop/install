@@ -1,5 +1,6 @@
 #!/bin/bash
 
+source "$HOME/.dotfiles/shell/helpers/helpers"
 source "$HOME/.dotfiles/shell/helpers/distro"
 
 if [ "$DOTFILES_OS" != linux ]; then
@@ -131,6 +132,20 @@ install-autostarts() {
   sudo udevadm control --reload-rules
 }
 
+install-clip-prune() {
+  mkdir -p ~/.config/systemd/user
+  for unit in clip-prune.service clip-prune.timer; do
+    symlink_file "$HOME/.dotfiles/config/systemd/user/$unit" "$HOME/.config/systemd/user/$unit"
+  done
+  systemctl --user daemon-reload
+
+  # Only the machine holding the OBS recordings prunes them. No --now: OnStartupSec
+  # is already past mid-session, so starting it would prune immediately
+  if [ -d /mnt/storage/Videos/Recordings ]; then
+    systemctl --user enable clip-prune.timer
+  fi
+}
+
 # ----------------------------------------------------------------------------
 # Fedora-only post-install — RPM Fusion, flathub, codecs, firmware, NVIDIA.
 # Mirrors https://github.com/devangshekhawat/Fedora-44-Post-Install-Guide
@@ -259,6 +274,7 @@ install-claude-code
 sync-claude-code-config
 install-flathub-packages
 install-autostarts
+install-clip-prune
 
 # Enable desktop shell modules
 source "$HOME/.dotfiles/shell/helpers/dotmod"
