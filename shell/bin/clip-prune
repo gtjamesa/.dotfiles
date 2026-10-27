@@ -8,8 +8,9 @@
 set -euo pipefail
 
 MAX_AGE_DAYS=14
+RECORDINGS=/mnt/storage/Videos/Recordings
 
-dir=/mnt/storage/Videos/Recordings
+dirs=()
 dry_run=0
 
 for arg in "$@"; do
@@ -23,12 +24,35 @@ for arg in "$@"; do
     echo "unknown option: $arg" >&2
     exit 1
     ;;
-  *) dir=$arg ;;
+  *) dirs+=("$arg") ;;
   esac
 done
 
+if [ ${#dirs[@]} -gt 1 ]; then
+  echo "only one dir allowed, got ${#dirs[@]}" >&2
+  exit 1
+fi
+dir=${dirs[0]-$RECORDINGS}
+
 if [ ! -d "$dir" ]; then
   echo "$dir not found, nothing to prune"
+  exit 0
+fi
+
+# Absolute and symlink-free: find doesn't follow a symlinked start dir, and
+# reads a bare "!" or "(" as an operator
+dir=$(realpath -- "$dir")
+
+case $dir/ in
+"$(realpath -m -- "$RECORDINGS")"/?*)
+  echo "refusing $dir: subfolders of $RECORDINGS hold Kept clips" >&2
+  exit 1
+  ;;
+esac
+
+# A clock running ahead would make every clip look old
+if [ "$(timedatectl show -p NTPSynchronized --value 2>/dev/null)" != yes ]; then
+  echo "clock not NTP-synced, skipping"
   exit 0
 fi
 
@@ -36,7 +60,8 @@ fi
 action=(-delete -printf 'deleted %f\n')
 [ "$dry_run" = 1 ] && action=(-printf 'would delete %f\n')
 
-# -mtime +N counts whole days, so +13 means at least 14 full days old
-find "$dir" -maxdepth 1 -type f -regextype posix-extended \
+# -mtime +N counts whole days, so +13 means at least 14 full days old.
+# C locale so [0-9] matches ASCII digits only
+LC_ALL=C find "$dir" -maxdepth 1 -type f -regextype posix-extended \
   -regex '.*/(Replay )?[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}-[0-9]{2}-[0-9]{2}\.mp4' \
   -mtime +$((MAX_AGE_DAYS - 1)) "${action[@]}"
