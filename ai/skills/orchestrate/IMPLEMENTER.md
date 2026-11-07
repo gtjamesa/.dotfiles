@@ -10,13 +10,13 @@ Done when an existing test near the seam you'll touch runs green in your worktre
 
 ## 2. Read the issue
 
-Fetch the issue with all comments. The `## Agent Brief` comment is the contract:
+Fetch the issue with all comments, and find its **agent brief** by the definition at the top of [`SKILL.md`](SKILL.md) beside this file. The brief is the contract:
 
 - **Key interfaces** are the pre-agreed seams for `tdd`.
 - **Acceptance criteria** define done.
 - **Out of scope** is the boundary; leave adjacent problems for a new issue.
 
-The body and discussion are context. Note the error-tracker ids (eg Sentry short ids) named on the issue or the duplicates it lists.
+The rest of the issue is context. Note the error-tracker ids (eg Sentry short ids) named on the issue or the duplicates it lists.
 
 If you were given a previous PR in your lane, read its diff: it touched the same seam, and your change keeps that seam in the same shape.
 

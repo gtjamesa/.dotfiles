@@ -5,7 +5,7 @@ argument-hint: "[#issue ...]"
 disable-model-invocation: true
 ---
 
-Fix a set of triaged issues, each on its own branch and PR, so the user can merge or hold each one separately. Each issue's **agent brief** (the `## Agent Brief` comment from `/triage`) is its spec.
+Fix a set of triaged issues, each on its own branch and PR, so the user can merge or hold each one separately. Each issue's **agent brief** is its spec: a `## Agent Brief` section in a comment (from `/triage`) or in the issue body (an issue created already triaged). When there are several, the newest wins, and every comment counts as newer than the body.
 
 Tracker operations (read, claim, comment, label) follow `docs/agents/issue-tracker.md`; role names map to labels via `docs/agents/triage-labels.md`. If either is missing, tell the user to run `/setup-matt-pocock-skills` and stop.
 
@@ -15,7 +15,7 @@ Communicate through **context pointers**: issue numbers, branch names, PR number
 
 Candidates are the issue numbers in `$ARGUMENTS` (`#1500`, `1500`, any separators). With no arguments, list open issues with the `ready-for-agent` role.
 
-Fetch each candidate's state, assignees, labels, dependencies and comments. The **frontier** is every candidate that is open, unassigned, labelled `ready-for-agent`, has no open blocker, and has an agent brief. Record every other candidate with its reason; they go in the final table.
+Fetch each candidate's state, assignees, labels, dependencies, body and comments. The **frontier** is every candidate that is open, unassigned, labelled `ready-for-agent`, has no open blocker, and has an agent brief. Record every other candidate with its reason; they go in the final table.
 
 ## 2. Lanes
 
