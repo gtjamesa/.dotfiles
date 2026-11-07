@@ -54,6 +54,19 @@
     ]
   },
   "model": "claude-opus-5-5",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.dotfiles/ai/hooks/comment-ceiling.py\""
+          }
+        ]
+      }
+    ]
+  },
   "enableWorkflows": false,
   "enabledPlugins": {
     "commit-commands@claude-plugins-official": true,
@@ -105,17 +118,5 @@
   },
   "voiceEnabled": false,
   "defaultMode": "auto",
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Edit|Write|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$HOME/.dotfiles/ai/hooks/comment-ceiling.py\""
-          }
-        ]
-      }
-    ]
-  }
+  "switchModelsOnFlag": false
 }

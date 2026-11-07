@@ -57,7 +57,7 @@ digraph dependabot_review {
 If no specific PRs given, list all open dependabot PRs:
 
 ```bash
-gh pr list --author "app/dependabot" --state open --json number,title,url,mergeable,labels
+gh pr list --author "app/dependabot" --state open --limit 200 --json number,title,url,mergeable,labels
 ```
 
 If specific PR numbers given, fetch those directly.
