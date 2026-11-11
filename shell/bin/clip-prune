@@ -1,13 +1,16 @@
 #!/usr/bin/env bash
-# clip-prune — delete Raw clips (see GLOSSARY.md) older than 14 days from the
-# OBS recordings folder. Kept clips (renamed, or in a subfolder) are never touched.
+# clip-prune — delete Raw clips (see GLOSSARY.md) older than N days (default 10)
+# from the OBS recordings folder. Kept clips (renamed, or in a subfolder) are
+# never touched.
 #
-#   clip-prune [--dry-run] [dir]    dir defaults to /mnt/storage/Videos/Recordings
+#   clip-prune [--dry-run] [--days N] [dir]
+#
+# dir defaults to /mnt/storage/Videos/Recordings.
 #
 # Run daily by config/systemd/user/clip-prune.timer.
 set -euo pipefail
 
-MAX_AGE_DAYS=14
+MAX_AGE_DAYS=10
 RECORDINGS=/mnt/storage/Videos/Recordings
 
 # A failure is otherwise only visible in the journal
@@ -16,20 +19,33 @@ trap '[ $? = 0 ] || notify-send -u critical "clip-prune failed" "journalctl --us
 dirs=()
 dry_run=0
 
-for arg in "$@"; do
-  case $arg in
+while [ $# -gt 0 ]; do
+  case $1 in
   --dry-run) dry_run=1 ;;
+  --days)
+    [ $# -ge 2 ] || { echo "--days needs a value" >&2; exit 1; }
+    MAX_AGE_DAYS=$2
+    shift
+    ;;
+  --days=*) MAX_AGE_DAYS=${1#--days=} ;;
   -h | --help)
-    echo "Usage: clip-prune [--dry-run] [dir]"
+    echo "Usage: clip-prune [--dry-run] [--days N] [dir]"
     exit 0
     ;;
   -*)
-    echo "unknown option: $arg" >&2
+    echo "unknown option: $1" >&2
     exit 1
     ;;
-  *) dirs+=("$arg") ;;
+  *) dirs+=("$1") ;;
   esac
+  shift
 done
+
+# Also guards the -mtime arithmetic below against injection and N-1 < 0
+if ! [[ $MAX_AGE_DAYS =~ ^[1-9][0-9]*$ ]]; then
+  echo "--days must be a positive integer, got '$MAX_AGE_DAYS'" >&2
+  exit 1
+fi
 
 if [ ${#dirs[@]} -gt 1 ]; then
   echo "only one dir allowed, got ${#dirs[@]}" >&2
@@ -63,7 +79,7 @@ fi
 action=(-delete -printf 'deleted %f\n')
 [ "$dry_run" = 1 ] && action=(-printf 'would delete %f\n')
 
-# -mtime +N counts whole days, so +13 means at least 14 full days old.
+# -mtime +N counts whole days, so +(days-1) means at least <days> full days old.
 # C locale so [0-9] matches ASCII digits only
 LC_ALL=C find "$dir" -maxdepth 1 -type f -regextype posix-extended \
   -regex '.*/(Replay )?[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}-[0-9]{2}-[0-9]{2}\.mp4' \

@@ -19,7 +19,7 @@ A clip saved from the OBS replay buffer, named `Replay YYYY-MM-DD hh-mm-ss.mp4`.
 _Avoid_: Instant replay, highlight
 
 **Raw clip**:
-A Recording or Replay that still has its OBS-given name and sits loose in the recordings folder. Raw clips are disposable after 14 days.
+A Recording or Replay that still has its OBS-given name and sits loose in the recordings folder. Raw clips are disposable after 10 days.
 _Avoid_: Unsorted clip, temp clip
 
 **Kept clip**:

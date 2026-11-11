@@ -1,5 +1,5 @@
 [Unit]
-Description=Delete raw OBS clips older than 14 days
+Description=Delete raw OBS clips older than 10 days
 
 [Service]
 Type=oneshot
