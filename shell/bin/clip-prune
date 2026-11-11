@@ -75,12 +75,24 @@ if [ "$(timedatectl show -p NTPSynchronized --value 2>/dev/null)" != yes ]; then
   exit 0
 fi
 
-# -delete is true only on success, so a failed removal is never logged as deleted
-action=(-delete -printf 'deleted %f\n')
-[ "$dry_run" = 1 ] && action=(-printf 'would delete %f\n')
+# -delete is true only on success, so a failed removal is never logged or counted.
+# Each line is prefixed with its size in bytes for the awk total
+action=(-delete -printf '%s deleted %f\n')
+total_verb=cleared
+if [ "$dry_run" = 1 ]; then
+  action=(-printf '%s would delete %f\n')
+  total_verb='would clear'
+fi
 
 # -mtime +N counts whole days, so +(days-1) means at least <days> full days old.
 # C locale so [0-9] matches ASCII digits only
 LC_ALL=C find "$dir" -maxdepth 1 -type f -regextype posix-extended \
   -regex '.*/(Replay )?[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}-[0-9]{2}-[0-9]{2}\.mp4' \
-  -mtime +$((MAX_AGE_DAYS - 1)) "${action[@]}"
+  -mtime +$((MAX_AGE_DAYS - 1)) "${action[@]}" |
+  awk -v total_verb="$total_verb" '
+    { n++; bytes += $1; sub(/^[0-9]+ /, ""); print }
+    END {
+      mb = bytes / 1048576
+      if (mb >= 1024) printf "%s %.1f GB (%d clips)\n", total_verb, mb / 1024, n
+      else printf "%s %.1f MB (%d clips)\n", total_verb, mb, n
+    }'
