@@ -15,7 +15,8 @@ fclip() {
     return 1
   fi
 
-  ffmpeg -ss "$3" -to "$4" -i "$1" -async 1 "$2"
+  # crop, not scale: libx264 refuses odd dimensions under yuv420p; rescaling blurs text
+  ffmpeg -ss "$3" -to "$4" -i "$1" -async 1 -vf "crop=trunc(iw/2)*2:trunc(ih/2)*2" "$2"
 }
 
 fconcat() {
