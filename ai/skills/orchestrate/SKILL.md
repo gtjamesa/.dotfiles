@@ -5,7 +5,12 @@ argument-hint: "[#issue ...]"
 disable-model-invocation: true
 ---
 
-Fix a set of triaged issues, each on its own branch and PR, so the user can merge or hold each one separately. Each issue's **agent brief** is its spec: a `## Agent Brief` section in a comment (from `/triage`) or in the issue body (an issue created already triaged). When there are several, the newest wins, and every comment counts as newer than the body.
+Fix a set of triaged issues, each on its own branch and PR, so the user can merge or hold each one separately. Each issue's **agent brief** is its spec, in one of two shapes:
+
+- a `## Agent Brief` section (from `/triage`), in a comment or the issue body
+- a **ticket** (from `/to-tickets`): a body with `## What to build` and `## Acceptance criteria`, and usually a `## Parent`
+
+When there are several, the newest wins, and every comment counts as newer than the body.
 
 Tracker operations (read, claim, comment, label) follow `docs/agents/issue-tracker.md`; role names map to labels via `docs/agents/triage-labels.md`. If either is missing, tell the user to run `/setup-matt-pocock-skills` and stop.
 
@@ -19,7 +24,7 @@ Fetch each candidate's state, assignees, labels, dependencies, body and comments
 
 ## 2. Lanes
 
-Read each brief's **Key interfaces**. Issues naming the same type, class, endpoint group or subsystem share a **lane**; when overlap is unclear, share the lane. Each lane runs one issue at a time; lanes run in parallel. Order within a lane: priority-labelled issues first, then by number.
+Read the seams each brief names: its **Key interfaces**, or for a ticket, the types, endpoints and subsystems in What to build and Acceptance criteria. Issues naming the same type, class, endpoint group or subsystem share a **lane**; when overlap is unclear, share the lane. Each lane runs one issue at a time; lanes run in parallel. Order within a lane: priority-labelled issues first, then by number.
 
 Give each issue a **slot**: a distinct integer from 1, used wherever the repo's worktree docs need a per-checkout value (test DB token, port).
 

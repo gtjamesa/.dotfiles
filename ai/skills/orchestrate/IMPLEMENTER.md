@@ -16,6 +16,8 @@ Fetch the issue with all comments, and find its **agent brief** by the definitio
 - **Acceptance criteria** define done.
 - **Out of scope** is the boundary; leave adjacent problems for a new issue.
 
+A ticket maps onto these: What to build holds its seams, and its Acceptance criteria define done. Its boundary is its own What to build: read the Parent for context, and leave what the Parent's other tickets deliver to them, even where the Parent's criteria list it.
+
 The rest of the issue is context. Note the error-tracker ids (eg Sentry short ids) named on the issue or the duplicates it lists.
 
 If you were given a previous PR in your lane, read its diff: it touched the same seam, and your change keeps that seam in the same shape.
@@ -25,6 +27,8 @@ If you were given a previous PR in your lane, read its diff: it touched the same
 Run the Skill tool with `tdd`, building against the brief.
 
 Follow the repo's conventions from CLAUDE.md: commit format, changesets, static analysis. Commit messages reference `#<n>` and the error-tracker ids.
+
+A criterion marked HITL is the user's to meet (a prod run, a release): defer it and name it in the PR.
 
 Done when every acceptance criterion is met by a passing test or deliberately deferred, and the static analysis and the tests you touched are green.
 
